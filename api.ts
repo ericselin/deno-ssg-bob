@@ -5,15 +5,16 @@ import {
   OutputFile,
   FrontmatterParser,
   ContentParser,
+  transformFilename,
 } from "./domain.ts";
 
 export type Html = string;
 export type DirectoryPath = string;
-export type Filename = string;
+export type Filepath = string;
 export type Url = string;
 
 export type ContentBase<T, t> = {
-  filename: Filename;
+  filename: Filepath;
   type?: t;
   url?: Url;
   frontmatter: T;
@@ -26,11 +27,11 @@ export type ContentRenderer<T extends ContentNone> = (content: T) => string;
 
 const renderer = <T extends ContentNone>(baseLayout: ContentRenderer<T>) =>
   (content: T): OutputFile => ({
-    filename: `public/${content.filename}`,
+    filepath: `public/${content.filename}`,
     content: baseLayout(content),
   });
 
-const build = async <T extends ContentNone>(
+export const build = async <T extends ContentNone>(
   directories: DirectoryPath[],
   renderContent: ContentRenderer<T>,
   options?: {
@@ -56,6 +57,7 @@ const build = async <T extends ContentNone>(
   files
     .map(parse)
     .map(render)
+    .map(transformFilename)
     .map(writeContentFile);
 };
 

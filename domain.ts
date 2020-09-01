@@ -1,16 +1,16 @@
-import type { ContentBase, Filename, Html } from "./api.ts";
+import type { ContentBase, Filepath, Html } from "./api.ts";
 
 export type RawFile = string;
 export type RawFrontmatter = string;
 export type RawContent = string;
 
 type ContentFile = {
-  filename: Filename;
+  filepath: Filepath;
   content: RawFile;
 };
 
 export type OutputFile = {
-  filename: Filename;
+  filepath: Filepath;
   content: RawFile;
 };
 
@@ -19,33 +19,44 @@ export type FrontmatterParser<T> = (
 ) => T;
 export type ContentParser = (content: RawContent) => Html;
 
-const readDirectoryFilepathsRecursive = async (
-  directory: string,
-): Promise<string[]> => {
-  const files: string[] = [];
-  for await (const dirEntry of Deno.readDir(directory)) {
-    const entryPath = `${directory}/${dirEntry.name}`;
-    if (dirEntry.isFile) files.push(entryPath);
-    else if (dirEntry.isDirectory) {
-      const subdirFilepaths = await readDirectoryFilepathsRecursive(entryPath);
+const readDirectoryRecursive = async (
+  rootDirectory: string,
+  directory?: string,
+): Promise<ContentFile[]> => {
+  const files: ContentFile[] = [];
+  const fullDirectoryPath = rootDirectory + (directory ? `/${directory}` : "");
+  for await (const dirEntry of Deno.readDir(fullDirectoryPath)) {
+    const entryPath = (directory ? `${directory}/` : "") + dirEntry.name;
+    if (dirEntry.isFile) {
+      files.push(
+        {
+          filepath: `${entryPath}`,
+          content: await Deno.readTextFile(
+            `${fullDirectoryPath}/${dirEntry.name}`,
+          ),
+        },
+      );
+    } else if (dirEntry.isDirectory) {
+      const subdirFilepaths = await readDirectoryRecursive(
+        rootDirectory,
+        entryPath,
+      );
       files.push(...subdirFilepaths);
     }
   }
   return files;
 };
 
-const toContentFile = async (filepath: string): Promise<ContentFile> => ({
-  filename: filepath,
-  content: new TextDecoder().decode(await Deno.readFile(filepath)).toString(),
-});
+const readDirectory = async (directory: string): Promise<ContentFile[]> => {
+  return readDirectoryRecursive(directory);
+};
 
 export const readContentFiles = async (
   directories: string[],
 ): Promise<ContentFile[]> => {
   const files = await Promise.resolve(directories)
-    .then((dirs) => Promise.all(dirs.map(readDirectoryFilepathsRecursive)))
-    .then((arrays) => arrays.flat())
-    .then((filepaths) => Promise.all(filepaths.map(toContentFile)));
+    .then((dirs) => Promise.all(dirs.map(readDirectory)))
+    .then((arrays) => arrays.flat());
   return files;
 };
 
@@ -58,14 +69,32 @@ export const parseContentFile = <T extends ContentBase<any, any>>(
     const rawContent = contentSplit.pop() || "";
     const rawFrontmatter = contentSplit.pop() || "";
     return {
-      filename: contentFile.filename,
+      filename: contentFile.filepath,
       frontmatter: parseFrontmatter(rawFrontmatter),
       content: parseContent(rawContent),
     } as T;
   };
 
+export const transformFilename = (file: OutputFile): OutputFile => {
+  const pathSegments = file.filepath.split("/");
+  const [filename] = pathSegments.pop()?.split(".") || [];
+  if (filename === "index") pathSegments.push("index.html");
+  else pathSegments.push(`${filename}/index.html`);
+  return {
+    content: file.content,
+    filepath: pathSegments.join("/"),
+  };
+};
+
+export const dirname = (path: string) => {
+  const arr = path.split("/");
+  arr.pop();
+  return arr.join("/");
+};
+
 export const writeContentFile = async (
   contentFile: OutputFile,
 ): Promise<void> => {
-  console.log(contentFile);
+    await Deno.mkdir(dirname(contentFile.filepath), { recursive: true });
+    await Deno.writeTextFile(contentFile.filepath, contentFile.content);
 };
