@@ -7,6 +7,7 @@ import {
 } from "./domain.ts";
 import { Filepath, DirectoryPath, OutputFile, writeContentFile } from "./fs.ts";
 import { yaml, md } from "./deps.ts";
+import { map, log } from "./fn.ts";
 
 export type Html = string;
 export type Url = string;
@@ -38,26 +39,33 @@ export const build = async <T extends ContentNone>(
     contentParser: ContentParser;
   },
 ): Promise<void> => {
+  // set up options
   const opt: typeof options = Object.assign(
     {},
     options,
-    {
+    <typeof options> {
       frontmatterParser: yaml.parse,
       contentParser: markdownParser,
     },
   );
+
+  // set up functions
   const parse = parseContentFile(
     opt.frontmatterParser,
     opt.contentParser,
   );
   const render = renderer(renderContent);
 
-  const files = await readContentFiles(directories);
-  files
-    .map(parse)
-    .map(render)
-    .map(transformFilename)
-    .map(writeContentFile);
+  // run workflow
+  await Promise
+    .resolve(directories)
+    .then(log("Reading content directories:"))
+    .then(readContentFiles)
+    .then(map(parse))
+    .then(map(render))
+    .then(map(transformFilename))
+    .then(map(writeContentFile))
+    .then(log("Done!", false));
 };
 
 export default build;
