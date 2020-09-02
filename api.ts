@@ -1,22 +1,19 @@
 import {
   readContentFiles,
   parseContentFile,
-  writeContentFile,
-  OutputFile,
   FrontmatterParser,
   ContentParser,
   transformFilename,
 } from "./domain.ts";
+import { Filepath, DirectoryPath, OutputFile, writeContentFile } from "./fs.ts";
+import { yaml, md } from "./deps.ts";
 
 export type Html = string;
-export type DirectoryPath = string;
-export type Filepath = string;
 export type Url = string;
 
 export type ContentBase<T, t> = {
   filename: Filepath;
-  type?: t;
-  url?: Url;
+  type: t;
   frontmatter: T;
   content: Html;
 };
@@ -28,8 +25,10 @@ export type ContentRenderer<T extends ContentNone> = (content: T) => string;
 const renderer = <T extends ContentNone>(baseLayout: ContentRenderer<T>) =>
   (content: T): OutputFile => ({
     filepath: `public/${content.filename}`,
-    content: baseLayout(content),
+    output: baseLayout(content),
   });
+
+const markdownParser = (str: string): Html => md.parse(str).content;
 
 export const build = async <T extends ContentNone>(
   directories: DirectoryPath[],
@@ -43,8 +42,8 @@ export const build = async <T extends ContentNone>(
     {},
     options,
     {
-      frontmatterParser: (str: string) => str ? JSON.parse(str) : "",
-      contentParser: (str: string) => str ? str.toUpperCase() : "",
+      frontmatterParser: yaml.parse,
+      contentParser: markdownParser,
     },
   );
   const parse = parseContentFile(

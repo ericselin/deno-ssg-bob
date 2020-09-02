@@ -8,12 +8,13 @@ Deno.test("extremely simple parse case works", () => {
     (str) => str.toUpperCase(),
   );
   const actual = parse({
-    filename: "file.md",
+    filepath: "file.md",
     content: '{"param":1}\n---\nhello',
   });
   const expected: ContentBase<any, undefined> = {
     content: "HELLO",
     filename: "file.md",
+    type: undefined,
     frontmatter: {
       param: 1
     },

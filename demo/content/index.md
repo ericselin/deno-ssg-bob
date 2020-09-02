@@ -1,3 +1,6 @@
+---
+type: index
+---
 # Bob the static site builder
 
 Bob is a static site generator built on top of the [Deno](https://deno.land) runtime.
