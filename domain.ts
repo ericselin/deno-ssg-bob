@@ -9,7 +9,7 @@ export type ContentBase<T, t> = {
   content: Html;
 };
 
-export type ContentNone = ContentBase<unknown, string>;
+export type ContentNone = ContentBase<unknown, unknown>;
 
 export type ContentRenderer<T extends ContentNone> = (content: T) => string;
 

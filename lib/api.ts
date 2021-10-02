@@ -8,7 +8,7 @@ import type {
 } from "../domain.ts";
 import {
   ContentFile,
-  listDirectories,
+  listDirectory,
   OutputFile,
   readContentFile,
   writeContentFile,
@@ -82,12 +82,13 @@ export const render = async <T extends ContentNone>(
 };
 
 export const build = async (
-  directories: string[],
+  directory: string,
   rendererPath: string,
+  publicDir: string,
 ) => {
   const { default: base } = await import(path.join(Deno.cwd(), rendererPath));
 
-  const filepaths = await listDirectories(directories);
+  const filepaths = await listDirectory(directory, publicDir);
 
   for (const filepath of filepaths) {
     if (await filterFileMod(filepath)) {

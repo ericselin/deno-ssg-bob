@@ -17,12 +17,12 @@ export type OutputFile = {
   output: RawFile;
 };
 
-export const transformFilename = (filepath: string): string => {
+export const getPublicPathCreator = (publicPath: string) => (filepath: string): string => {
   const dirPathSegments = filepath.split("/").slice(0, -1);
   const parsedPath = path.parse(filepath);
   if (parsedPath.name === "index") dirPathSegments.push("index.html");
   else dirPathSegments.push(`${parsedPath.name}/index.html`);
-  return path.join("public", ...dirPathSegments);
+  return path.join(publicPath, ...dirPathSegments);
 };
 
 export const readContentFile = async (
@@ -38,28 +38,21 @@ export const readContentFile = async (
 };
 
 export const listDirectory = async (
-  directory: string,
+  contentDir: string,
+  publicDir: string,
 ): Promise<Filepath[]> => {
   const files: Filepath[] = [];
-  for await (const dirEntry of walk(directory)) {
+  const createPublicPath = getPublicPathCreator(publicDir);
+  for await (const dirEntry of walk(contentDir)) {
     if (dirEntry.isFile) {
-      const relativeEntryPath = path.relative(directory, dirEntry.path);
+      const relativeEntryPath = path.relative(contentDir, dirEntry.path);
       files.push({
-        contentDir: directory,
+        contentDir: contentDir,
         relativePath: relativeEntryPath,
-        outputPath: transformFilename(relativeEntryPath),
+        outputPath: createPublicPath(relativeEntryPath),
       });
     }
   }
-  return files;
-};
-
-export const listDirectories = async (
-  directories: string[],
-): Promise<Filepath[]> => {
-  const files = await Promise.resolve(directories)
-    .then((dirs) => Promise.all(dirs.map(listDirectory)))
-    .then((arrays) => arrays.flat());
   return files;
 };
 

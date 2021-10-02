@@ -10,7 +10,7 @@ const dir = path.relative(
 );
 
 Deno.test("directory lister base case", async () => {
-  assertEquals(await listDirectory(dir), [
+  assertEquals(await listDirectory(dir, "public"), [
     {
       contentDir: "lib/fs.test",
       relativePath: "file.md",
