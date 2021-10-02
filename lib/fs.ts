@@ -1,4 +1,4 @@
-import { path } from "../deps.ts";
+import { path, walk } from "../deps.ts";
 
 export type DirectoryPath = string;
 export type Filepath = {
@@ -41,35 +41,21 @@ export const readContentFile = async (
   };
 };
 
-const listDirectoryRecursive = async (
-  rootDirectory: string,
-  directory = "",
+export const listDirectory = async (
+  directory: string,
 ): Promise<Filepath[]> => {
   const files: Filepath[] = [];
-  const fullDirectoryPath = path.join(rootDirectory, directory);
-  for await (const dirEntry of Deno.readDir(fullDirectoryPath)) {
-    const relativeEntryPath = path.join(directory, dirEntry.name);
+  for await (const dirEntry of walk(directory)) {
     if (dirEntry.isFile) {
+      const relativeEntryPath = path.relative(directory, dirEntry.path);
       files.push({
-        contentDir: rootDirectory,
+        contentDir: directory,
         relativePath: relativeEntryPath,
         outputPath: transformFilename(relativeEntryPath),
       });
-    } else if (dirEntry.isDirectory) {
-      const subdirFilepaths = await listDirectoryRecursive(
-        rootDirectory,
-        relativeEntryPath,
-      );
-      files.push(...subdirFilepaths);
     }
   }
   return files;
-};
-
-export const listDirectory = (
-  directory: string,
-): Promise<Filepath[]> => {
-  return listDirectoryRecursive(directory);
 };
 
 export const listDirectories = async (
