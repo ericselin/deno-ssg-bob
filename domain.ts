@@ -1,6 +1,5 @@
-import type { ContentBase, Html } from "./api.ts";
-import { readDirectory, ContentFile, OutputFile } from "./fs.ts";
-import { path } from "./deps.ts";
+import type { ContentBase, Html } from "./lib/api.ts";
+import { readDirectory, Filepath, ContentFile } from "./lib/fs.ts";
 
 export type RawFile = string;
 export type RawFrontmatter = string;
@@ -11,16 +10,16 @@ export type FrontmatterParser<T> = (
 ) => T;
 export type ContentParser = (content: RawContent) => Html;
 
-export const readContentFiles = async (
+export const listDirectories = async (
   directories: string[],
-): Promise<ContentFile[]> => {
+): Promise<Filepath[]> => {
   const files = await Promise.resolve(directories)
     .then((dirs) => Promise.all(dirs.map(readDirectory)))
     .then((arrays) => arrays.flat());
   return files;
 };
 
-export const parseContentFile = <T extends ContentBase<any, any>>(
+export const parseContentFile = <T extends ContentBase<unknown, unknown>>(
   parseFrontmatter: FrontmatterParser<T>,
   parseContent: ContentParser,
 ) =>
@@ -37,13 +36,3 @@ export const parseContentFile = <T extends ContentBase<any, any>>(
     } as T;
   };
 
-export const transformFilename = (file: OutputFile): OutputFile => {
-  const dirPathSegments = file.filepath.split("/").slice(0, -1);
-  const parsedPath = path.parse(file.filepath);
-  if (parsedPath.name === "index") dirPathSegments.push("index.html");
-  else dirPathSegments.push(`${parsedPath.name}/index.html`);
-  return {
-    filepath: dirPathSegments.join("/"),
-    output: file.output,
-  };
-};

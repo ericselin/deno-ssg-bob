@@ -1,13 +1,11 @@
 import {
-  readContentFiles,
   parseContentFile,
   FrontmatterParser,
   ContentParser,
-  transformFilename,
-} from "./domain.ts";
-import { Filepath, DirectoryPath, OutputFile, writeContentFile } from "./fs.ts";
-import { yaml, md } from "./deps.ts";
-import { map, log } from "./fn.ts";
+} from "../domain.ts";
+import { Filepath, OutputFile, readContentFile, writeContentFile } from "./fs.ts";
+import { yaml, md } from "../deps.ts";
+import { log } from "./fn.ts";
 
 export type Html = string;
 export type Url = string;
@@ -19,20 +17,20 @@ export type ContentBase<T, t> = {
   content: Html;
 };
 
-type ContentNone = ContentBase<any, string>;
+type ContentNone = ContentBase<unknown, string>;
 
 export type ContentRenderer<T extends ContentNone> = (content: T) => string;
 
 const renderer = <T extends ContentNone>(baseLayout: ContentRenderer<T>) =>
   (content: T): OutputFile => ({
-    filepath: `public/${content.filename}`,
+    filepath: content.filename.outputPath,
     output: baseLayout(content),
   });
 
 const markdownParser = (str: string): Html => md.parse(str).content;
 
-export const build = async <T extends ContentNone>(
-  directories: DirectoryPath[],
+export const render = async <T extends ContentNone>(
+  filepath: Filepath,
   renderContent: ContentRenderer<T>,
   options?: {
     frontmatterParser: FrontmatterParser<T>;
@@ -58,14 +56,13 @@ export const build = async <T extends ContentNone>(
 
   // run workflow
   await Promise
-    .resolve(directories)
-    .then(log("Reading content directories:"))
-    .then(readContentFiles)
-    .then(map(parse))
-    .then(map(render))
-    .then(map(transformFilename))
-    .then(map(writeContentFile))
+    .resolve(filepath)
+    .then(log("Rendering content to disk:"))
+    .then(readContentFile)
+    .then(parse)
+    .then(render)
+    .then(writeContentFile)
     .then(log("Done!", false));
 };
 
-export default build;
+export default render;

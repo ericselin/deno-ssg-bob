@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>Bob the static site builder</title>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Code:300,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+
+<body>
+  <header>
+    <a href="/">//bob</a>
+    <ul>
+      <li><a href="/features/">Features</a></li>
+    </ul>
+  </header>
+  
+<section class="hero">
+  <h1>Hi, I'm <span>Bob</span></h1>
+  <h2>and I'm a static site builder.</h2>
+</section>
+<div class="box"></div>
+
+<main>
+  <h1 id="bob-the-static-site-builder">Bob the static site builder</h1>
+<p>Bob is a static site generator built on top of the <a href="https://deno.land">Deno</a> runtime.</p>
+<p><strong>Goals</strong>:</p>
+
+<ul>
+<li>Type safety and intellisense in template files by using TypeScript template literals in layout files</li>
+<li>JS bundling via native Deno bundle command</li>
+<li>Unused CSS removal via postcss</li>
+<li>Efficient image manipulation via the Sharp library</li>
+<li>Speed via Worker-based multithreading</li>
+<li>Easy for web developers to reason about because it&#39;s built in TypeScript</li>
+<li>Incremental builds</li>
+<li>Multilingual</li>
+<li>Pluggable (behind the scenes at least) in order to make development easier</li>
+</ul>
+<p>Functional programming and Domain Driven Design is used as much as possible in the core.</p>
+
+</main>
+
+  <footer>
+    Bob is built with Deno
+  </footer>
+</body>
+
+</html>

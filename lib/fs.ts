@@ -1,7 +1,11 @@
-import { path } from "./deps.ts";
+import { path } from "../deps.ts";
 
 export type DirectoryPath = string;
-export type Filepath = string;
+export type Filepath = {
+  contentDir: string;
+  relativePath: string;
+  outputPath: string;
+};
 
 export type RawFile = string;
 export type RawFrontmatter = string;
@@ -13,28 +17,44 @@ export type ContentFile = {
 };
 
 export type OutputFile = {
-  filepath: Filepath;
+  filepath: string;
   output: RawFile;
+};
+
+export const transformFilename = (filepath: string): string => {
+  const dirPathSegments = filepath.split("/").slice(0, -1);
+  const parsedPath = path.parse(filepath);
+  if (parsedPath.name === "index") dirPathSegments.push("index.html");
+  else dirPathSegments.push(`${parsedPath.name}/index.html`);
+  return path.join("public", ...dirPathSegments);
+};
+
+export const readContentFile = async (
+  filepath: Filepath,
+): Promise<ContentFile> => {
+  const content = await Deno.readTextFile(
+    path.join(filepath.contentDir, filepath.relativePath),
+  );
+  return {
+    filepath,
+    content,
+  };
 };
 
 const readDirectoryRecursive = async (
   rootDirectory: string,
-  directory: string = "",
-): Promise<ContentFile[]> => {
-  const files: ContentFile[] = [];
+  directory = "",
+): Promise<Filepath[]> => {
+  const files: Filepath[] = [];
   const fullDirectoryPath = path.join(rootDirectory, directory);
   for await (const dirEntry of Deno.readDir(fullDirectoryPath)) {
     const relativeEntryPath = path.join(directory, dirEntry.name);
     if (dirEntry.isFile) {
-      const content = await Deno.readTextFile(
-        path.join(fullDirectoryPath, dirEntry.name),
-      );
-      files.push(
-        {
-          filepath: relativeEntryPath,
-          content,
-        },
-      );
+      files.push({
+        contentDir: rootDirectory,
+        relativePath: relativeEntryPath,
+        outputPath: transformFilename(relativeEntryPath),
+      });
     } else if (dirEntry.isDirectory) {
       const subdirFilepaths = await readDirectoryRecursive(
         rootDirectory,
@@ -46,9 +66,9 @@ const readDirectoryRecursive = async (
   return files;
 };
 
-export const readDirectory = async (
+export const readDirectory = (
   directory: string,
-): Promise<ContentFile[]> => {
+): Promise<Filepath[]> => {
   return readDirectoryRecursive(directory);
 };
 
