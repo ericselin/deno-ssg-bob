@@ -1,6 +1,6 @@
 import { path } from "./deps.ts";
 import { render, filterFileMod } from "./mod.ts";
-import { listDirectories } from "./domain.ts";
+import { listDirectories } from "./lib/fs.ts";
 
 const base = await import(path.join(Deno.cwd(), "site.ts"));
 

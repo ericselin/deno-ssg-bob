@@ -41,7 +41,7 @@ export const readContentFile = async (
   };
 };
 
-const readDirectoryRecursive = async (
+const listDirectoryRecursive = async (
   rootDirectory: string,
   directory = "",
 ): Promise<Filepath[]> => {
@@ -56,7 +56,7 @@ const readDirectoryRecursive = async (
         outputPath: transformFilename(relativeEntryPath),
       });
     } else if (dirEntry.isDirectory) {
-      const subdirFilepaths = await readDirectoryRecursive(
+      const subdirFilepaths = await listDirectoryRecursive(
         rootDirectory,
         relativeEntryPath,
       );
@@ -66,10 +66,19 @@ const readDirectoryRecursive = async (
   return files;
 };
 
-export const readDirectory = (
+export const listDirectory = (
   directory: string,
 ): Promise<Filepath[]> => {
-  return readDirectoryRecursive(directory);
+  return listDirectoryRecursive(directory);
+};
+
+export const listDirectories = async (
+  directories: string[],
+): Promise<Filepath[]> => {
+  const files = await Promise.resolve(directories)
+    .then((dirs) => Promise.all(dirs.map(listDirectory)))
+    .then((arrays) => arrays.flat());
+  return files;
 };
 
 export const writeContentFile = async (
