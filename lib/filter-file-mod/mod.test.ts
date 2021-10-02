@@ -1,10 +1,12 @@
-import { assertEquals } from "../../deps.ts";
+import { assertEquals, path } from "../../deps.ts";
 import { shouldRender } from "./mod.ts";
+
+const dir = path.fromFileUrl(path.dirname(import.meta.url));
 
 Deno.test("returns true if content newer than output", async () => {
   assertEquals(
     await shouldRender({
-      contentDir: ".",
+      contentDir: dir,
       relativePath: "2.md",
       outputPath: "1.html",
     }),
@@ -15,7 +17,7 @@ Deno.test("returns true if content newer than output", async () => {
 Deno.test("returns false if content older than output", async () => {
   assertEquals(
     await shouldRender({
-      contentDir: ".",
+      contentDir: dir,
       relativePath: "2.md",
       outputPath: "1.html",
     }),
@@ -26,7 +28,7 @@ Deno.test("returns false if content older than output", async () => {
 Deno.test("returns true if output not found", async () => {
   assertEquals(
     await shouldRender({
-      contentDir: ".",
+      contentDir: dir,
       relativePath: "2.md",
       outputPath: "2.html",
     }),
