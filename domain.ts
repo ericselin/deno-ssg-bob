@@ -2,33 +2,30 @@
 This file should include only top-level type declarations
 */
 
-import type { ContentBase, Html } from "./lib/api.ts";
-import { ContentFile } from "./lib/fs.ts";
+export type ContentBase<T, t> = {
+  filename: Filepath;
+  type: t;
+  frontmatter: T;
+  content: Html;
+};
 
+export type ContentNone = ContentBase<unknown, string>;
+
+export type ContentRenderer<T extends ContentNone> = (content: T) => string;
+
+export type Html = string;
 export type RawFile = string;
 export type RawFrontmatter = string;
 export type RawContent = string;
+
+export type Filepath = {
+  contentDir: string;
+  relativePath: string;
+  outputPath: string;
+};
 
 export type FrontmatterParser<T> = (
   frontmatter: RawFrontmatter,
 ) => T;
 export type ContentParser = (content: RawContent) => Html;
-
-
-export const parseContentFile = <T extends ContentBase<unknown, unknown>>(
-  parseFrontmatter: FrontmatterParser<T>,
-  parseContent: ContentParser,
-) =>
-  (contentFile: ContentFile): T => {
-    const contentSplit = contentFile.content.split("\n---\n");
-    const rawContent = contentSplit.pop() || "";
-    const rawFrontmatter = contentSplit.pop() || "";
-    const frontmatter = parseFrontmatter(rawFrontmatter);
-    return {
-      filename: contentFile.filepath,
-      type: frontmatter?.type,
-      frontmatter,
-      content: parseContent(rawContent),
-    } as T;
-  };
 

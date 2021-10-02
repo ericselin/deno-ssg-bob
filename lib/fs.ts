@@ -1,11 +1,7 @@
 import { path, walk } from "../deps.ts";
+import type { Filepath } from "../domain.ts";
 
 export type DirectoryPath = string;
-export type Filepath = {
-  contentDir: string;
-  relativePath: string;
-  outputPath: string;
-};
 
 export type RawFile = string;
 export type RawFrontmatter = string;

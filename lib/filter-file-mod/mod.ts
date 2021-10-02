@@ -1,5 +1,5 @@
 import { exists, path } from "../../deps.ts";
-import type { Filepath } from "../fs.ts";
+import type { Filepath } from "../../domain.ts";
 
 type ShouldRender = (filepath: Filepath) => boolean | Promise<boolean>;
 

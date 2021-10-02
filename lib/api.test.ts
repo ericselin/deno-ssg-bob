@@ -1,6 +1,6 @@
-import { assertEquals } from "./deps.ts";
-import { parseContentFile } from "./domain.ts";
-import { ContentBase } from "./lib/api.ts";
+import { assertEquals } from "../deps.ts";
+import type { ContentBase } from "../domain.ts";
+import { parseContentFile } from "./api.ts";
 
 Deno.test("extremely simple parse case works", () => {
   const parse = parseContentFile(

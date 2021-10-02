@@ -1,13 +1,3 @@
-import { path } from "./deps.ts";
-import { render, filterFileMod } from "./mod.ts";
-import { listDirectories } from "./lib/fs.ts";
+import { build } from "./mod.ts";
 
-const base = await import(path.join(Deno.cwd(), "site.ts"));
-
-const filepaths = await listDirectories(["content"]);
-
-for (const filepath of filepaths) {
-  if (await filterFileMod(filepath)) {
-    await render(filepath, base.default);
-  }
-}
+build(["content"], "site.ts");
