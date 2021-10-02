@@ -14,8 +14,8 @@ import {
   writeContentFile,
 } from "./fs.ts";
 import { shouldRender as filterFileMod } from "./filter-file-mod/mod.ts";
-import { md, yaml, path } from "../deps.ts";
-import { log } from "./fn.ts";
+import { dependenciesChanged } from "./filter-renderer-deps/mod.ts";
+import { Logger, md, path, yaml } from "../deps.ts";
 
 export type Html = string;
 export type Url = string;
@@ -73,26 +73,33 @@ export const render = async <T extends ContentNone>(
   // run workflow
   await Promise
     .resolve(filepath)
-    .then(log("Rendering content to disk:"))
     .then(readContentFile)
     .then(parse)
     .then(render)
-    .then(writeContentFile)
-    .then(log("Done!", false));
+    .then(writeContentFile);
 };
 
 export const build = async (
   directory: string,
   rendererPath: string,
   publicDir: string,
+  log?: Logger,
 ) => {
   const { default: base } = await import(path.join(Deno.cwd(), rendererPath));
 
   const filepaths = await listDirectory(directory, publicDir);
 
+  const layoutChanged = await dependenciesChanged(rendererPath, publicDir);
+  layoutChanged && log &&
+    log.warning("Layout files changed, rebuilding everything");
+
   for (const filepath of filepaths) {
-    if (await filterFileMod(filepath)) {
+    if (layoutChanged || await filterFileMod(filepath)) {
+      log &&
+        log.info(`Rendering content file '${filepath.relativePath}' to disk`);
       await render(filepath, base);
+    } else {
+      log && log.debug(`Content file '${filepath.relativePath}' unchanged`);
     }
   }
 };

@@ -1,7 +1,7 @@
 import { exists, path } from "../../deps.ts";
 import type { Filepath } from "../../domain.ts";
 
-type ShouldRender = (filepath: Filepath) => boolean | Promise<boolean>;
+type ShouldRender = (filepath: Filepath) => Promise<boolean>;
 
 const getModificationTime = async (filepath: string): Promise<Date | null> => {
   if (!await exists(filepath)) return null;

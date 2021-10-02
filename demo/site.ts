@@ -1,4 +1,4 @@
-import { ContentBase } from "../mod.ts";
+import type { ContentBase } from "../mod.ts";
 import base from "./base.ts";
 
 export type OnlyContent = ContentBase<undefined, "default">;

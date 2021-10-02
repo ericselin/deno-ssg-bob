@@ -1,3 +1,17 @@
 import { build } from "./mod.ts";
+import { log } from "./deps.ts";
 
-build("content", "site.ts", "public");
+await log.setup({
+  handlers: {
+    console: new log.handlers.ConsoleHandler("DEBUG"),
+  },
+
+  loggers: {
+    default: {
+      level: "DEBUG",
+      handlers: ["console"],
+    },
+  },
+});
+
+build("content", "site.ts", "public", log);

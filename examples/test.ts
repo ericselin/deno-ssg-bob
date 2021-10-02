@@ -21,7 +21,6 @@ const getPaths = (exampleDir: string) => {
     Deno.cwd(),
     path.fromFileUrl(path.dirname(import.meta.url)),
   );
-  console.log("this dir", thisDir);
   return {
     contentDir: path.join(thisDir, exampleDir, "content"),
     rendererPath: path.join(thisDir, exampleDir, "site.ts"),
