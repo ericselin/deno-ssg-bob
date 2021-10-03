@@ -1,0 +1,50 @@
+<html lang="en"><head><meta charSet="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta http-equiv="X-UA-Compatible" content="ie=edge" /><title>Hi, I'm Eric | ericselin.dev</title><link rel="preconnect" href="https://fonts.gstatic.com" /><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;family=Source+Code+Pro:wght@400;700;900&amp;display=swap" rel="stylesheet" /><style></style></head><body><header><a href="/">e</a><ul><li><a href="/blog/">Blog</a></li><li><a href="/experiments/">Experiments</a></li></ul></header><section class="hero"><h1>Hi, I'm <span>Eric</span></h1><h2>I'm a developer.</h2></section><main><p>Client-side JavaScript (computing things in the web browser) is getting pretty darn awesome for creating apps out of web pages. You can do almost anything in the browser nowadays, such as video conferencing, 3D modeling, local file editing, even hardware I/O interaction, and much more. But since <a href="/blog/your-website-is-not-an-app/">your website is not an app</a>, you really do not need or want to execute tons of JavaScript when your page loads. Why? Because the page is just <strong>content</strong>, at least when it initially loads.</p>
+<h2 id="executing-javascript-on-page-load-is-bad">Executing JavaScript on page load is bad</h2>
+<h3 id="performance">Performance</h3>
+<p>This is my biggest passion, and it should be obvious. The more work you do (i.e. compute / execute / process), the longer it&#39;s going to take. And the higher the chances that you make a mistake. Just do less, and that will equal less time, less battery usage. It all boils down to being respectful of your users and providing a great experience. But less time (better performance) also means more money for you.</p>
+<h3 id="search-engine-ranking-or-seo-">Search engine ranking (or, SEO)</h3>
+<p>It should come as no surprise that client-side JavaScript is bad for SEO. Although not neccessarily 100% accurate anymore, search engines cannot see your fancy client-side rendered content. Which is bad. Meanwhile, they are increasingly focusing on performance as a ranking attribute. Which also boils down being respectful of users and providing a great experience.</p>
+<h3 id="accessibility">Accessibility</h3>
+<p>Is your site usable on a low-end phone with an expensive but sub-par mobile connection? Probably not. And you might be fine with that. But even rich white men in their Teslas are sometimes driving through tunnels. And sometimes the Internet just doesn&#39;t work perfectly (it&#39;s quite a complicated piece of engineering, after all), so your page might not render for tens of seconds because that one third-party A/B testing tool just doesn&#39;t load immediately.</p>
+<h3 id="honorary-mention-developer-experience">Honorary mention: developer experience</h3>
+<p>Ask your frontend developer if they would like a world where they could just code for the newest devices while older devices would &quot;just work&quot; with static content. Serving pages that work without JavaScript and enriching those pages if the browser supports some new API that you want for your interactive shopping cart (what we in the biz call &quot;progressive enhancement&quot;). Note that this new API should of course <em>not</em> be used on page load anyway.</p>
+<h2 id="we-can-eliminate-javascript-execution-from-page-load">We can eliminate JavaScript execution from page load</h2>
+<p>Think about it. Wouldn&#39;t it be great? The original promise of the World Wide Web with focus on content, accessible to all including usability on any device or network. Try turning off JavaScript in your browser for a moment and enjoy the speed of the Internet! You might say that I&#39;m crazy, that you need all of your JS stuff, and tomorrow you&#39;ll need even more. That you can only solve your problems by including some more <code>&lt;script&gt;</code> tags on your page. Now consider the alternative. What if I&#39;m right? What if we could eliminate all JavaScript from page load? <a href="https://www.quotes.net/mquote/121319">Isn&#39;t that worth fighting for?</a></p>
+<p>I know that you think I&#39;m crazy, that you could not possibly get rid of your precious <code>&lt;script&gt;</code> tags. At least since you followed my advice and created your site as static HTML, CSS, and of course JavaScript (&quot;JAMstack&quot;). And that&#39;s ok. But let&#39;s dig a little deeper into that with some examples of what you might need. I&#39;ll try to create as many examples as possible for how to solve different problems without resorting to client-side JavaScript.</p>
+<h2 id="examples">Examples</h2>
+<p>These are or will be links to related blog posts. Stay tuned...</p>
+
+<ul>
+<li>Changing page contents based on the user or request
+<ul>
+<li>A/B testing</li>
+<li>GDPR banner</li>
+</ul>
+</li>
+<li>Tracking users
+<ul>
+<li>Analytics</li>
+</ul>
+</li>
+<li>Creating interacivity or elaborate designs
+<ul>
+<li>Carousels</li>
+<li>Masonry layout</li>
+<li>Instagram image gallery</li>
+<li>Menus, tabs, and the like</li>
+<li>Image zoom</li>
+</ul>
+</li>
+<li>Editing &quot;dynamic&quot; content
+<ul>
+<li>Rapidly changing content e.g. managed by marketers</li>
+<li>Tag managers</li>
+</ul>
+</li>
+<li>Best practices
+<ul>
+<li>Lazy loading images</li>
+</ul>
+</li>
+</ul>
+</main><footer>There's no such thing as the cloud - it's just someone else's computer.</footer></body></html>

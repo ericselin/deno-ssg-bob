@@ -1,2 +1,2 @@
-export type { ContentBase, ContentRenderer } from "./domain.ts";
-export { render, build } from "./lib/api.ts";
+export type { Component, ContentBase, ContentRenderer } from "./domain.ts";
+export { build, render } from "./lib/api.ts";

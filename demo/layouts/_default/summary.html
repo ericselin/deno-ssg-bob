@@ -1,0 +1,14 @@
+<article>
+  <header>
+    <h2><a href="{{ .Permalink }}">{{ .Title }}</a></h2>
+    <i>{{ .Date.Format "Mon, Jan 2, 2006" }} - {{ .FuzzyWordCount }} Words </i>
+  </header>
+  <p>
+  {{ .Summary }}
+  </p>
+  <footer>
+    <a href="{{ .RelPermalink }}">
+      <nobr>Read more →</nobr>
+    </a>
+  </footer>
+</article>

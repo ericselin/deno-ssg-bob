@@ -1,3 +1,7 @@
+/// <reference no-default-lib="true"/>
+/// <reference lib="es2020" />
+/// <reference lib="deno.ns" />
+
 import type {
   ContentBase,
   ContentNone,
@@ -15,7 +19,7 @@ import {
 } from "./fs.ts";
 import { shouldRender as filterFileMod } from "./filter-file-mod/mod.ts";
 import { dependenciesChanged } from "./filter-renderer-deps/mod.ts";
-import { Logger, md, path, yaml } from "../deps.ts";
+import { h, Logger, md, path, renderJsx, yaml } from "../deps.ts";
 
 export type Html = string;
 export type Url = string;
@@ -85,7 +89,17 @@ export const build = async (
   publicDir: string,
   log?: Logger,
 ) => {
-  const { default: base } = await import(path.join(Deno.cwd(), rendererPath));
+  let renderToString: ContentRenderer<ContentNone>;
+
+  const { default: layout } = await import(path.join(Deno.cwd(), rendererPath));
+
+  if (path.extname(rendererPath) === ".tsx") {
+    log && log.debug(`Rendering layout file '${rendererPath}' as TSX`);
+    renderToString = (content) => renderJsx(h(layout, content));
+  } else {
+    log && log.debug(`Rendering layout file '${rendererPath}' as function`);
+    renderToString = layout;
+  }
 
   const filepaths = await listDirectory(directory, publicDir);
 
@@ -97,7 +111,7 @@ export const build = async (
     if (layoutChanged || await filterFileMod(filepath)) {
       log &&
         log.info(`Rendering content file '${filepath.relativePath}' to disk`);
-      await render(filepath, base);
+      await render(filepath, renderToString);
     } else {
       log && log.debug(`Content file '${filepath.relativePath}' unchanged`);
     }

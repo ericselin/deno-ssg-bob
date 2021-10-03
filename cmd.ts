@@ -14,4 +14,4 @@ await log.setup({
   },
 });
 
-build("content", "site.ts", "public", log);
+build("content", "layouts/index.tsx", "public", log);

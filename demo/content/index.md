@@ -1,20 +1,30 @@
 ---
-type: index
+modified: 2021-04-28T23:22:57+02:00
 ---
-# Bob the static site builder
 
-Bob is a static site generator built on top of the [Deno](https://deno.land) runtime.
+I like to code. And I like to develop new things. Most of all, I'm an
+entrepreneur at heart.
 
-**Goals**:
+### Coding
 
-- Type safety and intellisense in template files by using TypeScript template literals in layout files
-- JS bundling via native Deno bundle command
-- Unused CSS removal via postcss
-- Efficient image manipulation via the Sharp library
-- Speed via Worker-based multithreading
-- Easy for web developers to reason about because it's built in TypeScript
-- Incremental builds
-- Multilingual
-- Pluggable (behind the scenes at least) in order to make development easier
+Elegant code is the dream. Simple solutions are the best.
 
-Functional programming and Domain Driven Design is used as much as possible in the core.
+### Entrepreneurship
+
+Test early and often because it's fun and effective.
+
+## Projects
+
+### Finnish Baby Box
+
+This is my current day job. I manage the technical implementation of our
+custom-built ecommerce solution. Official title: co-founder and CTO.
+
+[finnishbabybox.com](https://www.finnishbabybox.com)
+
+### Humla
+
+I tried every todo app out there and finally decided to make my own that
+works the way I want. Active users: 3.
+
+[humla.app](https://humla.app)

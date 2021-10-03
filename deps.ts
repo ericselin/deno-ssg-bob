@@ -8,3 +8,6 @@ export { Marked as md } from "https://deno.land/x/markdown@v2.0.0/mod.ts";
 import * as log from "https://deno.land/std@0.109.0/log/mod.ts";
 export { log };
 export type Logger = typeof log;
+
+export { h } from "https://x.lcas.dev/preact@10.5.12/mod.js";
+export { renderToString as renderJsx } from "https://x.lcas.dev/preact@10.5.12/ssr.js";
