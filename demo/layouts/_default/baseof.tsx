@@ -1,9 +1,10 @@
 /** @jsx h */
 
-import { h } from "https://x.lcas.dev/preact@10.5.12/mod.js";
-import { Component } from "../../../mod.ts";
+import { Component, h, readContents } from "../../../mod.ts";
 
-export const Base: Component = ({children}) => (
+export const Base: Component<{ css?: string }> = async (
+  { children, css },
+) => (
   <html lang="en">
     <head>
       <meta charSet="UTF-8" />
@@ -16,6 +17,7 @@ export const Base: Component = ({children}) => (
         rel="stylesheet"
       />
       <style>
+        {css && await readContents(css)}
       </style>
     </head>
 

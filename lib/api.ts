@@ -1,7 +1,3 @@
-/// <reference no-default-lib="true"/>
-/// <reference lib="es2020" />
-/// <reference lib="deno.ns" />
-
 import type {
   ContentBase,
   ContentNone,
@@ -19,15 +15,16 @@ import {
 } from "./fs.ts";
 import { shouldRender as filterFileMod } from "./filter-file-mod/mod.ts";
 import { dependenciesChanged } from "./filter-renderer-deps/mod.ts";
-import { h, Logger, md, path, renderJsx, yaml } from "../deps.ts";
+import { Logger, md, path, yaml } from "../deps.ts";
+import { h, render as renderJsx } from "./jsx.ts";
 
 export type Html = string;
 export type Url = string;
 
 const renderer = <T extends ContentNone>(baseLayout: ContentRenderer<T>) =>
-  (content: T): OutputFile => ({
+  async (content: T): Promise<OutputFile> => ({
     filepath: content.filename.outputPath,
-    output: baseLayout(content),
+    output: await baseLayout(content),
   });
 
 const markdownParser = (str: string): Html => md.parse(str).content;
@@ -95,7 +92,7 @@ export const build = async (
 
   if (path.extname(rendererPath) === ".tsx") {
     log && log.debug(`Rendering layout file '${rendererPath}' as TSX`);
-    renderToString = (content) => renderJsx(h(layout, content));
+    renderToString = async (content) => await renderJsx(h(layout, content));
   } else {
     log && log.debug(`Rendering layout file '${rendererPath}' as function`);
     renderToString = layout;

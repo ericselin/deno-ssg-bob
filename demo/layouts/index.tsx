@@ -1,12 +1,12 @@
 /** @jsx h */
-/** @jsxFrag Fragment */
 
-import { ContentBase, Component } from "../../mod.ts";
-import { h } from "https://x.lcas.dev/preact@10.5.12/mod.js";
+import { Component, ContentBase, getPath, h } from "../../mod.ts";
 import { Base } from "./_default/baseof.tsx";
 
-const Index: Component<ContentBase<undefined, undefined>> = (props) => (
-  <Base {...props}>
+const Index: Component<ContentBase<undefined, undefined>> = (
+  props,
+) => (
+  <Base css={getPath(import.meta.url, "index.css")} {...props}>
     <section class="hero">
       <h1>
         Hi, I'm <span>Eric</span>
@@ -14,7 +14,9 @@ const Index: Component<ContentBase<undefined, undefined>> = (props) => (
       <h2>I'm a developer.</h2>
     </section>
 
-    <main dangerouslySetInnerHTML={{ __html: props.content }} />
+    <main>
+      {props.content}
+    </main>
   </Base>
 );
 
