@@ -1,17 +1,17 @@
 /** @jsx h */
 
-import { Component, ContentBase, getPath, h } from "../../mod.ts";
+import { getPath, h, Layout } from "../../mod.ts";
 import { Base } from "./_base.tsx";
 
-const Index: Component<ContentBase<undefined, undefined>> = (
+const Index: Layout<undefined, undefined> = (
   props,
 ) => (
   <Base css={getPath(import.meta.url, "index.css")} {...props}>
     <section class="hero">
       <h1>
-        Hi, I'm <span>Eric</span>
+        <span>bob</span> the static site builder
       </h1>
-      <h2>I'm a developer.</h2>
+      <h2>Extremely fast content updating</h2>
     </section>
 
     <main>

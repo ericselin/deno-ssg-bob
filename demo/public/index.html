@@ -1,4 +1,4 @@
-<html lang="en"><head><meta charSet="UTF-8"></meta><meta name="viewport" content="width=device-width, initial-scale=1.0"></meta><meta http-equiv="X-UA-Compatible" content="ie=edge"></meta><title>Hi, I'm Eric | ericselin.dev</title><link rel="preconnect" href="https://fonts.gstatic.com"></link><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Source+Code+Pro:wght@400;700;900&display=swap" rel="stylesheet"></link><style>:root {
+<html lang="en"><head><meta charSet="UTF-8"></meta><meta name="viewport" content="width=device-width, initial-scale=1.0"></meta><meta http-equiv="X-UA-Compatible" content="ie=edge"></meta><title>bob the static site builder</title><link rel="preconnect" href="https://fonts.gstatic.com"></link><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Source+Code+Pro:wght@400;700;900&display=swap" rel="stylesheet"></link><style>:root {
   --nord0: #2e3440;
   --nord1: #3b4252;
   --nord2: #434c5e;
@@ -63,14 +63,12 @@ body > header {
 body > header > a {
   text-decoration: none;
   font-weight: 900;
-  font-size: 2rem;
+  font-size: 1.5rem;
   background: var(--color-accent);
-  width: 2rem;
-  height: 2rem;
-  line-height: 1.5rem;
   text-align: center;
   border-radius: 25%;
   color: var(--color-body);
+  padding: 0 0.25rem;
 }
 
 body > header > a:hover {
@@ -127,6 +125,12 @@ a {
 
 a:hover {
   color: var(--color-accent);
+}
+
+pre {
+  max-width: 100%;
+  display: block;
+  overflow: auto;
 }
 
 code {
@@ -203,7 +207,7 @@ body > footer {
   font-weight: 400;
   margin-top: 1rem;
 }
-</style></head><body><header><a href="/">e</a><ul><li><a href="/blog/">Blog</a></li><li><a href="/experiments/">Experiments</a></li></ul></header><section class="hero"><h1>Hi, I'm <span>Eric</span></h1><h2>I'm a developer.</h2></section><main><h1 id="bob-the-static-site-builder">Bob the static site builder</h1>
+</style></head><body><header><a href="/">bob</a><ul><li><a href="/getting-started/">Getting started</a></li></ul></header><section class="hero"><h1><span>bob</span> the static site builder</h1><h2>Extremely fast content updating</h2></section><main><h1 id="bob-the-static-site-builder">Bob the static site builder</h1>
 <p>Bob is a static site generator built on top of the <a href="https://deno.land">Deno</a> runtime.</p>
 <h2 id="features">Features</h2>
 <p>Bob is designed for creating extremely performant websites that require near-instant content updating and network edge personalization. All with best-in-class developer experience.</p>
@@ -250,4 +254,4 @@ Create client-side code right in your layout files.</li>
 <p>Structure your layout files as you wish, and export a renderer function from a file named <code>site.ts</code>. This function will be called with a <code>ContentFile</code> for each content page that should be rendered.</p>
 <h3 id="content-files">Content files</h3>
 <p>Add Markdown content files to the <code>content</code> directory as needed. Each content file will be rendered into an HTML file using the corresponding path into the <code>public</code> directory.</p>
-</main><footer>There's no such thing as the cloud - it's just someone else's computer.</footer></body></html>
+</main><footer>Static sites should be fast, including updating content</footer></body></html>

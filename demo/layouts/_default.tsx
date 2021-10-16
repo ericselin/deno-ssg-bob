@@ -1,9 +1,9 @@
 /** @jsx h */
 
-import { Component, ContentBase, h } from "../../mod.ts";
+import { Layout, h } from "../../mod.ts";
 import { Base } from "./_base.tsx";
 
-const Index: Component<ContentBase<undefined, undefined>> = (
+const Index: Layout<undefined, undefined> = (
   props,
 ) => (
   <Base {...props}>
