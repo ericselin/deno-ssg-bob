@@ -23,7 +23,7 @@ const getPaths = (exampleDir: string) => {
   );
   return {
     contentDir: path.join(thisDir, exampleDir, "content"),
-    rendererPath: path.join(thisDir, exampleDir, "site.ts"),
+    layoutDir: path.join(thisDir, exampleDir, "layouts"),
     expectedDir: path.join(thisDir, exampleDir, "expected"),
   };
 };
@@ -34,9 +34,11 @@ const testExampleDir = (dir: string) =>
     const paths = getPaths(dir);
     try {
       await build(
-        paths.contentDir,
-        paths.rendererPath,
-        publicDir,
+        {
+          contentDir: paths.contentDir,
+          layoutDir: paths.layoutDir,
+          publicDir,
+        },
       );
       await assertDirectoriesEqual(publicDir, paths.expectedDir);
     } finally {

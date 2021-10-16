@@ -42,6 +42,8 @@ export const render = async (
 
   component = await component;
 
+  if (!component) return "";
+
   if (typeof component === "string") {
     return component;
   }

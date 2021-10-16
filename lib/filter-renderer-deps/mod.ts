@@ -1,4 +1,4 @@
-import { path, walk } from "../../deps.ts";
+import { path, walk, exists } from "../../deps.ts";
 
 export const _latestModification = async (
   dir: string,
@@ -16,12 +16,13 @@ export const _latestModification = async (
 };
 
 export const dependenciesChanged = async (
-  scriptPath: string,
-  publicPath: string,
+  layoutDir: string,
+  publicDir: string,
 ): Promise<boolean> => {
-  const renderTime = await _latestModification(publicPath);
+  if (!await exists(publicDir)) return true;
+  const renderTime = await _latestModification(publicDir);
   const layoutTime = await _latestModification(
-    path.dirname(scriptPath),
+    layoutDir,
     [".ts", ".tsx"],
   );
   return layoutTime > renderTime;

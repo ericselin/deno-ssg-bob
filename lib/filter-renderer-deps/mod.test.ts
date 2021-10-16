@@ -24,12 +24,11 @@ const dir = path.join(
   ),
   "test",
 );
-const rendererPath = path.join(dir, "site.ts");
 
 Deno.test("builds after change yields false", async () => {
   assertEquals(
     await dependenciesChanged(
-      rendererPath,
+      dir,
       path.join(dir, "after-change"),
     ),
     false,
@@ -39,8 +38,18 @@ Deno.test("builds after change yields false", async () => {
 Deno.test("builds before change yields true", async () => {
   assertEquals(
     await dependenciesChanged(
-      rendererPath,
+      dir,
       path.join(dir, "before-change"),
+    ),
+    true,
+  );
+});
+
+Deno.test("does not crash if public folder non-existent", async () => {
+  assertEquals(
+    await dependenciesChanged(
+      dir,
+      path.join(dir, "non-existent"),
     ),
     true,
   );

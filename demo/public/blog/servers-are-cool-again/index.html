@@ -1,40 +1,4 @@
-<html lang="en"><head><meta charSet="UTF-8"></meta><meta name="viewport" content="width=device-width, initial-scale=1.0"></meta><meta http-equiv="X-UA-Compatible" content="ie=edge"></meta><title>Hi, I'm Eric | ericselin.dev</title><link rel="preconnect" href="https://fonts.gstatic.com"></link><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Source+Code+Pro:wght@400;700;900&display=swap" rel="stylesheet"></link><style>.hero {
-  font-family: var(--font-heading);
-  max-width: var(--max-width);
-  margin: calc(3 * var(--margin)) auto;
-}
-
-.hero h1 {
-  font-size: 4rem;
-}
-
-.hero h1, .hero h2 {
-  margin: 0;
-}
-
-.hero h1 span {
-  position: relative;
-  z-index: 1;
-}
-
-.hero h1 span::before {
-  content: ' ';
-  display: block;
-  position: absolute;
-  height: 1rem;
-  bottom: -0.25rem;
-  background: var(--color-accent);
-  left: 0;
-  right: 0;
-  z-index: -1;
-}
-
-.hero h2 {
-  color: inherit;
-  font-weight: 400;
-  margin-top: 1rem;
-}
-</style></head><body><header><a href="/">e</a><ul><li><a href="/blog/">Blog</a></li><li><a href="/experiments/">Experiments</a></li></ul></header><section class="hero"><h1>Hi, I'm <span>Eric</span></h1><h2>I'm a developer.</h2></section><main><p>I don&#39;t like executing code on the client, i.e. in the user&#39;s browser. I think it&#39;s disrespectful, wasteful, and worst of all (for your business), results in lowered performance. <a href="/blog/your-website-is-not-an-app/">I recently wrote about it on this very blog.</a> But as many have pointed out, sometimes you need dynamic functionality on your site. Or maybe you need some logging / analytics. In any case, I absolutely agree that there are some very good reasons to change or react to every individual request (i.e. &quot;page load&quot; in a sense). This of course is not possible with a purely static site with no client-side JavaScript. So what do you do then? You execute your code on a server instead.</p>
+<html lang="en"><head><meta charSet="UTF-8"></meta><meta name="viewport" content="width=device-width, initial-scale=1.0"></meta><meta http-equiv="X-UA-Compatible" content="ie=edge"></meta><title>Hi, I'm Eric | ericselin.dev</title><link rel="preconnect" href="https://fonts.gstatic.com"></link><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Source+Code+Pro:wght@400;700;900&display=swap" rel="stylesheet"></link><style></style></head><body><header><a href="/">e</a><ul><li><a href="/blog/">Blog</a></li><li><a href="/experiments/">Experiments</a></li></ul></header><main><p>I don&#39;t like executing code on the client, i.e. in the user&#39;s browser. I think it&#39;s disrespectful, wasteful, and worst of all (for your business), results in lowered performance. <a href="/blog/your-website-is-not-an-app/">I recently wrote about it on this very blog.</a> But as many have pointed out, sometimes you need dynamic functionality on your site. Or maybe you need some logging / analytics. In any case, I absolutely agree that there are some very good reasons to change or react to every individual request (i.e. &quot;page load&quot; in a sense). This of course is not possible with a purely static site with no client-side JavaScript. So what do you do then? You execute your code on a server instead.</p>
 <p>And then you say: &quot;But Eric, you must hate servers as well - they are for sure not very static!&quot; To which I say: &quot;Yes, you are right, I hate servers as well.&quot; Hate is a pretty strong word here, of course. Servers are essential for everything we do, but in the context of websites, I kind of hate them. (Note that all pages are sent by servers, this page included. But this page was sent from the dumbest and simplest server possible - one that only sends raw text files over the network.) Anyway, bear with me, it&#39;s going to get clearer.</p>
 <h2 id="why-traditional-servers-are-bad">Why (traditional) servers are bad</h2>
 <p>Servers are bad for one big reason: they scale extremely poorly. If you have one server in one location, you&#39;re in big trouble. Network traffic from your customers in Japan need to travel around the world to your server in Sweden. And when your site gets more popular, everyone will get worse performance because one server can only handle so much traffic. You can of course do vertical scaling (buy more computing power from your server provider) or horizontal scaling (buy more servers, possibly geographically distributed around the world). But scaling is <em>hard</em> - proper hard. Not least because orchestrating these different forms of scaling (when to scale where and how) is difficult and <em>always creates overhead</em>.</p>
