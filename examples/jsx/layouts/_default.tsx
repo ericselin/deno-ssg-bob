@@ -1,12 +1,14 @@
 /** @jsx h */
 
-import { Component, h } from "../../mod.ts";
+import { Layout, h } from "../../../mod.ts";
 
-const Base: Component = ({ children }) => {
+const Base: Layout = ({ content }) => {
   return (
     <div>
       <Drugs drugs={["rick", "morty"]} />
-      <div dangerouslySetInnerHTML={{ __html: children }} />
+      <div>
+        {content}
+      </div>
     </div>
   );
 };

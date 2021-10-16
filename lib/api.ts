@@ -97,22 +97,23 @@ const loadIfExists = async (scriptPath: string) => {
   }
 };
 
-type LayoutModule<t, T> = {
+type LayoutModuleBase<t, T> = {
   module: {
     default: T;
   };
   type: t;
   path: string;
 };
-type LayoutModuleTsx = LayoutModule<"tsx", Component | Promise<Component>>;
-type LayoutModuleFn = LayoutModule<"ts", ContentRenderer<ContentNone>>;
-type LayoutModuleUnknown = LayoutModule<"unknown", unknown>;
+type LayoutModuleTsx = LayoutModuleBase<"tsx", Component | Promise<Component>>;
+type LayoutModuleUnknown = LayoutModuleBase<"unknown", unknown>;
+type LayoutModule =
+  | LayoutModuleTsx
+  | LayoutModuleUnknown
+  | undefined;
 
 const loadFirstLayout = async (
   scriptPaths: string[],
-): Promise<
-  LayoutModuleTsx | LayoutModuleFn | LayoutModuleUnknown | undefined
-> => {
+): Promise<LayoutModule> => {
   if (!scriptPaths.length) return undefined;
   const currentPath = scriptPaths[0];
   const module = await loadIfExists(currentPath);
@@ -121,11 +122,29 @@ const loadFirstLayout = async (
   switch (path.extname(currentPath)) {
     case ".tsx":
       return { ...props, type: "tsx" };
-    case ".ts":
-      return { ...props, type: "ts" };
     default:
       return { ...props, type: "unknown" };
   }
+};
+
+export const getLookupTable = (contentPath: string, layoutDir: string) => {
+  const {dir: contentDir, name: contentName } = path.parse(contentPath);
+  const contentDirSegments = contentDir ? contentDir.split(path.sep) : [];
+  const defaultLayouts = [""].concat(contentDirSegments)
+    .map((_dir, i, dirs) => path.join(...dirs.slice(0, i + 1)))
+    .map((dir) => path.join(dir, "_default.tsx"))
+    .reverse();
+  const namedLayout = path.join(
+    contentDir,
+    contentName + ".tsx",
+  );
+
+  const lookup: string[] = [
+    namedLayout,
+    ...defaultLayouts,
+  ].map((relativePath) => path.join(layoutDir, relativePath));
+
+  return lookup;
 };
 
 const findLayout = async (
@@ -135,15 +154,7 @@ const findLayout = async (
 ): Promise<ContentRenderer<ContentNone> | undefined> => {
   let renderToString: ContentRenderer<ContentNone>;
 
-  const jsxPath = contentPath.replace(/\.\w+$/, ".tsx");
-  const jsPath = contentPath.replace(/\.\w+$/, ".js");
-
-  const lookup = [
-    path.join(layoutDir, jsxPath),
-    path.join(layoutDir, "_default.tsx"),
-    path.join(layoutDir, jsPath),
-    path.join(layoutDir, "_default.ts"),
-  ];
+  const lookup = getLookupTable(contentPath, layoutDir);
 
   log?.debug(`Searching for layout for ${contentPath} in [
     ${lookup.join("\n    ")}\n  ]`);
@@ -158,9 +169,6 @@ const findLayout = async (
     log?.debug(`Rendering layout file '${layout.path}' as TSX`);
     renderToString = async (content) =>
       await renderJsx(h(layout.module.default, content));
-  } else if (layout.type === "ts") {
-    log?.debug(`Rendering layout file '${layout.path}' as function`);
-    renderToString = layout.module.default;
   } else {
     log?.warning(`Unknown layout type '${layout.path}'`);
     return undefined;
