@@ -1,7 +1,5 @@
 import { exists, path } from "../../deps.ts";
-import type { Filepath } from "../../domain.ts";
-
-type ShouldRender = (filepath: Filepath) => Promise<boolean>;
+import type { Filter } from "../../domain.ts";
 
 const getModificationTime = async (filepath: string): Promise<Date | null> => {
   if (!await exists(filepath)) return null;
@@ -9,7 +7,7 @@ const getModificationTime = async (filepath: string): Promise<Date | null> => {
   return contentFile.mtime;
 };
 
-export const shouldRender: ShouldRender = async (filepath) => {
+export const shouldRender: Filter = () => async (filepath) => {
   // get modification time of content file
   const contentModTime = await getModificationTime(
     path.join(filepath.contentDir, filepath.relativePath),

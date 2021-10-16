@@ -1,34 +1,41 @@
 import type {
-  ContentNone,
-  ContentParser,
-  ContentRenderer,
-  Filepath,
-  FrontmatterParser,
-} from "../domain.ts";
-import {
+  Builder,
+  Component,
+  BuildOptions,
   ContentFile,
-  listDirectory,
+  ContentUnknown,
+  FilePath,
+  Layout,
   OutputFile,
-  readContentFile,
-  writeContentFile,
-} from "./fs.ts";
+} from "../domain.ts";
+import { listDirectory, readContentFile, writeContentFile } from "./fs.ts";
 import { shouldRender as filterFileMod } from "./filter-file-mod/mod.ts";
 import { dependenciesChanged } from "./filter-renderer-deps/mod.ts";
 import { Logger, md, path, yaml } from "../deps.ts";
-import { Component, h, render as renderJsx } from "./jsx.ts";
+import { h, render as renderJsx } from "./jsx.ts";
 
-export type Html = string;
-export type Url = string;
+export type ContentRenderer<T extends ContentUnknown> = (
+  content: T,
+) => string | Promise<string>;
 
-const renderer = <T extends ContentNone>(baseLayout: ContentRenderer<T>) =>
-  async (content: T): Promise<OutputFile> => ({
-    filepath: content.filename.outputPath,
+const renderer = (baseLayout: ContentRenderer<ContentUnknown>) =>
+  async (content: ContentUnknown): Promise<OutputFile> => ({
+    path: content.filepath.outputPath,
     output: await baseLayout(content),
   });
 
-const markdownParser = (str: string): Html => md.parse(str).content;
+type Html = string;
+type RawFrontmatter = string;
+type RawContent = string;
 
-export const parseContentFile = <T extends ContentNone>(
+type FrontmatterParser<T> = (
+  frontmatter: RawFrontmatter,
+) => T;
+type ContentParser = (content: RawContent) => Html;
+
+const markdownParser = (str: string): string => md.parse(str).content;
+
+export const parseContentFile = <T extends ContentUnknown>(
   parseFrontmatter: FrontmatterParser<T>,
   parseContent: ContentParser,
 ) =>
@@ -38,17 +45,17 @@ export const parseContentFile = <T extends ContentNone>(
     const rawFrontmatter = contentSplit.pop() || "";
     const frontmatter = parseFrontmatter(rawFrontmatter);
     return {
-      filename: contentFile.filepath,
+      filepath: contentFile.filepath,
       frontmatter,
       content: parseContent(rawContent),
     } as T;
   };
 
-export const render = async <T extends ContentNone>(
-  filepath: Filepath,
-  renderContent: ContentRenderer<T>,
+export const render = async (
+  filepath: FilePath,
+  renderContent: ContentRenderer<ContentUnknown>,
   options?: {
-    frontmatterParser: FrontmatterParser<T>;
+    frontmatterParser: FrontmatterParser<ContentUnknown>;
     contentParser: ContentParser;
   },
 ): Promise<void> => {
@@ -72,18 +79,10 @@ export const render = async <T extends ContentNone>(
   // run workflow
   await Promise
     .resolve(filepath)
-    .then(readContentFile)
+    .then(readContentFile(null as unknown as BuildOptions))
     .then(parse)
     .then(render)
-    .then(writeContentFile);
-};
-
-type BuildOptions = {
-  contentDir: string;
-  layoutDir: string;
-  publicDir: string;
-  force?: boolean;
-  log?: Logger;
+    .then(writeContentFile(null as unknown as BuildOptions));
 };
 
 const loadIfExists = async (scriptPath: string) => {
@@ -102,7 +101,7 @@ type LayoutModuleBase<t, T> = {
   type: t;
   path: string;
 };
-type LayoutModuleTsx = LayoutModuleBase<"tsx", Component | Promise<Component>>;
+type LayoutModuleTsx = LayoutModuleBase<"tsx", Layout | Promise<Layout>>;
 type LayoutModuleUnknown = LayoutModuleBase<"unknown", unknown>;
 type LayoutModule =
   | LayoutModuleTsx
@@ -126,7 +125,7 @@ const loadFirstLayout = async (
 };
 
 export const getLookupTable = (contentPath: string, layoutDir: string) => {
-  const {dir: contentDir, name: contentName } = path.parse(contentPath);
+  const { dir: contentDir, name: contentName } = path.parse(contentPath);
   const contentDirSegments = contentDir ? contentDir.split(path.sep) : [];
   const defaultLayouts = [""].concat(contentDirSegments)
     .map((_dir, i, dirs) => path.join(...dirs.slice(0, i + 1)))
@@ -149,8 +148,8 @@ const findLayout = async (
   contentPath: string,
   layoutDir: string,
   log?: Logger,
-): Promise<ContentRenderer<ContentNone> | undefined> => {
-  let renderToString: ContentRenderer<ContentNone>;
+): Promise<ContentRenderer<ContentUnknown> | undefined> => {
+  let renderToString: ContentRenderer<ContentUnknown>;
 
   const lookup = getLookupTable(contentPath, layoutDir);
 
@@ -166,7 +165,7 @@ const findLayout = async (
   if (layout.type === "tsx") {
     log?.debug(`Rendering layout file '${layout.path}' as TSX`);
     renderToString = async (content) =>
-      await renderJsx(h(layout.module.default, content));
+      await renderJsx(h(layout.module.default as Component, content));
   } else {
     log?.warning(`Unknown layout type '${layout.path}'`);
     return undefined;
@@ -174,12 +173,7 @@ const findLayout = async (
   return renderToString;
 };
 
-type BuildResults = {
-  durationMs: number;
-  renderCount: number;
-};
-
-export const build = async (options: BuildOptions): Promise<BuildResults> => {
+export const build: Builder = async (options) => {
   const startTime = Date.now();
 
   const { contentDir, layoutDir, publicDir, force, log } = options;
@@ -201,7 +195,7 @@ export const build = async (options: BuildOptions): Promise<BuildResults> => {
   let renderCount = 0;
 
   for (const filepath of filepaths) {
-    if (layoutChanged || await filterFileMod(filepath)) {
+    if (layoutChanged || await filterFileMod(options)(filepath)) {
       const renderToString = await findLayout(
         filepath.relativePath,
         layoutDir,

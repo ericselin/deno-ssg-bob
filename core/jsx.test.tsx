@@ -1,7 +1,8 @@
 /** @jsx h */
 
 import { assertEquals } from "../deps.ts";
-import { Component, h, render } from "./jsx.ts";
+import { h, render } from "./jsx.ts";
+import type { Component } from "../domain.ts";
 
 Deno.test("basic jsx rendering works", async () => {
   const Sub: Component<{ someone: string }> = (
