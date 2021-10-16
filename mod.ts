@@ -1,4 +1,4 @@
-export type { ContentBase, ContentRenderer } from "./domain.ts";
+export type { Layout } from "./domain.ts";
 export type { Component } from "./lib/jsx.ts";
 export { build, render } from "./lib/api.ts";
 export { h } from "./lib/jsx.ts";

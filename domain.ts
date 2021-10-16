@@ -1,6 +1,11 @@
 /*
 This file should include only top-level type declarations
 */
+
+import type { Component } from "./lib/jsx.ts";
+
+export type Layout<T = undefined, t = undefined> = Component<ContentBase<T, t>>;
+
 export type ContentBase<T, t> = {
   filename: Filepath;
   type: t;
