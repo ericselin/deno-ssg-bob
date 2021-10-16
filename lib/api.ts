@@ -168,7 +168,14 @@ const findLayout = async (
   return renderToString;
 };
 
-export const build = async (options: BuildOptions) => {
+type BuildResults = {
+  durationMs: number;
+  renderCount: number;
+};
+
+export const build = async (options: BuildOptions): Promise<BuildResults> => {
+  const startTime = Date.now();
+
   const { contentDir, layoutDir, publicDir, force, log } = options;
 
   log?.debug(
@@ -203,5 +210,8 @@ export const build = async (options: BuildOptions) => {
     }
   }
 
-  if (!renderCount) log?.info("Everything up to date, nothing rendered");
+  return {
+    durationMs: Date.now() - startTime,
+    renderCount,
+  };
 };

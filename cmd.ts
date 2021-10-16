@@ -18,10 +18,12 @@ await log.setup({
   },
 });
 
-build({
+const results = await build({
   contentDir: "content",
   layoutDir: "layouts",
   publicDir: "public",
   force,
   log,
 });
+
+log.info(`Built ${results.renderCount} pages in ${results.durationMs} ms`);
