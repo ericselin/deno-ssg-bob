@@ -84,6 +84,7 @@ type BuildOptions = {
   contentDir: string;
   layoutDir: string;
   publicDir: string;
+  force?: boolean;
   log?: Logger;
 };
 
@@ -167,13 +168,8 @@ const findLayout = async (
   return renderToString;
 };
 
-export const build = async (options: Partial<BuildOptions>) => {
-  const { contentDir, layoutDir, publicDir, log } = {
-    contentDir: "content",
-    layoutDir: "layouts",
-    publicDir: "public",
-    ...options,
-  };
+export const build = async (options: BuildOptions) => {
+  const { contentDir, layoutDir, publicDir, force, log } = options;
 
   log?.debug(
     `Build directories: content:${contentDir} layouts:${layoutDir} public:${publicDir}`,
@@ -183,6 +179,13 @@ export const build = async (options: Partial<BuildOptions>) => {
 
   const layoutChanged = await dependenciesChanged(layoutDir, publicDir);
   layoutChanged && log?.warning("Layout files changed, rebuilding everything");
+
+  if (force) {
+    log?.warning(`Force building and cleaning public directory ${publicDir}`);
+    await Deno.remove(publicDir, { recursive: true });
+  }
+
+  let renderCount = 0;
 
   for (const filepath of filepaths) {
     if (layoutChanged || await filterFileMod(filepath)) {
@@ -194,8 +197,11 @@ export const build = async (options: Partial<BuildOptions>) => {
       if (!renderToString) continue;
       log?.info(`Rendering content file '${filepath.relativePath}' to disk`);
       await render(filepath, renderToString);
+      renderCount++;
     } else {
       log && log.debug(`Content file '${filepath.relativePath}' unchanged`);
     }
   }
+
+  if (!renderCount) log?.info("Everything up to date, nothing rendered");
 };

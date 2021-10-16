@@ -1,17 +1,27 @@
 import { build } from "./mod.ts";
-import { log } from "./deps.ts";
+import { log, parseFlags } from "./deps.ts";
+
+const { v: verbose, f: force } = parseFlags(Deno.args);
+
+const logLevel = verbose ? "DEBUG" : "INFO";
 
 await log.setup({
   handlers: {
-    console: new log.handlers.ConsoleHandler("DEBUG"),
+    console: new log.handlers.ConsoleHandler(logLevel),
   },
 
   loggers: {
     default: {
-      level: "DEBUG",
+      level: logLevel,
       handlers: ["console"],
     },
   },
 });
 
-build({ log });
+build({
+  contentDir: "content",
+  layoutDir: "layouts",
+  publicDir: "public",
+  force,
+  log,
+});
