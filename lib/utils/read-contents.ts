@@ -1,11 +1,17 @@
-export function readContents(filepath: string): Promise<string>;
-export function readContents(filepaths: string[]): Promise<string>;
+type MaybeString = string | undefined;
 
-export async function readContents(filepath: string | string[]) {
+export function readContents(filepath: MaybeString): Promise<MaybeString>;
+export function readContents(filepaths: (MaybeString)[]): Promise<MaybeString>;
+
+export async function readContents(filepath: MaybeString | MaybeString[]) {
+  if (!filepath) return;
   if (typeof filepath === "string") {
     return Deno.readTextFile(filepath);
   } else {
-    return (await Promise.all(filepath.map((path) => Deno.readTextFile(path))))
+    return (await Promise.all(
+      filepath.map((path) => path && Deno.readTextFile(path)),
+    ))
+      .filter(Boolean)
       .join("\n");
   }
 }
