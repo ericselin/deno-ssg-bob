@@ -1,9 +1,9 @@
 /** @jsx h */
 
-import { h, Layout } from "../../../mod.ts";
+import { h, LayoutWantsPages } from "../../../mod.ts";
 import { Base } from "../_base.tsx";
 
-const Index: Layout<undefined, undefined> = (
+const Index: LayoutWantsPages = (
   props,
 ) => (
   <Base {...props}>
@@ -11,7 +11,7 @@ const Index: Layout<undefined, undefined> = (
     <nav>
       <ul>
         <li>
-          <a href={""}>{}</a>
+          {props.pages.map((page) => <a href={""}>{page}</a>)}
         </li>
       </ul>
     </nav>
@@ -20,5 +20,7 @@ const Index: Layout<undefined, undefined> = (
     </main>
   </Base>
 );
+
+Index.wantsPages = ["**/*.md"];
 
 export default Index;

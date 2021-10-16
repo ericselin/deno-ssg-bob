@@ -4,18 +4,26 @@ This file should include only top-level type declarations
 
 import type { Component } from "./lib/jsx.ts";
 
-export type Layout<T = undefined, t = undefined> = Component<ContentBase<T, t>>;
+export type Layout<P = unknown, C = unknown> = Component<ContentBase<C> & P>;
 
-export type ContentBase<T, t> = {
+type WantsPages = string[];
+
+export type LayoutWantsPages<P = unknown, C = unknown> = Component<ContentBase<C> & P & { pages: string[] }> & {
+  /** Array of globs relative to the current content page */
+  wantsPages: WantsPages;
+};
+
+export type ContentBase<T> = {
   filename: Filepath;
-  type: t;
   frontmatter: T;
   content: Html;
 };
 
-export type ContentNone = ContentBase<unknown, unknown>;
+export type ContentNone = ContentBase<unknown>;
 
-export type ContentRenderer<T extends ContentNone> = (content: T) => string | Promise<string>;
+export type ContentRenderer<T extends ContentNone> = (
+  content: T,
+) => string | Promise<string>;
 
 export type Html = string;
 export type RawFile = string;

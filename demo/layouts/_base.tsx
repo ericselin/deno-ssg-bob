@@ -1,10 +1,10 @@
 /** @jsx h */
 
-import { Component, getPath, h, readContents } from "../../mod.ts";
+import { LayoutWantsPages, getPath, h, readContents } from "../../mod.ts";
 
 const baseCss = getPath(import.meta.url, "_base.css");
 
-export const Base: Component<{ css?: string }> = async (
+export const Base: LayoutWantsPages<{ css?: string }> = async (
   { children, css },
 ) => (
   <html lang="en">
@@ -39,3 +39,5 @@ export const Base: Component<{ css?: string }> = async (
     </body>
   </html>
 );
+
+Base.wantsPages = [];

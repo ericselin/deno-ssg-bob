@@ -1,5 +1,4 @@
 import type {
-  ContentBase,
   ContentNone,
   ContentParser,
   ContentRenderer,
@@ -29,7 +28,7 @@ const renderer = <T extends ContentNone>(baseLayout: ContentRenderer<T>) =>
 
 const markdownParser = (str: string): Html => md.parse(str).content;
 
-export const parseContentFile = <T extends ContentBase<unknown, unknown>>(
+export const parseContentFile = <T extends ContentNone>(
   parseFrontmatter: FrontmatterParser<T>,
   parseContent: ContentParser,
 ) =>
@@ -40,7 +39,6 @@ export const parseContentFile = <T extends ContentBase<unknown, unknown>>(
     const frontmatter = parseFrontmatter(rawFrontmatter);
     return {
       filename: contentFile.filepath,
-      type: frontmatter?.type,
       frontmatter,
       content: parseContent(rawContent),
     } as T;
