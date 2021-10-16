@@ -1,4 +1,173 @@
-<html lang="en"><head><meta charSet="UTF-8"></meta><meta name="viewport" content="width=device-width, initial-scale=1.0"></meta><meta http-equiv="X-UA-Compatible" content="ie=edge"></meta><title>Hi, I'm Eric | ericselin.dev</title><link rel="preconnect" href="https://fonts.gstatic.com"></link><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Source+Code+Pro:wght@400;700;900&display=swap" rel="stylesheet"></link><style>.hero {
+<html lang="en"><head><meta charSet="UTF-8"></meta><meta name="viewport" content="width=device-width, initial-scale=1.0"></meta><meta http-equiv="X-UA-Compatible" content="ie=edge"></meta><title>Hi, I'm Eric | ericselin.dev</title><link rel="preconnect" href="https://fonts.gstatic.com"></link><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Source+Code+Pro:wght@400;700;900&display=swap" rel="stylesheet"></link><style>:root {
+  --nord0: #2e3440;
+  --nord1: #3b4252;
+  --nord2: #434c5e;
+  --nord3: #4c566a;
+  --nord4: #d8dee9;
+  --nord5: #e5e9f0;
+  --nord6: #eceff4;
+  --nord7: #8fbcbb;
+  --nord8: #88c0d0;
+  --nord9: #81a1c1;
+  --nord10: #5e81ac;
+  --nord11: #bf616a;
+  --nord12: #d08770;
+  --nord13: #ebcb8b;
+  --nord14: #a3be8c;
+  --nord15: #b48ead;
+
+  --margin: 1rem;
+  --max-width: min(600px, 100% - 4 * var(--margin));
+
+  --color-bg: var(--nord0);
+  --color-fg: var(--nord6);
+  --color-body: var(--nord1);
+  --color-indent: var(--nord3);
+  --color-muted: var(--nord4);
+  --color-accent: var(--nord8);
+
+  --font-text: 'Inter', sans-serif;
+  --font-heading: 'Source Code Pro', monospace;
+  --font-mono: 'Source Code Pro', monospace;
+}
+
+@media (min-width: 500px) {
+  :root {
+    --margin: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  :root {
+    --margin: 2rem;
+  }
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  font-family: var(--font-text);
+  background: var(--color-body);
+  color: var(--color-fg);
+}
+
+body > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: var(--margin);
+  color: var(--color-muted);
+  font-family: var(--font-heading);
+}
+
+body > header > a {
+  text-decoration: none;
+  font-weight: 900;
+  font-size: 2rem;
+  background: var(--color-accent);
+  width: 2rem;
+  height: 2rem;
+  line-height: 1.5rem;
+  text-align: center;
+  border-radius: 25%;
+  color: var(--color-body);
+}
+
+body > header > a:hover {
+  color: var(--color-bg);
+}
+
+body > header ul {
+  display: grid;
+  grid-auto-flow: column;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+body > h1 {
+  max-width: var(--max-width);
+  margin: calc(2 * var(--margin)) auto;
+  padding: 0 var(--margin);
+  color: var(--color-fg);
+  font-family: var(--font-heading);
+}
+
+main {
+  max-width: var(--max-width);
+  margin: var(--margin) auto;
+  padding: 0 var(--margin);
+  background: var(--color-bg);
+  border-radius: 1rem;
+  line-height: 1.25;
+}
+
+main::before,
+main::after {
+  content: ' ';
+  display: block;
+  contain: layout;
+  margin: var(--margin) 0;
+}
+
+h1 a,
+h2 a,
+h3 a,
+h4 a,
+h5 a,
+h6 a {
+  text-decoration: none;
+}
+
+a {
+  color: inherit;
+  transition: color ease-in 200ms;
+}
+
+a:hover {
+  color: var(--color-accent);
+}
+
+code {
+  font-family: var(--font-mono);
+  line-height: initial;
+}
+
+article + article {
+  margin-top: calc(2 * var(--margin));
+}
+
+article + article::before {
+  content: '';
+  display: block;
+  height: 1px;
+  width: 50%;
+  background: var(--color-indent);
+  margin: 0 auto calc(2 * var(--margin));
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+.button-link {
+  border: 1px solid var(--color-accent);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  display: inline-block;
+  text-decoration: none;
+}
+
+body > footer {
+  margin: var(--margin);
+  text-align: center;
+  color: var(--color-muted);
+  font-family: var(--font-heading);
+}
+
+.hero {
   font-family: var(--font-heading);
   max-width: var(--max-width);
   margin: calc(3 * var(--margin)) auto;
@@ -34,19 +203,51 @@
   font-weight: 400;
   margin-top: 1rem;
 }
-</style></head><body><header><a href="/">e</a><ul><li><a href="/blog/">Blog</a></li><li><a href="/experiments/">Experiments</a></li></ul></header><section class="hero"><h1>Hi, I'm <span>Eric</span></h1><h2>I'm a developer.</h2></section><main><p>I like to code. And I like to develop new things. Most of all, I&#39;m an
-entrepreneur at heart.</p>
-<h3 id="coding">Coding</h3>
-<p>Elegant code is the dream. Simple solutions are the best.</p>
-<h3 id="entrepreneurship">Entrepreneurship</h3>
-<p>Test early and often because it&#39;s fun and effective.</p>
-<h2 id="projects">Projects</h2>
-<h3 id="finnish-baby-box">Finnish Baby Box</h3>
-<p>This is my current day job. I manage the technical implementation of our
-custom-built ecommerce solution. Official title: co-founder and CTO.</p>
-<p><a href="https://www.finnishbabybox.com">finnishbabybox.com</a></p>
-<h3 id="humla">Humla</h3>
-<p>I tried every todo app out there and finally decided to make my own that
-works the way I want. Active users: 3.</p>
-<p><a href="https://humla.app">humla.app</a></p>
+</style></head><body><header><a href="/">e</a><ul><li><a href="/blog/">Blog</a></li><li><a href="/experiments/">Experiments</a></li></ul></header><section class="hero"><h1>Hi, I'm <span>Eric</span></h1><h2>I'm a developer.</h2></section><main><h1 id="bob-the-static-site-builder">Bob the static site builder</h1>
+<p>Bob is a static site generator built on top of the <a href="https://deno.land">Deno</a> runtime.</p>
+<h2 id="features">Features</h2>
+<p>Bob is designed for creating extremely performant websites that require near-instant content updating and network edge personalization. All with best-in-class developer experience.</p>
+<h3 id="-extremely-performant-websites">🚀 Extremely performant websites</h3>
+
+<ul>
+<li>Minimal CSS footprint (coming soon)
+Include only the CSS needed for each page to keep CSS size as small as possible.</li>
+</ul>
+<h3 id="-near-instant-content-updating">⚡ Near-instant content updating</h3>
+
+<ul>
+<li>Incremental builds
+Build only what is needed in order to be extremely fast.</li>
+<li>Incremental deploy (coming soon)
+Deploy only changed content.</li>
+</ul>
+<h3 id="-network-edge-personalization">🌐 Network-edge personalization</h3>
+
+<ul>
+<li>Personalize pages on the edge, without client-side Javascript (coming soon)
+Create complex rules and change the page based on request parameters, such as visitor country or cookie values. Use this to create A/B tests, GDPR banners, or product recommendations. This requires the Cloudflare hosting plugin.</li>
+</ul>
+<h3 id="-best-in-class-developer-experience">🤓 Best-in-class developer experience</h3>
+
+<ul>
+<li>Fully typed using TypeScript
+Intellisense and type checking in layout templates.</li>
+<li>Highly modular
+Everything is a module internally, increasing customizability and maintainability.</li>
+<li>Structure your layouts any way you like
+The only thing that is needed is a function that takes a content page and renders it into HTML. The rest is up to you. Use template literals, JSX (example coming soon), or any other way to make this happen.</li>
+<li>Easily create client-side components (coming soon)
+Create client-side code right in your layout files.</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<p>You need to have the <a href="https://deno.land">Deno</a> runtime installed. When you have it installed, just run:</p>
+
+<pre><code>deno install -A [PATH TO CMD.TS]
+</code></pre>
+<h2 id="usage">Usage</h2>
+<p>See the <code>demo</code> directory for an example implementation.</p>
+<h3 id="layout-files">Layout files</h3>
+<p>Structure your layout files as you wish, and export a renderer function from a file named <code>site.ts</code>. This function will be called with a <code>ContentFile</code> for each content page that should be rendered.</p>
+<h3 id="content-files">Content files</h3>
+<p>Add Markdown content files to the <code>content</code> directory as needed. Each content file will be rendered into an HTML file using the corresponding path into the <code>public</code> directory.</p>
 </main><footer>There's no such thing as the cloud - it's just someone else's computer.</footer></body></html>

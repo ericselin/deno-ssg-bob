@@ -160,43 +160,6 @@ img {
   text-decoration: none;
 }
 
-.hero {
-  font-family: var(--font-heading);
-  max-width: var(--max-width);
-  margin: calc(3 * var(--margin)) auto;
-}
-
-.hero h1 {
-  font-size: 4rem;
-}
-
-.hero h1, .hero h2 {
-  margin: 0;
-}
-
-.hero h1 span {
-  position: relative;
-  z-index: 1;
-}
-
-.hero h1 span::before {
-  content: ' ';
-  display: block;
-  position: absolute;
-  height: 1rem;
-  bottom: -0.25rem;
-  background: var(--color-accent);
-  left: 0;
-  right: 0;
-  z-index: -1;
-}
-
-.hero h2 {
-  color: inherit;
-  font-weight: 400;
-  margin-top: 1rem;
-}
-
 body > footer {
   margin: var(--margin);
   text-align: center;

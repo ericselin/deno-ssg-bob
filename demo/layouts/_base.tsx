@@ -1,6 +1,8 @@
 /** @jsx h */
 
-import { Component, h, readContents } from "../../../mod.ts";
+import { Component, h, readContents, getPath } from "../../mod.ts";
+
+const baseCss = getPath(import.meta.url, "_base.css");
 
 export const Base: Component<{ css?: string }> = async (
   { children, css },
@@ -17,7 +19,7 @@ export const Base: Component<{ css?: string }> = async (
         rel="stylesheet"
       />
       <style>
-        {css && await readContents(css)}
+        {css && await readContents([baseCss, css])}
       </style>
     </head>
 

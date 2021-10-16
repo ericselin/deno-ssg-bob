@@ -1,7 +1,7 @@
 /** @jsx h */
 
 import { Component, ContentBase, h } from "../../mod.ts";
-import { Base } from "./_default/baseof.tsx";
+import { Base } from "./_base.tsx";
 
 const Index: Component<ContentBase<undefined, undefined>> = (
   props,
