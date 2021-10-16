@@ -12,12 +12,12 @@ const dir = path.relative(
 Deno.test("directory lister base case", async () => {
   assertEquals(await listDirectory(dir, "public"), [
     {
-      contentDir: "lib/fs.test",
+      contentDir: "core/fs.test",
       relativePath: "file.md",
       outputPath: "public/file/index.html",
     },
     {
-      contentDir: "lib/fs.test",
+      contentDir: "core/fs.test",
       relativePath: "sub/sub.md",
       outputPath: "public/sub/sub/index.html",
     },

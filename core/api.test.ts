@@ -11,10 +11,9 @@ Deno.test("extremely simple parse case works", () => {
     filepath: { contentDir: ".", relativePath: "file.md", outputPath: "file.html" },
     content: '{"param":1}\n---\nhello',
   });
-  const expected: ContentBase<unknown, undefined> = {
+  const expected: ContentBase<unknown> = {
     content: "HELLO",
     filename: { contentDir: ".", relativePath: "file.md", outputPath: "file.html" },
-    type: undefined,
     frontmatter: {
       param: 1
     },

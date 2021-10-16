@@ -2,7 +2,7 @@
 This file should include only top-level type declarations
 */
 
-import type { Component } from "./lib/jsx.ts";
+import type { Component } from "./core/jsx.ts";
 
 export type Layout<P = unknown, C = unknown> = Component<ContentBase<C> & P>;
 

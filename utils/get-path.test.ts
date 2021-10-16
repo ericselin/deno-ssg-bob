@@ -1,4 +1,4 @@
-import { assertEquals } from "../../deps.ts";
+import { assertEquals } from "../deps.ts";
 import { getPath } from "./get-path.ts";
 
 Deno.test("get content path is readable", async () => {

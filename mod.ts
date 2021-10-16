@@ -1,6 +1,6 @@
 export type { Layout, LayoutWantsPages } from "./domain.ts";
-export type { Component } from "./lib/jsx.ts";
-export { build, render } from "./lib/api.ts";
-export { h } from "./lib/jsx.ts";
-export * from "./lib/utils/get-path.ts";
-export * from "./lib/utils/read-contents.ts";
+export type { Component } from "./core/jsx.ts";
+export { build, render } from "./core/api.ts";
+export { h } from "./core/jsx.ts";
+export * from "./utils/get-path.ts";
+export * from "./utils/read-contents.ts";
