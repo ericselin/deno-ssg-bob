@@ -1,176 +1,48 @@
-import type {
-  Builder,
-  Component,
-  BuildOptions,
-  ContentFile,
-  ContentUnknown,
-  FilePath,
-  Layout,
-  OutputFile,
-} from "../domain.ts";
-import { listDirectory, readContentFile, writeContentFile } from "./fs.ts";
+import type { Builder, BuildOptions, WalkEntry } from "../domain.ts";
+import { readContentFile, writeContentFile } from "./fs.ts";
 import { shouldRender as filterFileMod } from "./filter-file-mod/mod.ts";
 import { dependenciesChanged } from "./filter-renderer-deps/mod.ts";
-import { Logger, md, path, yaml } from "../deps.ts";
-import { h, render as renderJsx } from "./jsx.ts";
+import getWalkEntryProcessor from "./walk-entry-processor.ts";
+import parse from "./parser.ts";
+import render from "./renderer.ts";
+import combineFilters from "./combine-filters.ts";
+import getLayoutLoader from "./layout-loader.ts";
+import walkFiles from "./walker.ts";
 
-export type ContentRenderer<T extends ContentUnknown> = (
-  content: T,
-) => string | Promise<string>;
+type Processor = (
+  options: BuildOptions,
+) => (walkEntry: WalkEntry) => Promise<boolean>;
 
-const renderer = (baseLayout: ContentRenderer<ContentUnknown>) =>
-  async (content: ContentUnknown): Promise<OutputFile> => ({
-    path: content.filepath.outputPath,
-    output: await baseLayout(content),
-  });
+export const getProcessor: Processor = (options) => {
+  const processWalkEntry = getWalkEntryProcessor(options);
+  const readFile = readContentFile(options);
+  const filter = combineFilters([filterFileMod])(options);
+  const throwIfUndefined = (msg: string) =>
+    <T>(v: T | undefined) => {
+      if (!v) throw new Error(msg);
+      else return v;
+    };
+  const loadLayout = getLayoutLoader(options);
 
-type Html = string;
-type RawFrontmatter = string;
-type RawContent = string;
-
-type FrontmatterParser<T> = (
-  frontmatter: RawFrontmatter,
-) => T;
-type ContentParser = (content: RawContent) => Html;
-
-const markdownParser = (str: string): string => md.parse(str).content;
-
-export const parseContentFile = <T extends ContentUnknown>(
-  parseFrontmatter: FrontmatterParser<T>,
-  parseContent: ContentParser,
-) =>
-  (contentFile: ContentFile): T => {
-    const contentSplit = contentFile.content.split("\n---\n");
-    const rawContent = contentSplit.pop() || "";
-    const rawFrontmatter = contentSplit.pop() || "";
-    const frontmatter = parseFrontmatter(rawFrontmatter);
-    return {
-      filepath: contentFile.filepath,
-      frontmatter,
-      content: parseContent(rawContent),
-    } as T;
-  };
-
-export const render = async (
-  filepath: FilePath,
-  renderContent: ContentRenderer<ContentUnknown>,
-  options?: {
-    frontmatterParser: FrontmatterParser<ContentUnknown>;
-    contentParser: ContentParser;
-  },
-): Promise<void> => {
-  // set up options
-  const opt: typeof options = Object.assign(
-    {},
-    options,
-    <typeof options> {
-      frontmatterParser: yaml.parse,
-      contentParser: markdownParser,
-    },
-  );
-
-  // set up functions
-  const parse = parseContentFile(
-    opt.frontmatterParser,
-    opt.contentParser,
-  );
-  const render = renderer(renderContent);
-
-  // run workflow
-  await Promise
-    .resolve(filepath)
-    .then(readContentFile(null as unknown as BuildOptions))
-    .then(parse)
-    .then(render)
-    .then(writeContentFile(null as unknown as BuildOptions));
-};
-
-const loadIfExists = async (scriptPath: string) => {
-  try {
-    const module = await import(path.join(Deno.cwd(), scriptPath));
-    return module;
-  } catch (_e) {
-    return undefined;
-  }
-};
-
-type LayoutModuleBase<t, T> = {
-  module: {
-    default: T;
-  };
-  type: t;
-  path: string;
-};
-type LayoutModuleTsx = LayoutModuleBase<"tsx", Layout | Promise<Layout>>;
-type LayoutModuleUnknown = LayoutModuleBase<"unknown", unknown>;
-type LayoutModule =
-  | LayoutModuleTsx
-  | LayoutModuleUnknown
-  | undefined;
-
-const loadFirstLayout = async (
-  scriptPaths: string[],
-): Promise<LayoutModule> => {
-  if (!scriptPaths.length) return undefined;
-  const currentPath = scriptPaths[0];
-  const module = await loadIfExists(currentPath);
-  if (!module) return loadFirstLayout(scriptPaths.slice(1));
-  const props = { module, path: currentPath };
-  switch (path.extname(currentPath)) {
-    case ".tsx":
-      return { ...props, type: "tsx" };
-    default:
-      return { ...props, type: "unknown" };
-  }
-};
-
-export const getLookupTable = (contentPath: string, layoutDir: string) => {
-  const { dir: contentDir, name: contentName } = path.parse(contentPath);
-  const contentDirSegments = contentDir ? contentDir.split(path.sep) : [];
-  const defaultLayouts = [""].concat(contentDirSegments)
-    .map((_dir, i, dirs) => path.join(...dirs.slice(0, i + 1)))
-    .map((dir) => path.join(dir, "_default.tsx"))
-    .reverse();
-  const namedLayout = path.join(
-    contentDir,
-    contentName + ".tsx",
-  );
-
-  const lookup: string[] = [
-    namedLayout,
-    ...defaultLayouts,
-  ].map((relativePath) => path.join(layoutDir, relativePath));
-
-  return lookup;
-};
-
-const findLayout = async (
-  contentPath: string,
-  layoutDir: string,
-  log?: Logger,
-): Promise<ContentRenderer<ContentUnknown> | undefined> => {
-  let renderToString: ContentRenderer<ContentUnknown>;
-
-  const lookup = getLookupTable(contentPath, layoutDir);
-
-  log?.debug(`Searching for layout for ${contentPath} in [
-    ${lookup.join("\n    ")}\n  ]`);
-
-  const layout = await loadFirstLayout(lookup);
-  if (!layout) {
-    log?.warning(`Could not find layout for ${contentPath}`);
-    return undefined;
-  }
-
-  if (layout.type === "tsx") {
-    log?.debug(`Rendering layout file '${layout.path}' as TSX`);
-    renderToString = async (content) =>
-      await renderJsx(h(layout.module.default as Component, content));
-  } else {
-    log?.warning(`Unknown layout type '${layout.path}'`);
-    return undefined;
-  }
-  return renderToString;
+  return (walkEntry) =>
+    // run workflow
+    Promise
+      .resolve(walkEntry)
+      .then(processWalkEntry)
+      .then(filter)
+      .then(throwIfUndefined("This file was filtered"))
+      .then(readFile)
+      .then(parse)
+      .then(loadLayout)
+      .then(render)
+      .then(writeContentFile(options))
+      .then(() => true)
+      .catch((e) => {
+        if (e.message !== "This file was filtered") {
+          throw e;
+        }
+        return false;
+      });
 };
 
 export const build: Builder = async (options) => {
@@ -182,9 +54,8 @@ export const build: Builder = async (options) => {
     `Build directories: content:${contentDir} layouts:${layoutDir} public:${publicDir}`,
   );
 
-  const filepaths = await listDirectory(contentDir, publicDir);
-
   const layoutChanged = await dependenciesChanged(layoutDir, publicDir);
+
   layoutChanged && log?.warning("Layout files changed, rebuilding everything");
 
   if (force) {
@@ -192,21 +63,15 @@ export const build: Builder = async (options) => {
     await Deno.remove(publicDir, { recursive: true });
   }
 
+  const process = getProcessor(options);
+
   let renderCount = 0;
 
-  for (const filepath of filepaths) {
-    if (layoutChanged || await filterFileMod(options)(filepath)) {
-      const renderToString = await findLayout(
-        filepath.relativePath,
-        layoutDir,
-        log,
-      );
-      if (!renderToString) continue;
-      log?.info(`Rendering content file '${filepath.relativePath}' to disk`);
-      await render(filepath, renderToString);
+  for await (const walkEntry of walkFiles(contentDir)) {
+    const rendered = await process(walkEntry);
+
+    if (rendered) {
       renderCount++;
-    } else {
-      log && log.debug(`Content file '${filepath.relativePath}' unchanged`);
     }
   }
 

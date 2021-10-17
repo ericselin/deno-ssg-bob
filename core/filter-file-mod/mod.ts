@@ -17,8 +17,8 @@ export const shouldRender: Filter = () => async (filepath) => {
   }
   // get modification time of rendered file
   const outputModTime = await getModificationTime(filepath.outputPath);
-  // if no output file mod time (does not exist), return true to render
-  if (!outputModTime) return true;
-  // if content modified after render, return true
-  return contentModTime > outputModTime;
+  // if no output file mod time (does not exist), return filepath to render
+  if (!outputModTime) return filepath;
+  // if content modified after render, return filepath
+  return contentModTime > outputModTime ? filepath : undefined;
 };

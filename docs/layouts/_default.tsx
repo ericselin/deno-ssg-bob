@@ -1,9 +1,9 @@
 /** @jsx h */
 
-import { Layout, h } from "../../mod.ts";
+import { h, Layout } from "../../mod.ts";
 import { Base } from "./_base.tsx";
 
-const Index: Layout<undefined, undefined> = (
+const Index: Layout = (
   props,
 ) => (
   <Base {...props}>

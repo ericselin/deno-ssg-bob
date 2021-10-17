@@ -3,7 +3,7 @@
 import { getPath, h, Layout } from "../../mod.ts";
 import { Base } from "./_base.tsx";
 
-const Index: Layout<undefined, undefined> = (
+const Index: Layout = (
   props,
 ) => (
   <Base css={getPath(import.meta.url, "index.css")} {...props}>

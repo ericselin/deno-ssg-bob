@@ -5,13 +5,14 @@ import { Base } from "../_base.tsx";
 
 const Index: LayoutWantsPages = (
   props,
+  pages,
 ) => (
   <Base {...props}>
     Nav
     <nav>
       <ul>
         <li>
-          {props.pages.map((page) => <a href={""}>{page}</a>)}
+          {pages?.map((page) => <a href={""}>{page}</a>)}
         </li>
       </ul>
     </nav>

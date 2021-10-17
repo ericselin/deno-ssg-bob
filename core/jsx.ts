@@ -1,7 +1,11 @@
-import type { ElementCreator, ElementRenderer, Props } from "../domain.ts";
+import type { Element, ElementCreator, ElementRenderer, Props } from "../domain.ts";
 
 export const h: ElementCreator = (type, props, ...children) => {
-  return { type, props, children };
+  const element: Element = { type, props, children };
+  if (typeof type !== "string" ) {
+    element.wantsPages = type.wantsPages;
+  }
+  return element;
 };
 
 const renderProps = (props?: Props): string => {
@@ -33,7 +37,7 @@ export const render: ElementRenderer = async (component) => {
   if (typeof component.type === "function") {
     const props = component.props || {};
     props.children = component.children;
-    component = await component.type(props);
+    component = await component.type(props, component.wantsPages as undefined);
     return render(component);
   }
 

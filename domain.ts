@@ -3,39 +3,45 @@
 export type Layout<P extends Props = Props, C = unknown> = Component<
   ContentBase<C> & P
 >;
+
 export type LayoutWantsPages<P extends Props = Props, C = unknown> =
-  & Component<ContentBase<C> & P & { pages: string[] }>
+  & Component<ContentBase<C> & P, WantedPages>
   & {
     /** Array of globs relative to the current content page */
     wantsPages: WantsPages;
   };
 
-export type Component<P extends Props = Props> = (
-  props: P & { children?: Children },
-) => Element | Promise<Element>;
-
-export type ElementCreator = (
-  type: Component | string | Promise<Component | string>,
-  props?: Props,
-  ...children: Children[]
-) => Element;
-
 export type ElementRenderer = (
   element: Children | Promise<Children>,
 ) => Promise<string>;
 
+export type ElementCreator = (
+  type: ElementType,
+  props?: Props,
+  ...children: Children[]
+) => Element;
+
 export type Element<P extends Props = Props> = {
-  type: Component | string | Promise<Component | string>;
+  type: ElementType;
   props?: P;
   children?: Children[];
+  wantsPages?: WantsPages;
 };
 
+export interface Component<P extends Props = Props, W = undefined> {
+  (props: P & { children?: Children }, pages?: W): Element | Promise<Element>;
+  wantsPages?: WantsPages;
+}
+
 export type Props = Record<string, unknown>;
+
+type ElementType = Component | string;
 
 type Child = Element | string;
 type Children = Child | Child[];
 
 type WantsPages = string[];
+type WantedPages = string[];
 
 declare global {
   namespace JSX {
@@ -47,7 +53,10 @@ declare global {
 
 // External dependencies
 
-import { Logger } from "./deps.ts";
+import type { Logger } from "./deps.ts";
+export type { Logger };
+import type { WalkEntry } from "./deps.ts";
+export type { WalkEntry };
 
 // Builder
 
@@ -66,11 +75,15 @@ export type BuildResults = {
   renderCount: number;
 };
 
+// File walker
+
+export type FileWalker = (path: string) => AsyncGenerator<WalkEntry>;
+
 // File path processing
 
-export type PathProcessor = (
+export type WalkEntryProcessor = (
   options: BuildOptions,
-) => (path: string) => FilePath;
+) => (walkEntry: WalkEntry) => FilePath;
 
 export type FilePath = {
   contentDir: string;
@@ -82,7 +95,7 @@ export type FilePath = {
 
 export type Filter = (
   options: BuildOptions,
-) => (filepath: FilePath) => Promise<boolean>;
+) => (filepath: FilePath) => Promise<FilePath | undefined>;
 
 // Content reading
 
@@ -99,7 +112,7 @@ type RawFile = string;
 
 // Parsers
 
-export type Parser = (options: BuildOptions) => (file: File) => ContentUnknown;
+export type Parser = (file: ContentFile) => ContentUnknown;
 
 export type ContentUnknown = ContentBase<unknown>;
 
@@ -111,11 +124,24 @@ export type ContentBase<T> = {
 
 type Html = string;
 
+// Layout file loading
+
+export type LayoutLoader = (
+  content: ContentUnknown,
+) => MaybePromise<RenderableContent>;
+
+export type RenderableContent = {
+  content: ContentUnknown;
+  renderer: ContentRenderer;
+};
+
+export type ContentRenderer = (content: ContentUnknown) => MaybePromise<Html>;
+
 // Rendering
 
 export type Renderer = (
-  options: BuildOptions,
-) => (content: ContentUnknown) => Promise<OutputFile>;
+  renderable: RenderableContent,
+) => MaybePromise<OutputFile>;
 
 export type OutputFile = {
   path: string;
@@ -127,3 +153,7 @@ export type OutputFile = {
 export type FileWriter = (
   options: BuildOptions,
 ) => (file: OutputFile) => Promise<void>;
+
+// Utilities
+
+type MaybePromise<T> = T | Promise<T>;
