@@ -1,9 +1,13 @@
 import type {
   Builder,
   BuildOptions,
+  ContentUnknown,
   FilePath,
+  PageGetter,
   PageGetterCreator,
+  PagesGetter,
 } from "../domain.ts";
+import { expandGlob } from "../deps.ts";
 import { readContentFile, writeContentFile } from "./fs.ts";
 import dirtyFileMod from "./dirty-file-mod/mod.ts";
 import dirtyLayoutsChanged from "./dirty-layouts/mod.ts";
@@ -11,6 +15,7 @@ import parse from "./parser.ts";
 import render from "./renderer.ts";
 import createDirtyFileWalker from "./dirty-file-walk.ts";
 import getLayoutLoader from "./layout-loader.ts";
+import getWalkEntryProcessor from "./walk-entry-processor.ts";
 
 type Processor = (
   options: BuildOptions,
@@ -18,16 +23,32 @@ type Processor = (
 
 export const createPageGetter: PageGetterCreator = (options) => {
   const readFile = readContentFile(options);
-  return (walkEntry) =>
+  return (filepath) =>
     Promise
-      .resolve(walkEntry)
+      .resolve(filepath)
       .then(readFile)
       .then(parse);
 };
 
+const createPagesGetter = (options: BuildOptions, getPage: PageGetter): PagesGetter => {
+  const processWalkEntry = getWalkEntryProcessor(options);
+  const { log } = options;
+  return async (glob) => {
+    const contentGlob = `content/${glob}`;
+    log?.debug(`Getting pages with glob "${contentGlob}"`);
+    const pages: ContentUnknown[] = [];
+    for await (const walkEntry of expandGlob(contentGlob)) {
+      const page = await getPage(processWalkEntry(walkEntry));
+      log?.debug(`Found page ${page.filepath.relativePath}`);
+      pages.push(page);
+    }
+    return pages;
+  };
+};
+
 export const getProcessor: Processor = (options) => {
   const getPage = createPageGetter(options);
-  const loadLayout = getLayoutLoader(options);
+  const loadLayout = getLayoutLoader(options, createPagesGetter(options, getPage));
 
   return (walkEntry) =>
     // run workflow
@@ -37,13 +58,7 @@ export const getProcessor: Processor = (options) => {
       .then(loadLayout)
       .then(render)
       .then(writeContentFile(options))
-      .then(() => true)
-      .catch((e) => {
-        if (e.message !== "This file was filtered") {
-          throw e;
-        }
-        return false;
-      });
+      .then(() => true);
 };
 
 export const build: Builder = async (options) => {

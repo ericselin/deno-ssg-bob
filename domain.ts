@@ -4,8 +4,8 @@ export type Layout<P extends Props = Props, C = unknown> = Component<
   ContentBase<C> & P
 >;
 
-export type LayoutWantsPages<P extends Props = Props, C = unknown> =
-  & Component<ContentBase<C> & P, WantedPages>
+export type LayoutWantsPages<P extends Props = Props, W = unknown, C = unknown> =
+  & Component<ContentBase<C> & P, WantedPages<W>>
   & {
     /** Array of globs relative to the current content page */
     wantsPages: WantsPages;
@@ -13,6 +13,8 @@ export type LayoutWantsPages<P extends Props = Props, C = unknown> =
 
 export type ElementRenderer = (
   element: Children | Promise<Children>,
+  getPages: PagesGetter,
+  options: BuildOptions,
 ) => Promise<string>;
 
 export type ElementCreator = (
@@ -28,7 +30,7 @@ export type Element<P extends Props = Props> = {
   wantsPages?: WantsPages;
 };
 
-export interface Component<P extends Props = Props, W = undefined> {
+export interface Component<P extends Props = Props, W = unknown> {
   (props: P & { children?: Children }, pages?: W): Element | Promise<Element>;
   wantsPages?: WantsPages;
 }
@@ -40,8 +42,10 @@ type ElementType = Component | string;
 type Child = Element | string;
 type Children = Child | Child[];
 
-type WantsPages = string[];
-type WantedPages = string[];
+export type PagesGetter = (wantsPages: WantsPages) => Promise<ContentUnknown[]>;
+
+export type WantsPages = string;
+export type WantedPages<W = unknown> = ContentBase<W>[];
 
 declare global {
   namespace JSX {

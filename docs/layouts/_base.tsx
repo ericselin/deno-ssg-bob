@@ -1,10 +1,10 @@
 /** @jsx h */
 
-import { LayoutWantsPages, getPath, h, readContents } from "../../mod.ts";
+import { getPath, h, Layout, readContents } from "../../mod.ts";
 
 const baseCss = getPath(import.meta.url, "_base.css");
 
-export const Base: LayoutWantsPages<{ css?: string }> = async (
+export const Base: Layout<{ css?: string }> = async (
   { children, css },
 ) => (
   <html lang="en">
@@ -30,6 +30,9 @@ export const Base: LayoutWantsPages<{ css?: string }> = async (
           <li>
             <a href="/getting-started/">Getting started</a>
           </li>
+          <li>
+            <a href="/scenarios/">Common scenarios</a>
+          </li>
         </ul>
       </header>
       {children}
@@ -39,5 +42,3 @@ export const Base: LayoutWantsPages<{ css?: string }> = async (
     </body>
   </html>
 );
-
-Base.wantsPages = [];

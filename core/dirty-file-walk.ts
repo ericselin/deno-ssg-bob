@@ -2,8 +2,8 @@ import type {
   BuildOptions,
   DirtyChecker,
   FilePath,
-  FileWalkerCreator,
   FilePathGenerator,
+  FileWalkerCreator,
 } from "../domain.ts";
 import { walk } from "../deps.ts";
 import getWalkEntryProcessor from "./walk-entry-processor.ts";
@@ -31,8 +31,10 @@ const createDirtyFileWalker: FileWalkerCreator = (dirtyCheckerCreators) =>
     );
     async function* markDirty(walk: FilePathGenerator, isDirty?: DirtyChecker) {
       for await (const filepath of walk) {
-        if (filepath.dirty) yield filepath;
-        else if (isDirty && await isDirty(filepath)) {
+        if (filepath.dirty) {
+          yield filepath;
+          continue;
+        } else if (isDirty && await isDirty(filepath)) {
           filepath.dirty = true;
           options.log?.debug(`Marking ${filepath.relativePath} dirty`);
         }

@@ -3,7 +3,7 @@ import type {
   Component,
   Layout,
   LayoutLoader,
-  Logger,
+  PagesGetter,
   RenderableContent,
 } from "../domain.ts";
 import { path } from "../deps.ts";
@@ -68,8 +68,12 @@ export const getLookupTable = (contentPath: string, layoutDir: string) => {
   return lookup;
 };
 
-const loadLayout = ({ layoutDir, log }: BuildOptions): LayoutLoader =>
+const loadLayout = (
+  options: BuildOptions,
+  getPages: PagesGetter,
+): LayoutLoader =>
   async (content) => {
+    const { layoutDir, log } = options;
     const { filepath: { relativePath: contentPath } } = content;
 
     const lookup = getLookupTable(contentPath, layoutDir);
@@ -87,7 +91,11 @@ const loadLayout = ({ layoutDir, log }: BuildOptions): LayoutLoader =>
       return <RenderableContent> {
         content,
         renderer: (content) =>
-          renderJsx(h(layout.module.default as Component, content)),
+          renderJsx(
+            h(layout.module.default as Component, content),
+            getPages,
+            options,
+          ),
       };
     } else {
       throw new Error(`Unknown layout type '${layout.path}'`);

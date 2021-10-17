@@ -1,8 +1,14 @@
-import type { Element, ElementCreator, ElementRenderer, Props } from "../domain.ts";
+import type {
+  Element,
+  ElementCreator,
+  ElementRenderer,
+  Props,
+  WantedPages,
+} from "../domain.ts";
 
 export const h: ElementCreator = (type, props, ...children) => {
   const element: Element = { type, props, children };
-  if (typeof type !== "string" ) {
+  if (typeof type !== "string") {
     element.wantsPages = type.wantsPages;
   }
   return element;
@@ -16,7 +22,7 @@ const renderProps = (props?: Props): string => {
   );
 };
 
-export const render: ElementRenderer = async (component) => {
+export const render: ElementRenderer = async (component, getPages, options) => {
   let html = "";
 
   component = await component;
@@ -29,7 +35,7 @@ export const render: ElementRenderer = async (component) => {
 
   if ("length" in component) {
     for (const c of component) {
-      html += await render(c);
+      html += await render(c, getPages, options);
     }
     return html;
   }
@@ -37,8 +43,12 @@ export const render: ElementRenderer = async (component) => {
   if (typeof component.type === "function") {
     const props = component.props || {};
     props.children = component.children;
-    component = await component.type(props, component.wantsPages as undefined);
-    return render(component);
+    let wantedPages: WantedPages | undefined = undefined;
+    if (component.wantsPages) {
+      wantedPages = await getPages(component.wantsPages);
+    }
+    component = await component.type(props, wantedPages);
+    return render(component, getPages, options);
   }
 
   const { type, props, children } = component;
@@ -47,7 +57,7 @@ export const render: ElementRenderer = async (component) => {
 
   if (children) {
     for (const child of children) {
-      html += await render(child);
+      html += await render(child, getPages, options);
     }
   }
 
