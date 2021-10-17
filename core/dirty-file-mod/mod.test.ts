@@ -1,6 +1,6 @@
 import { assert, path } from "../../deps.ts";
 import { BuildOptions } from "../../domain.ts";
-import { shouldRender } from "./mod.ts";
+import shouldRender from "./mod.ts";
 
 const dir = path.fromFileUrl(path.dirname(import.meta.url));
 

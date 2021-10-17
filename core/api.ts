@@ -1,38 +1,39 @@
-import type { Builder, BuildOptions, WalkEntry } from "../domain.ts";
+import type {
+  Builder,
+  BuildOptions,
+  FilePath,
+  PageGetterCreator,
+} from "../domain.ts";
 import { readContentFile, writeContentFile } from "./fs.ts";
-import { shouldRender as filterFileMod } from "./filter-file-mod/mod.ts";
-import { dependenciesChanged } from "./filter-renderer-deps/mod.ts";
-import getWalkEntryProcessor from "./walk-entry-processor.ts";
+import dirtyFileMod from "./dirty-file-mod/mod.ts";
+import dirtyLayoutsChanged from "./dirty-layouts/mod.ts";
 import parse from "./parser.ts";
 import render from "./renderer.ts";
-import combineFilters from "./combine-filters.ts";
+import createDirtyFileWalker from "./dirty-file-walk.ts";
 import getLayoutLoader from "./layout-loader.ts";
-import walkFiles from "./walker.ts";
 
 type Processor = (
   options: BuildOptions,
-) => (walkEntry: WalkEntry) => Promise<boolean>;
+) => (filepath: FilePath) => Promise<boolean>;
+
+export const createPageGetter: PageGetterCreator = (options) => {
+  const readFile = readContentFile(options);
+  return (walkEntry) =>
+    Promise
+      .resolve(walkEntry)
+      .then(readFile)
+      .then(parse);
+};
 
 export const getProcessor: Processor = (options) => {
-  const processWalkEntry = getWalkEntryProcessor(options);
-  const readFile = readContentFile(options);
-  const filter = combineFilters([filterFileMod])(options);
-  const throwIfUndefined = (msg: string) =>
-    <T>(v: T | undefined) => {
-      if (!v) throw new Error(msg);
-      else return v;
-    };
+  const getPage = createPageGetter(options);
   const loadLayout = getLayoutLoader(options);
 
   return (walkEntry) =>
     // run workflow
     Promise
       .resolve(walkEntry)
-      .then(processWalkEntry)
-      .then(filter)
-      .then(throwIfUndefined("This file was filtered"))
-      .then(readFile)
-      .then(parse)
+      .then(getPage)
       .then(loadLayout)
       .then(render)
       .then(writeContentFile(options))
@@ -54,21 +55,20 @@ export const build: Builder = async (options) => {
     `Build directories: content:${contentDir} layouts:${layoutDir} public:${publicDir}`,
   );
 
-  const layoutChanged = await dependenciesChanged(layoutDir, publicDir);
-
-  layoutChanged && log?.warning("Layout files changed, rebuilding everything");
-
   if (force) {
-    log?.warning(`Force building and cleaning public directory ${publicDir}`);
+    log?.warning(`Cleaning public directory ${publicDir} and force building`);
     await Deno.remove(publicDir, { recursive: true });
   }
 
+  const walkDirty = createDirtyFileWalker([dirtyLayoutsChanged, dirtyFileMod])(
+    options,
+  );
   const process = getProcessor(options);
 
   let renderCount = 0;
 
-  for await (const walkEntry of walkFiles(contentDir)) {
-    const rendered = await process(walkEntry);
+  for await (const filepath of walkDirty(contentDir)) {
+    const rendered = await process(filepath);
 
     if (rendered) {
       renderCount++;

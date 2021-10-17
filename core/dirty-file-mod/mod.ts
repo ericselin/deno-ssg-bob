@@ -1,5 +1,5 @@
 import { exists, path } from "../../deps.ts";
-import type { Filter } from "../../domain.ts";
+import type { DirtyCheckerCreator } from "../../domain.ts";
 
 const getModificationTime = async (filepath: string): Promise<Date | null> => {
   if (!await exists(filepath)) return null;
@@ -7,7 +7,7 @@ const getModificationTime = async (filepath: string): Promise<Date | null> => {
   return contentFile.mtime;
 };
 
-export const shouldRender: Filter = () => async (filepath) => {
+const dirtyFileMod: DirtyCheckerCreator = () => async (filepath) => {
   // get modification time of content file
   const contentModTime = await getModificationTime(
     path.join(filepath.contentDir, filepath.relativePath),
@@ -17,8 +17,10 @@ export const shouldRender: Filter = () => async (filepath) => {
   }
   // get modification time of rendered file
   const outputModTime = await getModificationTime(filepath.outputPath);
-  // if no output file mod time (does not exist), return filepath to render
-  if (!outputModTime) return filepath;
-  // if content modified after render, return filepath
-  return contentModTime > outputModTime ? filepath : undefined;
+  // if no output file mod time (does not exist), this is dirty
+  if (!outputModTime) return true;
+  // if content modified after render, this is dirty
+  return contentModTime > outputModTime;
 };
+
+export default dirtyFileMod;

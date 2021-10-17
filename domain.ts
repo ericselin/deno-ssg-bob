@@ -75,10 +75,6 @@ export type BuildResults = {
   renderCount: number;
 };
 
-// File walker
-
-export type FileWalker = (path: string) => AsyncGenerator<WalkEntry>;
-
 // File path processing
 
 export type WalkEntryProcessor = (
@@ -89,13 +85,21 @@ export type FilePath = {
   contentDir: string;
   relativePath: string;
   outputPath: string;
+  dirty?: boolean;
 };
 
 // Filters
 
-export type Filter = (
+export type DirtyCheckerCreator = (options: BuildOptions) => DirtyChecker;
+export type DirtyChecker = (filepath: FilePath) => Promise<boolean>;
+
+export type FileWalkerCreator = (
+  dirtyCheckerCreators: DirtyCheckerCreator[],
+) => (
   options: BuildOptions,
-) => (filepath: FilePath) => Promise<FilePath | undefined>;
+) => (dirpath: string) => AsyncGenerator<FilePath>;
+
+export type FilePathGenerator = AsyncGenerator<FilePath>;
 
 // Content reading
 
@@ -155,5 +159,8 @@ export type FileWriter = (
 ) => (file: OutputFile) => Promise<void>;
 
 // Utilities
+
+export type PageGetterCreator = (options: BuildOptions) => PageGetter;
+export type PageGetter = (filepath: FilePath) => MaybePromise<ContentUnknown>;
 
 type MaybePromise<T> = T | Promise<T>;
