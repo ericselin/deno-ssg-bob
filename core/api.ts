@@ -9,9 +9,9 @@ import type {
 } from "../domain.ts";
 import { exists, expandGlob } from "../deps.ts";
 import { readContentFile, writeContentFile } from "./fs.ts";
-import dirtyFileMod from "./dirty-file-mod/mod.ts";
-import dirtyLayoutsChanged from "./dirty-layouts/mod.ts";
-import allDirtyOnForce from "./dirty-force.ts";
+import dirtyFileMod from "./dirty-checkers/file-mod.ts";
+import dirtyLayoutsChanged from "./dirty-checkers/layouts.ts";
+import allDirtyOnForce from "./dirty-checkers/force-build.ts";
 import parse from "./parser.ts";
 import render from "./renderer.ts";
 import createDirtyFileWalker from "./dirty-file-walk.ts";

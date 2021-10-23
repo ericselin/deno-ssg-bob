@@ -1,8 +1,11 @@
 import { assert, path } from "../../deps.ts";
 import { BuildOptions } from "../../domain.ts";
-import shouldRender from "./mod.ts";
+import shouldRender from "./file-mod.ts";
 
-const dir = path.fromFileUrl(path.dirname(import.meta.url));
+const dir = path.join(
+  path.fromFileUrl(path.dirname(import.meta.url)),
+  "file-mod-test",
+);
 
 Deno.test("returns true if content newer than output", async () => {
   assert(
