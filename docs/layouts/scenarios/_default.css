@@ -1,0 +1,9 @@
+body > nav ul {
+  display: grid;
+  grid-auto-flow: column;
+  list-style: none;
+  padding: 0;
+  margin: var(--margin);
+  justify-content: center;
+  gap: 1rem;
+}

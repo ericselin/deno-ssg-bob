@@ -78,7 +78,7 @@ body > header > a:hover {
 body > header ul {
   display: grid;
   grid-auto-flow: column;
-  gap: 0.5rem;
+  gap: 1rem;
   list-style: none;
   padding: 0;
   margin: 0;
@@ -170,5 +170,15 @@ body > footer {
   color: var(--color-muted);
   font-family: var(--font-heading);
 }
-</style></head><body><header><a href="/">bob</a><ul><li><a href="/getting-started/">Getting started</a></li><li><a href="/scenarios/">Common scenarios</a></li></ul></header><nav><ul></ul></nav><main><h1>Common scenarios</h1><p>Here you&#39;ll find tips on how to achieve common web development tasks.</p>
+
+body > nav ul {
+  display: grid;
+  grid-auto-flow: column;
+  list-style: none;
+  padding: 0;
+  margin: var(--margin);
+  justify-content: center;
+  gap: 1rem;
+}
+</style></head><body><header><a href="/">bob</a><ul><li><a href="/getting-started/">Getting started</a></li><li><a href="/scenarios/">Common scenarios</a></li></ul></header><nav><ul><li><a href="/scenarios/">Common scenarios</a></li><li><a href="/scenarios/styling/">Styling: how to handle CSS</a></li></ul></nav><main><h1>Common scenarios</h1><p>Here you&#39;ll find tips on how to achieve common web development tasks.</p>
 </main><footer>Static sites should be fast, including updating content</footer></body></html>
