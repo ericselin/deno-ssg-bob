@@ -1,13 +1,13 @@
 import type {
   BuildOptions,
+  DefaultProps,
   Component,
-  Layout,
   LayoutLoader,
   PagesGetter,
   RenderableContent,
 } from "../domain.ts";
 import { path } from "../deps.ts";
-import { h, render as renderJsx } from "./jsx.ts";
+import { h, createRenderer } from "./jsx.ts";
 
 type LayoutModuleBase<t, T> = {
   module: {
@@ -16,7 +16,7 @@ type LayoutModuleBase<t, T> = {
   type: t;
   path: string;
 };
-type LayoutModuleTsx = LayoutModuleBase<"tsx", Layout | Promise<Layout>>;
+type LayoutModuleTsx = LayoutModuleBase<"tsx", Component | Promise<Component>>;
 type LayoutModuleUnknown = LayoutModuleBase<"unknown", unknown>;
 type LayoutModule =
   | LayoutModuleTsx
@@ -71,8 +71,9 @@ export const getLookupTable = (contentPath: string, layoutDir: string) => {
 const loadLayout = (
   options: BuildOptions,
   getPages: PagesGetter,
-): LayoutLoader =>
-  async (content) => {
+): LayoutLoader => {
+  const renderJsx = createRenderer(options, getPages);
+  return async (content) => {
     const { layoutDir, log } = options;
     const { filepath: { relativePath: contentPath } } = content;
 
@@ -91,15 +92,14 @@ const loadLayout = (
       return <RenderableContent> {
         content,
         renderer: (content) =>
-          renderJsx(
-            h(layout.module.default as Component, content),
-            getPages,
-            options,
+          renderJsx(content)(
+            h(layout.module.default as Component<DefaultProps, unknown, unknown>),
           ),
       };
     } else {
       throw new Error(`Unknown layout type '${layout.path}'`);
     }
   };
+};
 
 export default loadLayout;

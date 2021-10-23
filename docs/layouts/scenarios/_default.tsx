@@ -1,16 +1,19 @@
 /** @jsx h */
 
-import { h, LayoutWantsPages } from "../../../mod.ts";
+import { Component, h } from "../../../mod.ts";
 import { Base } from "../_base.tsx";
 
-const Index: LayoutWantsPages<
-  { frontmatter: { title?: string } },
-  { title?: string; url?: string }
+type ScenarioData = { title?: string; url?: string };
+
+const Index: Component<
+  { title?: string },
+  ScenarioData,
+  ScenarioData
 > = (
-  props,
-  pages,
+  _props,
+  { pages, page },
 ) => (
-  <Base {...props}>
+  <Base>
     <nav>
       <ul>
         {pages?.map((page) => (
@@ -21,8 +24,8 @@ const Index: LayoutWantsPages<
       </ul>
     </nav>
     <main>
-      {props.frontmatter.title && <h1>{props.frontmatter.title}</h1>}
-      {props.content}
+      {page.frontmatter.title && <h1>{page.frontmatter.title}</h1>}
+      {page.content}
     </main>
   </Base>
 );

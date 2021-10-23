@@ -7,10 +7,11 @@ import type {
   PageGetterCreator,
   PagesGetter,
 } from "../domain.ts";
-import { expandGlob } from "../deps.ts";
+import { exists, expandGlob } from "../deps.ts";
 import { readContentFile, writeContentFile } from "./fs.ts";
 import dirtyFileMod from "./dirty-file-mod/mod.ts";
 import dirtyLayoutsChanged from "./dirty-layouts/mod.ts";
+import allDirtyOnForce from "./dirty-force.ts";
 import parse from "./parser.ts";
 import render from "./renderer.ts";
 import createDirtyFileWalker from "./dirty-file-walk.ts";
@@ -30,7 +31,10 @@ export const createPageGetter: PageGetterCreator = (options) => {
       .then(parse);
 };
 
-const createPagesGetter = (options: BuildOptions, getPage: PageGetter): PagesGetter => {
+const createPagesGetter = (
+  options: BuildOptions,
+  getPage: PageGetter,
+): PagesGetter => {
   const processWalkEntry = getWalkEntryProcessor(options);
   const { log } = options;
   return async (glob) => {
@@ -48,7 +52,10 @@ const createPagesGetter = (options: BuildOptions, getPage: PageGetter): PagesGet
 
 export const getProcessor: Processor = (options) => {
   const getPage = createPageGetter(options);
-  const loadLayout = getLayoutLoader(options, createPagesGetter(options, getPage));
+  const loadLayout = getLayoutLoader(
+    options,
+    createPagesGetter(options, getPage),
+  );
 
   return (walkEntry) =>
     // run workflow
@@ -70,12 +77,16 @@ export const build: Builder = async (options) => {
     `Build directories: content:${contentDir} layouts:${layoutDir} public:${publicDir}`,
   );
 
-  if (force) {
-    log?.warning(`Cleaning public directory ${publicDir} and force building`);
+  if (force && await exists(publicDir)) {
+    log?.warning(`Cleaning public directory ${publicDir}`);
     await Deno.remove(publicDir, { recursive: true });
   }
 
-  const walkDirty = createDirtyFileWalker([dirtyLayoutsChanged, dirtyFileMod])(
+  const walkDirty = createDirtyFileWalker([
+    allDirtyOnForce,
+    dirtyLayoutsChanged,
+    dirtyFileMod,
+  ])(
     options,
   );
   const process = getProcessor(options);

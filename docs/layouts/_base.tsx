@@ -1,11 +1,12 @@
 /** @jsx h */
 
-import { getPath, h, Layout, readContents } from "../../mod.ts";
+import { Component, getPath, h, readContents } from "../../mod.ts";
 
 const baseCss = getPath(import.meta.url, "_base.css");
 
-export const Base: Layout<{ css?: string }> = async (
-  { children, css },
+export const Base: Component = async (
+  { children },
+  { needsCss },
 ) => (
   <html lang="en">
     <head>
@@ -19,7 +20,7 @@ export const Base: Layout<{ css?: string }> = async (
         rel="stylesheet"
       />
       <style>
-        {await readContents([baseCss, css])}
+        {await readContents([baseCss, ...needsCss])}
       </style>
     </head>
 

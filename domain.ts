@@ -1,20 +1,40 @@
 // Public types for layout modules (TSX)
 
-export type Layout<P extends Props = Props, C = unknown> = Component<
-  ContentBase<C> & P
->;
-
-export type LayoutWantsPages<P extends Props = Props, W = unknown, C = unknown> =
-  & Component<ContentBase<C> & P, WantedPages<W>>
+export type Component<
+  P extends Props = DefaultProps,
+  ContentFrontmatter = unknown,
+  WantedPagesFrontmatter = undefined,
+> =
+  & ((
+    props: P & { children?: Children },
+    context: Context<ContentFrontmatter, WantedPagesFrontmatter>,
+  ) => Awaitable<Element>)
   & {
-    /** Array of globs relative to the current content page */
-    wantsPages: WantsPages;
+    wantsPages?: WantsPages;
+    needsCss?: NeedsCss;
   };
+
+export type AnyComponent = Component<DefaultProps, unknown, unknown>;
+
+export type Context<
+  ContentFrontmatter = unknown,
+  WantedPagesFrontmatter = unknown,
+> = {
+  page: ContentBase<ContentFrontmatter>;
+  needsCss: CssSpecifier[];
+  wantedPages?: WantedPagesFrontmatter extends undefined ? undefined
+    : WantedPages<WantedPagesFrontmatter>;
+};
+
+export type ElementRendererCreator = (
+  options: BuildOptions,
+  getPages: PagesGetter,
+) => (
+  contentPage: ContentUnknown,
+) => ElementRenderer;
 
 export type ElementRenderer = (
   element: Children | Promise<Children>,
-  getPages: PagesGetter,
-  options: BuildOptions,
 ) => Promise<string>;
 
 export type ElementCreator = (
@@ -23,21 +43,18 @@ export type ElementCreator = (
   ...children: Children[]
 ) => Element;
 
-export type Element<P extends Props = Props> = {
+export type Element<P extends Props = DefaultProps> = {
   type: ElementType;
   props?: P;
   children?: Children[];
   wantsPages?: WantsPages;
+  needsCss?: NeedsCss;
 };
 
-export interface Component<P extends Props = Props, W = unknown> {
-  (props: P & { children?: Children }, pages?: W): Element | Promise<Element>;
-  wantsPages?: WantsPages;
-}
-
 export type Props = Record<string, unknown>;
+export type DefaultProps = Props;
 
-type ElementType = Component | string;
+type ElementType = Component<DefaultProps, unknown, unknown> | string;
 
 type Child = Element | string;
 type Children = Child | Child[];
@@ -46,6 +63,9 @@ export type PagesGetter = (wantsPages: WantsPages) => Promise<ContentUnknown[]>;
 
 export type WantsPages = string;
 export type WantedPages<W = unknown> = ContentBase<W>[];
+
+type CssSpecifier = string;
+export type NeedsCss = CssSpecifier;
 
 declare global {
   namespace JSX {
@@ -95,7 +115,7 @@ export type FilePath = {
 // Filters
 
 export type DirtyCheckerCreator = (options: BuildOptions) => DirtyChecker;
-export type DirtyChecker = (filepath: FilePath) => Promise<boolean>;
+export type DirtyChecker = (filepath: FilePath) => Awaitable<boolean>;
 
 export type FileWalkerCreator = (
   dirtyCheckerCreators: DirtyCheckerCreator[],
@@ -136,20 +156,20 @@ type Html = string;
 
 export type LayoutLoader = (
   content: ContentUnknown,
-) => MaybePromise<RenderableContent>;
+) => Awaitable<RenderableContent>;
 
 export type RenderableContent = {
   content: ContentUnknown;
   renderer: ContentRenderer;
 };
 
-export type ContentRenderer = (content: ContentUnknown) => MaybePromise<Html>;
+export type ContentRenderer = (content: ContentUnknown) => Awaitable<Html>;
 
 // Rendering
 
 export type Renderer = (
   renderable: RenderableContent,
-) => MaybePromise<OutputFile>;
+) => Awaitable<OutputFile>;
 
 export type OutputFile = {
   path: string;
@@ -165,6 +185,7 @@ export type FileWriter = (
 // Utilities
 
 export type PageGetterCreator = (options: BuildOptions) => PageGetter;
-export type PageGetter = (filepath: FilePath) => MaybePromise<ContentUnknown>;
+export type PageGetter = (filepath: FilePath) => Awaitable<ContentUnknown>;
 
-type MaybePromise<T> = T | Promise<T>;
+export type AnyObject = Record<string, unknown>;
+type Awaitable<T> = T | Promise<T>;

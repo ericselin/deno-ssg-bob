@@ -1,12 +1,13 @@
 /** @jsx h */
 
-import { getPath, h, Layout } from "../../mod.ts";
+import { Component, h } from "../../mod.ts";
 import { Base } from "./_base.tsx";
 
-const Index: Layout = (
-  props,
+const Index: Component = (
+  _props,
+  {page: {content}}
 ) => (
-  <Base css={getPath(import.meta.url, "index.css")} {...props}>
+  <Base>
     <section class="hero">
       <h1>
         <span>bob</span> the static site builder
@@ -15,9 +16,11 @@ const Index: Layout = (
     </section>
 
     <main>
-      {props.content}
+      {content}
     </main>
   </Base>
 );
+
+Index.needsCss = "index.css";
 
 export default Index;

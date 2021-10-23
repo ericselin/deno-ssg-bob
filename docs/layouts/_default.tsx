@@ -1,16 +1,17 @@
 /** @jsx h */
 
-import { h, Layout } from "../../mod.ts";
+import { Component, h } from "../../mod.ts";
 import { Base } from "./_base.tsx";
 
-const Index: Layout = (
-  props,
+const Default: Component = (
+  _props,
+  { page: { content } },
 ) => (
-  <Base {...props}>
+  <Base>
     <main>
-      {props.content}
+      {content}
     </main>
   </Base>
 );
 
-export default Index;
+export default Default;
