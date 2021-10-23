@@ -1,13 +1,13 @@
 import type {
   BuildOptions,
-  DefaultProps,
   Component,
+  DefaultProps,
   LayoutLoader,
   PagesGetter,
   RenderableContent,
 } from "../domain.ts";
-import { path } from "../deps.ts";
-import { h, createRenderer } from "./jsx.ts";
+import { exists, path } from "../deps.ts";
+import { createRenderer, h } from "./jsx.ts";
 
 type LayoutModuleBase<t, T> = {
   module: {
@@ -24,12 +24,8 @@ type LayoutModule =
   | undefined;
 
 const loadIfExists = async (scriptPath: string) => {
-  try {
-    const module = await import(path.join(Deno.cwd(), scriptPath));
-    return module;
-  } catch (_e) {
-    return undefined;
-  }
+  const fullPath = path.join(Deno.cwd(), scriptPath);
+  if (await exists(fullPath)) return import(fullPath);
 };
 
 const loadFirstLayout = async (
@@ -93,7 +89,13 @@ const loadLayout = (
         content,
         renderer: (content) =>
           renderJsx(content)(
-            h(layout.module.default as Component<DefaultProps, unknown, unknown>),
+            h(
+              layout.module.default as Component<
+                DefaultProps,
+                unknown,
+                unknown
+              >,
+            ),
           ),
       };
     } else {
