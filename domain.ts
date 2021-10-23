@@ -27,10 +27,10 @@ export type Context<
 };
 
 export type ElementRendererCreator = (
-  options: BuildOptions,
-  getPages: PagesGetter,
+  options?: BuildOptions,
+  getPages?: PagesGetter,
 ) => (
-  contentPage: ContentUnknown,
+  contentPage?: ContentUnknown,
 ) => ElementRenderer;
 
 export type ElementRenderer = (

@@ -1,4 +1,5 @@
 import type {
+  ContentUnknown,
   Context,
   Element,
   ElementCreator,
@@ -51,14 +52,17 @@ export const createRenderer: ElementRendererCreator = (_options, getPages) =>
         const props = component.props || {};
         props.children = component.children;
         if (component.needsCss) {
-          renderContext.needsCss = [...renderContext.needsCss, (`layouts/${component.needsCss}`)];
+          renderContext.needsCss = [
+            ...renderContext.needsCss,
+            (`layouts/${component.needsCss}`),
+          ];
         }
         const context: Context = {
-          page: contentPage,
+          page: contentPage as ContentUnknown,
           needsCss: renderContext.needsCss,
         };
         if (component.wantsPages) {
-          context.wantedPages = await getPages(component.wantsPages);
+          context.wantedPages = getPages && await getPages(component.wantsPages);
         }
         component = await component.type(props, context);
         return render(component);

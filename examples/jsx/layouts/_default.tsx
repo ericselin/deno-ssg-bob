@@ -1,8 +1,8 @@
 /** @jsx h */
 
-import { Layout, h } from "../../../mod.ts";
+import { Component, h } from "../../../mod.ts";
 
-const Base: Layout = ({ content }) => {
+const Base: Component = (_, { page: { content } }) => {
   return (
     <div>
       <Drugs drugs={["rick", "morty"]} />
