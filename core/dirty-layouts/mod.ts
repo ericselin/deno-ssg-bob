@@ -12,7 +12,9 @@ export const _latestModification = async (
     }
     const stat = await Deno.stat(dirEntry.path);
     if (!latestModTime) latestModTime = stat.mtime;
-    else if (stat.mtime && stat.mtime > latestModTime) latestModTime = stat.mtime;
+    else if (stat.mtime && stat.mtime > latestModTime) {
+      latestModTime = stat.mtime;
+    }
   }
   return latestModTime;
 };
@@ -36,14 +38,16 @@ export const isOlder = async (
 const dirtyLayouts: DirtyCheckerCreator = (
   { layoutDir, publicDir, log },
 ) => {
-  const isPublicOlderP = isOlder(publicDir, layoutDir).then(
-    (isOlder) => {
-      log?.debug(`Public dir is ${isOlder ? "older" : "newer"} than layouts dir`);
-      if (isOlder) log?.warning("Layouts changed, marking everything dirty");
-      return isOlder;
-    },
-  );
-  return () => isPublicOlderP;
+  let publicDirOlder: boolean;
+  return async () => {
+    if (typeof publicDirOlder === "undefined") {
+      publicDirOlder = await isOlder(publicDir, layoutDir);
+      if (publicDirOlder) {
+        log?.warning("Layouts changed, marking everything dirty");
+      }
+    }
+    return publicDirOlder;
+  };
 };
 
 export default dirtyLayouts;
