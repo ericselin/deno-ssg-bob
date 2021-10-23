@@ -71,14 +71,29 @@ const loadLayout = (
   const renderJsx = createRenderer(options, getPages);
   return async (content) => {
     const { layoutDir, log } = options;
-    const { filepath: { relativePath: contentPath } } = content;
+    const { filepath: { relativePath: contentPath }, frontmatter } = content;
 
-    const lookup = getLookupTable(contentPath, layoutDir);
+    let loadPaths: string[];
 
-    log?.debug(`Searching for layout for ${contentPath} in [
-    ${lookup.join("\n    ")}\n  ]`);
+    if (frontmatter.layout) {
+      loadPaths = [
+        `${layoutDir}/${frontmatter.layout}`,
+      ];
+      log?.debug(
+        `Layout for ${contentPath} set in frontmatter to ${frontmatter.layout}`,
+      );
+    } else {
+      loadPaths = getLookupTable(contentPath, layoutDir);
 
-    const layout = await loadFirstLayout(lookup);
+      log?.debug(
+        `Searching for layout for ${contentPath} in [\n${
+          loadPaths.join("\n    ")
+        }\n  ]`,
+      );
+    }
+
+    const layout = await loadFirstLayout(loadPaths);
+
     if (!layout) {
       throw new Error(`Could not find layout for ${contentPath}`);
     }

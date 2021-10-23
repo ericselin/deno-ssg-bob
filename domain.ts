@@ -146,7 +146,9 @@ export type ContentUnknown = ContentBase<unknown>;
 
 export type ContentBase<T> = {
   filepath: FilePath;
-  frontmatter: T;
+  frontmatter: T & {
+    layout?: string;
+  };
   content: Html;
 };
 
