@@ -1,7 +1,28 @@
 import { build } from "./mod.ts";
 import { log, parseFlags } from "./deps.ts";
 
-const { v: verbose, f: force } = parseFlags(Deno.args);
+const usage = `bob the static site builder
+
+Build the content files in the \`content\` directory,
+using the TSX layouts in the \`layouts\` directory,
+into the output directory \`public\`.
+
+Builds are by default incremental, i.e. build only
+what is needed.
+
+OPTIONS:
+
+-f    force build everything
+      will clean the current public directory
+-v    verbose logging
+-h    show help`;
+
+const { v: verbose, f: force, h: help } = parseFlags(Deno.args);
+
+if (help) {
+  console.log(usage);
+  Deno.exit();
+}
 
 const logLevel = verbose ? "DEBUG" : "INFO";
 

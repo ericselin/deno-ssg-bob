@@ -77,6 +77,11 @@ export const build: Builder = async (options) => {
     `Build directories: content:${contentDir} layouts:${layoutDir} public:${publicDir}`,
   );
 
+  if (!force) {
+    log?.warning("Incremental builds are currently experimental");
+    log?.warning("Use `-f` CLI flag to force build everything");
+  }
+
   if (force && await exists(publicDir)) {
     log?.warning(`Cleaning public directory ${publicDir}`);
     await Deno.remove(publicDir, { recursive: true });

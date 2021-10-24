@@ -1,6 +1,6 @@
-# Bob the static site builder
+# bob the static site builder
 
-Bob is a static site generator built on top of the [Deno](https://deno.land) runtime.
+`bob` is a static site generator built on top of the [Deno](https://deno.land) runtime.
 
 ## Features
 
@@ -25,12 +25,10 @@ Bob is designed for creating extremely performant websites that require near-ins
 
 ### 🤓 Best-in-class developer experience
 
-- Fully typed using TypeScript
+- Fully typed using TypeScript and TSX
   Intellisense and type checking in layout templates.
 - Highly modular
-  Everything is a module internally, increasing customizability and maintainability.
-- Structure your layouts any way you like
-  The only thing that is needed is a function that takes a content page and renders it into HTML. The rest is up to you. Use template literals, JSX (example coming soon), or any other way to make this happen.
+  Layouts are just TSX components. Import any additional components or libraries as you wish.
 - Easily create client-side components (coming soon)
   Create client-side code right in your layout files.
 
@@ -39,16 +37,22 @@ Bob is designed for creating extremely performant websites that require near-ins
 You need to have the [Deno](https://deno.land) runtime installed. When you have it installed, just run:
 
 ```
-deno install -A [PATH TO CMD.TS]
+deno install --allow-read --allow-write --allow-net https://deno.land/x/bob/cli.ts
 ```
 
 ## Usage
 
-See the `demo` directory for an example implementation.
+To build your site, in the site root, just run:
+
+```
+$> bob
+```
+
+See the `docs` directory for an example implementation. See CLI help with `bob -h`.
 
 ### Layout files
 
-Structure your layout files as you wish, and export a renderer function from a file named `site.ts`. This function will be called with a `ContentFile` for each content page that should be rendered.
+Layouts are just TSX components, exported as a default export from different files. Structure your code and components as you wish, but make sure you have a default layout located in `layouts/_default.tsx`.
 
 ### Content files
 
