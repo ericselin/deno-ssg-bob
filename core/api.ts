@@ -99,10 +99,15 @@ export const build: Builder = async (options) => {
   let renderCount = 0;
 
   for await (const filepath of walkDirty(contentDir)) {
+    try {
     const rendered = await process(filepath);
 
     if (rendered) {
       renderCount++;
+    }
+    } catch (e) {
+      log?.error(`Error rendering page ${filepath.relativePath}!`);
+      throw e;
     }
   }
 
