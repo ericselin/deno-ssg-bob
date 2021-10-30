@@ -151,6 +151,7 @@ export type ContentBase<T> = {
   frontmatter: T & {
     layout?: string;
   };
+  title?: string;
   content: Html;
 };
 

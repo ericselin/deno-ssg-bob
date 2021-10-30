@@ -22,3 +22,16 @@ Deno.test("extremely simple parse case works", () => {
   };
   assertEquals(actual, expected);
 });
+
+Deno.test("parser sets title from frontmatter", () => {
+  const parse = parseContentFile(
+    (str) => str,
+    JSON.parse,
+  );
+  const actual = parse({
+    //@ts-ignore Not needed for this test
+    filepath: {},
+    content: '{"title":"This is a title"}\n---\nhello',
+  });
+  assertEquals(actual.title, "This is a title");
+});

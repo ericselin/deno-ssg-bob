@@ -19,12 +19,19 @@ export const parseContentFile = (
     const contentSplit = contentFile.content.split("\n---\n");
     const rawContent = contentSplit.pop() || "";
     const rawFrontmatter = contentSplit.pop() || "";
-    const frontmatter = parseFrontmatter(rawFrontmatter);
-    return {
+    const frontmatter = parseFrontmatter(rawFrontmatter) as
+      | Record<string, unknown>
+      | undefined;
+
+    const content = {
       filepath: contentFile.filepath,
       frontmatter: frontmatter || {},
       content: parseContent(rawContent),
     } as ContentUnknown;
+
+    if (frontmatter?.title) content.title = frontmatter.title as string;
+
+    return content;
   };
 
 export default parseContentFile(markdownParser, yaml.parse);
