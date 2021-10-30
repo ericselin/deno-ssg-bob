@@ -25,11 +25,20 @@ type Processor = (
 export const createPageGetter: PageGetterCreator = (options) => {
   const readFile = readContentFile(options);
   const parse = getParser(options);
+  const { log, buildDrafts } = options;
+
+  buildDrafts && log?.info("Building draft pages");
+
   return (filepath) =>
     Promise
       .resolve(filepath)
       .then(readFile)
-      .then(parse);
+      .then(parse)
+      .then((page) =>
+        // if page is a draft and not building drafts, return undefined
+        // i.e. no page found
+        (page.frontmatter?.draft && !buildDrafts) ? undefined : page
+      );
 };
 
 const createPagesGetter = (
@@ -44,8 +53,10 @@ const createPagesGetter = (
     const pages: ContentUnknown[] = [];
     for await (const walkEntry of expandGlob(contentGlob)) {
       const page = await getPage(processWalkEntry(walkEntry));
-      log?.debug(`Found page ${page.filepath.relativePath}`);
-      pages.push(page);
+      if (page) {
+        log?.debug(`Found page ${page.filepath.relativePath}`);
+        pages.push(page);
+      }
     }
     return pages;
   };
@@ -63,10 +74,16 @@ export const getProcessor: Processor = (options) => {
     Promise
       .resolve(walkEntry)
       .then(getPage)
-      .then(loadLayout)
-      .then(render)
-      .then(writeContentFile(options))
-      .then(() => true);
+      .then((page) =>
+        // continue if page found, otherwise return false
+        page
+          ? Promise.resolve(page)
+            .then(loadLayout)
+            .then(render)
+            .then(writeContentFile(options))
+            .then(() => true)
+          : false
+      );
 };
 
 export const build: Builder = async (options) => {
@@ -101,11 +118,11 @@ export const build: Builder = async (options) => {
 
   for await (const filepath of walkDirty(contentDir)) {
     try {
-    const rendered = await process(filepath);
+      const rendered = await process(filepath);
 
-    if (rendered) {
-      renderCount++;
-    }
+      if (rendered) {
+        renderCount++;
+      }
     } catch (e) {
       log?.error(`Error rendering page ${filepath.relativePath}!`);
       throw e;

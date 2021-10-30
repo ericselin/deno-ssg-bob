@@ -14,10 +14,11 @@ OPTIONS:
 
 -f    force build everything
       will clean the current public directory
+-d    build draft pages
 -v    verbose logging
 -h    show help`;
 
-const { v: verbose, f: force, h: help } = parseFlags(Deno.args);
+const { v: verbose, f: force, h: help, d: buildDrafts } = parseFlags(Deno.args);
 
 if (help) {
   console.log(usage);
@@ -44,6 +45,7 @@ const results = await build({
   layoutDir: "layouts",
   publicDir: "public",
   force,
+  buildDrafts,
   log,
 });
 
