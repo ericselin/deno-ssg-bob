@@ -12,7 +12,7 @@ import { readContentFile, writeContentFile } from "./fs.ts";
 import dirtyFileMod from "./dirty-checkers/file-mod.ts";
 import dirtyLayoutsChanged from "./dirty-checkers/layouts.ts";
 import allDirtyOnForce from "./dirty-checkers/force-build.ts";
-import parse from "./parser.ts";
+import getParser from "./parser.ts";
 import render from "./renderer.ts";
 import createDirtyFileWalker from "./dirty-file-walk.ts";
 import getLayoutLoader from "./layout-loader.ts";
@@ -24,6 +24,7 @@ type Processor = (
 
 export const createPageGetter: PageGetterCreator = (options) => {
   const readFile = readContentFile(options);
+  const parse = getParser(options);
   return (filepath) =>
     Promise
       .resolve(filepath)

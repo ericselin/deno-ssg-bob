@@ -152,6 +152,7 @@ export type ContentBase<T> = {
     layout?: string;
   };
   title?: string;
+  date?: Date,
   content: Html;
 };
 
