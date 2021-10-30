@@ -24,6 +24,7 @@ Deno.test("returns true if content newer than output", async () => {
       contentDir: path.join(dir, "content"),
       relativePath: "3.md",
       outputPath: path.join(dir, "public", "2.html"),
+      url: new URL('https://test.com'),
     }),
     true,
   );
@@ -35,6 +36,7 @@ Deno.test("returns false if content older than output", async () => {
       contentDir: path.join(dir, "content"),
       relativePath: "1.md",
       outputPath: path.join(dir, "public", "2.html"),
+      url: new URL('https://test.com'),
     }),
     false,
   );
@@ -46,6 +48,7 @@ Deno.test("returns true if output not found", async () => {
       contentDir: path.join(dir, "content"),
       relativePath: "1.md",
       outputPath: "not-found.html",
+      url: new URL('https://test.com'),
     }),
     true,
   );

@@ -8,20 +8,14 @@ Deno.test("extremely simple parse case works", () => {
     JSON.parse,
   );
   const actual = parse({
-    filepath: {
-      contentDir: ".",
-      relativePath: "file.md",
-      outputPath: "file.html",
-    },
+    //@ts-ignore Not needed for this test
+    filepath: {},
     content: '{"param":1}\n---\nhello',
   });
   const expected: ContentBase<{ param: number }> = {
     content: "HELLO",
-    filepath: {
-      contentDir: ".",
-      relativePath: "file.md",
-      outputPath: "file.html",
-    },
+    //@ts-ignore Not needed for this test
+    filepath: {},
     frontmatter: {
       param: 1,
     },

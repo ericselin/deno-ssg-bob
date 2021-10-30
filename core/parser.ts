@@ -1,7 +1,6 @@
-import type { ContentUnknown, Parser } from "../domain.ts";
+import type { ContentUnknown, Html, Parser } from "../domain.ts";
 import { md, yaml } from "../deps.ts";
 
-type Html = string;
 type RawFrontmatter = string;
 type RawContent = string;
 

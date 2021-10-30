@@ -91,6 +91,7 @@ export type BuildOptions = {
   layoutDir: string;
   publicDir: string;
   force?: boolean;
+  baseUrl?: string;
   log?: Logger;
 };
 
@@ -109,6 +110,7 @@ export type FilePath = {
   contentDir: string;
   relativePath: string;
   outputPath: string;
+  url: URL;
   dirty?: boolean;
 };
 
@@ -136,7 +138,7 @@ export type ContentFile = {
   content: RawFile;
 };
 
-type RawFile = string;
+export type RawFile = string;
 
 // Parsers
 
@@ -152,7 +154,7 @@ export type ContentBase<T> = {
   content: Html;
 };
 
-type Html = string;
+export type Html = string;
 
 // Layout file loading
 

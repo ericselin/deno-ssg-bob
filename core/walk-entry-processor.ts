@@ -1,4 +1,4 @@
-import type { WalkEntryProcessor } from "../domain.ts";
+import type { BuildOptions, WalkEntryProcessor } from "../domain.ts";
 import { path } from "../deps.ts";
 
 export const getPublicPathCreator = (publicPath: string) =>
@@ -10,8 +10,30 @@ export const getPublicPathCreator = (publicPath: string) =>
     return path.join(publicPath, ...dirPathSegments);
   };
 
-const processWalkEntry: WalkEntryProcessor = ({ contentDir, publicDir, log }) => {
+export const getURLCreator = (options: BuildOptions) => {
+  let { baseUrl, log } = options;
+  if (!baseUrl) {
+    log?.warning("Base URL not set, using default value");
+    baseUrl = "http://localhost";
+  }
+  return (relativeEntryPath: string): URL => {
+    const parsedPath = path.parse(relativeEntryPath);
+    const dirPathSegments = parsedPath.dir.split(path.sep);
+    if (parsedPath.name !== "index") dirPathSegments.push(parsedPath.name);
+    const pathname = "/" +
+        dirPathSegments.length
+      ? dirPathSegments.join("/") + "/"
+      : "";
+    const url = new URL(pathname, baseUrl);
+    log?.debug(`Page ${relativeEntryPath} getting url ${url.toString()}`);
+    return url;
+  };
+};
+
+const processWalkEntry: WalkEntryProcessor = (options) => {
+  const { contentDir, publicDir, log } = options;
   const createPublicPath = getPublicPathCreator(publicDir);
+  const createURL = getURLCreator(options);
   return (walkEntry) => {
     if (walkEntry.isFile) {
       const relativeEntryPath = path.relative(contentDir, walkEntry.path);
@@ -19,6 +41,7 @@ const processWalkEntry: WalkEntryProcessor = ({ contentDir, publicDir, log }) =>
         contentDir: contentDir,
         relativePath: relativeEntryPath,
         outputPath: createPublicPath(relativeEntryPath),
+        url: createURL(relativeEntryPath),
       };
       log?.debug(`Processing ${relativeEntryPath}`);
       return filepath;
