@@ -1,7 +1,7 @@
 import type { Renderer } from "../domain.ts";
 
 const renderer: Renderer = async ({ renderer, page }) => ({
-  path: page.filepath.outputPath,
+  path: page.location.outputPath,
   output: await renderer(page),
 });
 

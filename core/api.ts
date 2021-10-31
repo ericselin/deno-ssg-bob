@@ -2,13 +2,17 @@ import type {
   Builder,
   BuildOptions,
   ContentGetter,
-  FilePath,
+  Location,
   Page,
   PagesGetter,
 } from "../domain.ts";
-import { ContentType, FileType } from "../domain.ts";
-import { exists, expandGlob } from "../deps.ts";
-import { readContentFile, writeContentFile } from "./fs.ts";
+import { ContentType } from "../domain.ts";
+import { exists, expandGlob, path } from "../deps.ts";
+import {
+  createOutputFileWriter,
+  createStaticFileWriter,
+  readContentFile,
+} from "./fs.ts";
 import dirtyFileMod from "./dirty-checkers/file-mod.ts";
 import dirtyLayoutsChanged from "./dirty-checkers/layouts.ts";
 import allDirtyOnForce from "./dirty-checkers/force-build.ts";
@@ -20,12 +24,12 @@ import getWalkEntryProcessor from "./walk-entry-processor.ts";
 
 type Processor = (
   options: BuildOptions,
-) => (filepath: FilePath) => Promise<boolean>;
+) => (location: Location) => Promise<boolean>;
 
 type ContentGetterCreator = (options: BuildOptions) => ContentGetter;
 
 export type PageGetter = (
-  filepath: FilePath,
+  location: Location,
 ) => Promise<Page | undefined>;
 
 const createPagesGetter = (
@@ -35,14 +39,14 @@ const createPagesGetter = (
   const processWalkEntry = getWalkEntryProcessor(options);
   const { log } = options;
   return async (glob) => {
-    const contentGlob = `content/${glob}`;
+    const contentGlob = path.join(options.contentDir, glob);
     log?.debug(`Getting pages with glob "${contentGlob}"`);
     const pages: Page[] = [];
     for await (const walkEntry of expandGlob(contentGlob)) {
-      const page = await getContent(processWalkEntry(walkEntry));
-      if (page?.type === ContentType.Page) {
-        log?.debug(`Found page ${page.filepath.relativePath}`);
-        pages.push(page);
+      const content = await getContent(processWalkEntry(walkEntry));
+      if (content?.type === ContentType.Page) {
+        log?.debug(`Found page ${content.location.inputPath}`);
+        pages.push(content);
       }
     }
     return pages;
@@ -53,13 +57,13 @@ const createContentGetter: ContentGetterCreator = (options) => {
   const { buildDrafts } = options;
   const readFile = readContentFile(options);
   const parse = getParser(options);
-  return (filePath) =>
+  return (location) =>
     Promise
-      .resolve(filePath)
+      .resolve(location)
       .then(readFile)
       .then((file) => {
         switch (file.type) {
-          case FileType.Page:
+          case ContentType.Page:
             return Promise
               .resolve(file)
               .then(parse)
@@ -68,6 +72,8 @@ const createContentGetter: ContentGetterCreator = (options) => {
                 // i.e. no page found
                 (page.frontmatter?.draft && !buildDrafts) ? undefined : page
               );
+          case ContentType.Static:
+            return file;
           default:
             return undefined;
         }
@@ -80,19 +86,25 @@ export const getProcessor: Processor = (options) => {
     options,
     createPagesGetter(options, getContent),
   );
+  const writeOutputFile = createOutputFileWriter(options);
+  const writeStaticFile = createStaticFileWriter(options);
 
-  return (filePath) =>
+  return (location) =>
     // run workflow
     Promise
-      .resolve(filePath)
+      .resolve(location)
       .then(getContent)
-      .then((page) =>
+      .then((content) =>
         // continue if page found, otherwise return false
-        page?.type === ContentType.Page
-          ? Promise.resolve(page)
+        content?.type === ContentType.Page
+          ? Promise.resolve(content)
             .then(loadLayout)
             .then(render)
-            .then(writeContentFile(options))
+            .then(writeOutputFile)
+            .then(() => true)
+          : content?.location.type === ContentType.Static
+          ? Promise.resolve(content)
+            .then(writeStaticFile)
             .then(() => true)
           : false
       );
@@ -128,15 +140,15 @@ export const build: Builder = async (options) => {
 
   let renderCount = 0;
 
-  for await (const filepath of walkDirty(contentDir)) {
+  for await (const location of walkDirty(contentDir)) {
     try {
-      const rendered = await process(filepath);
+      const rendered = await process(location);
 
       if (rendered) {
         renderCount++;
       }
     } catch (e) {
-      log?.error(`Error rendering page ${filepath.relativePath}!`);
+      log?.error(`Error rendering page ${location.inputPath}!`);
       throw e;
     }
   }

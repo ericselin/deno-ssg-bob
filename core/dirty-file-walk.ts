@@ -1,8 +1,7 @@
 import type {
   BuildOptions,
   DirtyChecker,
-  FilePath,
-  FilePathGenerator,
+  LocationGenerator,
   FileWalkerCreator,
 } from "../domain.ts";
 import { walk } from "../deps.ts";
@@ -11,16 +10,16 @@ import getWalkEntryProcessor from "./walk-entry-processor.ts";
 async function* walkFiles(
   options: BuildOptions,
   path: string,
-): AsyncGenerator<FilePath> {
+): LocationGenerator {
   const processWalkEntry = getWalkEntryProcessor(options);
   for await (const walkEntry of walk(path)) {
     if (walkEntry.isFile) yield processWalkEntry(walkEntry);
   }
 }
 
-async function* yieldDirtyFilePaths(walk: FilePathGenerator) {
-  for await (const filepath of walk) {
-    if (filepath.dirty) yield filepath;
+async function* yieldDirtyFilePaths(walk: LocationGenerator) {
+  for await (const location of walk) {
+    if (location.dirty) yield location;
   }
 }
 
@@ -29,16 +28,16 @@ const createDirtyFileWalker: FileWalkerCreator = (dirtyCheckerCreators) =>
     const dirtyCheckers = dirtyCheckerCreators.map((dirtyChekerCreator) =>
       dirtyChekerCreator(options)
     );
-    async function* markDirty(walk: FilePathGenerator, isDirty?: DirtyChecker) {
-      for await (const filepath of walk) {
-        if (filepath.dirty) {
-          yield filepath;
+    async function* markDirty(walk: LocationGenerator, isDirty?: DirtyChecker) {
+      for await (const location of walk) {
+        if (location.dirty) {
+          yield location;
           continue;
-        } else if (isDirty && await isDirty(filepath)) {
-          filepath.dirty = true;
-          options.log?.debug(`Marking ${filepath.relativePath} dirty`);
+        } else if (isDirty && await isDirty(location)) {
+          location.dirty = true;
+          options.log?.debug(`Marking ${location.inputPath} dirty`);
         }
-        yield filepath;
+        yield location;
       }
     }
     return (dirpath) => {

@@ -68,8 +68,8 @@ export const createRenderer: ElementRendererCreator = (_options, getPages) =>
               .then((wantedPages) =>
                 // filter out the current page from wanted pages
                 wantedPages.filter((page) =>
-                  page.filepath.relativePath !==
-                    context.page.filepath.relativePath
+                  page.location.inputPath !==
+                    context.page.location.inputPath
                 )
               );
         }

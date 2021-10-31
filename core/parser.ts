@@ -27,7 +27,7 @@ export const getContentFileParser = (
 
       const content: Page = {
         type: ContentType.Page,
-        filepath: contentFile.filepath,
+        location: contentFile.location,
         frontmatter: frontmatter || {},
         content: parseContent(rawContent),
         get summary() {
@@ -55,7 +55,7 @@ export const getContentFileParser = (
           content.date = new Date(frontmatter.date as string);
         } catch (e) {
           log?.warning(
-            `Could not parse date "${frontmatter.date}" in \`${contentFile.filepath.relativePath}\``,
+            `Could not parse date "${frontmatter.date}" in \`${contentFile.location.inputPath}\``,
           );
           log?.debug(e.toString());
         }

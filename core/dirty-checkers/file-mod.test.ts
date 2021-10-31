@@ -1,5 +1,5 @@
 import { assertEquals, path } from "../../deps.ts";
-import { BuildOptions } from "../../domain.ts";
+import { BuildOptions, ContentType } from "../../domain.ts";
 import shouldRender from "./file-mod.ts";
 
 const dir = path.join(
@@ -21,8 +21,8 @@ await resetModTime(["content", "3.md"]);
 Deno.test("returns true if content newer than output", async () => {
   assertEquals(
     await shouldRender({} as BuildOptions)({
-      contentDir: path.join(dir, "content"),
-      relativePath: "3.md",
+      type: ContentType.Unknown,
+      inputPath: path.join(dir, "content", "3.md"),
       outputPath: path.join(dir, "public", "2.html"),
       url: new URL('https://test.com'),
     }),
@@ -33,8 +33,8 @@ Deno.test("returns true if content newer than output", async () => {
 Deno.test("returns false if content older than output", async () => {
   assertEquals(
     await shouldRender({} as BuildOptions)({
-      contentDir: path.join(dir, "content"),
-      relativePath: "1.md",
+      type: ContentType.Unknown,
+      inputPath: path.join(dir, "content", "1.md"),
       outputPath: path.join(dir, "public", "2.html"),
       url: new URL('https://test.com'),
     }),
@@ -45,8 +45,8 @@ Deno.test("returns false if content older than output", async () => {
 Deno.test("returns true if output not found", async () => {
   assertEquals(
     await shouldRender({} as BuildOptions)({
-      contentDir: path.join(dir, "content"),
-      relativePath: "1.md",
+      type: ContentType.Unknown,
+      inputPath: path.join(dir, "content", "1.md"),
       outputPath: "not-found.html",
       url: new URL('https://test.com'),
     }),

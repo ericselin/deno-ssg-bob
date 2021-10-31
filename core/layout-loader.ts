@@ -71,7 +71,8 @@ const loadLayout = (
   const renderJsx = createRenderer(options, getPages);
   return async (page) => {
     const { layoutDir, log } = options;
-    const { filepath: { relativePath: contentPath }, frontmatter } = page;
+    const { location: { inputPath }, frontmatter } = page;
+    const contentPath = path.relative(options.contentDir, inputPath);
 
     let loadPaths: string[];
 

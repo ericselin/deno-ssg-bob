@@ -1,4 +1,4 @@
-import { exists, path } from "../../deps.ts";
+import { exists } from "../../deps.ts";
 import type { DirtyCheckerCreator } from "../../domain.ts";
 
 const getModificationTime = async (filepath: string): Promise<Date | null> => {
@@ -8,18 +8,18 @@ const getModificationTime = async (filepath: string): Promise<Date | null> => {
 };
 
 const dirtyFileMod: DirtyCheckerCreator = () =>
-  async (filepath) => {
+  async (location) => {
     // get modification time of content file
     const contentModTime = await getModificationTime(
-      path.join(filepath.contentDir, filepath.relativePath),
+      location.inputPath
     );
     if (!contentModTime) {
       throw new Error(
-        `Content file ${filepath.relativePath} not found in ${filepath.contentDir}`,
+        `Content file ${location.inputPath} not found`,
       );
     }
     // get modification time of rendered file
-    const outputModTime = await getModificationTime(filepath.outputPath);
+    const outputModTime = await getModificationTime(location.outputPath);
     // if no output file mod time (does not exist), this is dirty
     if (!outputModTime) return true;
     // if content modified after render, this is dirty
