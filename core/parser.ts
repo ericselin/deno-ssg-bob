@@ -1,4 +1,4 @@
-import type { BuildOptions, ContentUnknown, Html, Parser } from "../domain.ts";
+import type { BuildOptions, Page, Html, Parser } from "../domain.ts";
 import { md, yaml } from "../deps.ts";
 
 type RawFrontmatter = string;
@@ -44,7 +44,7 @@ export const getContentFileParser = (
           // return without whitespace
           return summary.trim();
         },
-      } as ContentUnknown;
+      } as Page;
 
       if (frontmatter?.title) content.title = frontmatter.title as string;
 

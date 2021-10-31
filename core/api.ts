@@ -1,7 +1,7 @@
 import type {
   Builder,
   BuildOptions,
-  ContentUnknown,
+  Page,
   FilePath,
   PageGetter,
   PageGetterCreator,
@@ -50,7 +50,7 @@ const createPagesGetter = (
   return async (glob) => {
     const contentGlob = `content/${glob}`;
     log?.debug(`Getting pages with glob "${contentGlob}"`);
-    const pages: ContentUnknown[] = [];
+    const pages: Page[] = [];
     for await (const walkEntry of expandGlob(contentGlob)) {
       const page = await getPage(processWalkEntry(walkEntry));
       if (page) {

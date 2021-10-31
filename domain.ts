@@ -2,12 +2,12 @@
 
 export type Component<
   P extends Props = DefaultProps,
-  ContentFrontmatter = unknown,
+  PageFrontmatter = unknown,
   WantedPagesFrontmatter = undefined,
 > =
   & ((
     props: P & { children?: Children },
-    context: Context<ContentFrontmatter, WantedPagesFrontmatter>,
+    context: Context<PageFrontmatter, WantedPagesFrontmatter>,
   ) => Awaitable<Element>)
   & {
     wantsPages?: WantsPages;
@@ -17,10 +17,10 @@ export type Component<
 export type AnyComponent = Component<DefaultProps, unknown, unknown>;
 
 export type Context<
-  ContentFrontmatter = unknown,
+  PageFrontmatter = unknown,
   WantedPagesFrontmatter = unknown,
 > = {
-  page: ContentBase<ContentFrontmatter>;
+  page: Page<PageFrontmatter>;
   needsCss: CssSpecifier[];
   wantedPages?: WantedPagesFrontmatter extends undefined ? undefined
     : WantedPages<WantedPagesFrontmatter>;
@@ -30,7 +30,7 @@ export type ElementRendererCreator = (
   options?: BuildOptions,
   getPages?: PagesGetter,
 ) => (
-  contentPage?: ContentUnknown,
+  page?: Page,
 ) => ElementRenderer;
 
 export type ElementRenderer = (
@@ -59,10 +59,10 @@ type ElementType = Component<DefaultProps, unknown, unknown> | string;
 type Child = Element | string;
 type Children = Child | Child[];
 
-export type PagesGetter = (wantsPages: WantsPages) => Promise<ContentUnknown[]>;
+export type PagesGetter = (wantsPages: WantsPages) => Promise<Page[]>;
 
 export type WantsPages = string;
-export type WantedPages<W = unknown> = ContentBase<W>[];
+export type WantedPages<W = unknown> = Page<W>[];
 
 type CssSpecifier = string;
 export type NeedsCss = CssSpecifier;
@@ -132,9 +132,9 @@ export type FilePathGenerator = AsyncGenerator<FilePath>;
 
 export type FileReader = (
   options: BuildOptions,
-) => (filepath: FilePath) => Promise<ContentFile>;
+) => (filepath: FilePath) => Promise<PageFile>;
 
-export type ContentFile = {
+export type PageFile = {
   filepath: FilePath;
   content: RawFile;
 };
@@ -143,11 +143,9 @@ export type RawFile = string;
 
 // Parsers
 
-export type Parser = (file: ContentFile) => ContentUnknown;
+export type Parser = (file: PageFile) => Page;
 
-export type ContentUnknown = ContentBase<unknown>;
-
-export type ContentBase<T> = {
+export type Page<T = unknown> = {
   filepath: FilePath;
   frontmatter: T & {
     layout?: string;
@@ -164,20 +162,20 @@ export type Html = string;
 // Layout file loading
 
 export type LayoutLoader = (
-  content: ContentUnknown,
-) => Awaitable<RenderableContent>;
+  page: Page,
+) => Awaitable<RenderablePage>;
 
-export type RenderableContent = {
-  content: ContentUnknown;
-  renderer: ContentRenderer;
+export type RenderablePage = {
+  page: Page;
+  renderer: PageRenderer;
 };
 
-export type ContentRenderer = (content: ContentUnknown) => Awaitable<Html>;
+export type PageRenderer = (page: Page) => Awaitable<Html>;
 
 // Rendering
 
 export type Renderer = (
-  renderable: RenderableContent,
+  renderable: RenderablePage,
 ) => Awaitable<OutputFile>;
 
 export type OutputFile = {
@@ -196,7 +194,7 @@ export type FileWriter = (
 export type PageGetterCreator = (options: BuildOptions) => PageGetter;
 export type PageGetter = (
   filepath: FilePath,
-) => Awaitable<ContentUnknown | undefined>;
+) => Awaitable<Page | undefined>;
 
 export type AnyObject = Record<string, unknown>;
 type Awaitable<T> = T | Promise<T>;

@@ -4,7 +4,7 @@ import type {
   DefaultProps,
   LayoutLoader,
   PagesGetter,
-  RenderableContent,
+  RenderablePage,
 } from "../domain.ts";
 import { exists, path } from "../deps.ts";
 import { createRenderer, h } from "./jsx.ts";
@@ -69,9 +69,9 @@ const loadLayout = (
   getPages: PagesGetter,
 ): LayoutLoader => {
   const renderJsx = createRenderer(options, getPages);
-  return async (content) => {
+  return async (page) => {
     const { layoutDir, log } = options;
-    const { filepath: { relativePath: contentPath }, frontmatter } = content;
+    const { filepath: { relativePath: contentPath }, frontmatter } = page;
 
     let loadPaths: string[];
 
@@ -100,8 +100,8 @@ const loadLayout = (
 
     if (layout.type === "tsx") {
       log?.debug(`Rendering layout file '${layout.path}' as TSX`);
-      return <RenderableContent> {
-        content,
+      return <RenderablePage> {
+        page,
         renderer: (content) =>
           renderJsx(content)(
             h(

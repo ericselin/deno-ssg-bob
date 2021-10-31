@@ -1,5 +1,5 @@
 import type {
-  ContentUnknown,
+  Page,
   Context,
   Element,
   ElementCreator,
@@ -58,7 +58,7 @@ export const createRenderer: ElementRendererCreator = (_options, getPages) =>
           ];
         }
         const context: Context = {
-          page: contentPage as ContentUnknown,
+          page: contentPage as Page,
           needsCss: renderContext.needsCss,
         };
         if (component.wantsPages) {
