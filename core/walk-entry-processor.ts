@@ -10,10 +10,15 @@ export const getPublicPathCreator = (publicPath: string) =>
     return path.join(publicPath, ...dirPathSegments);
   };
 
+let didWarnAboutBaseURL = false;
+
 export const getURLCreator = (options: BuildOptions) => {
   let { baseUrl, log } = options;
-  if (!baseUrl) {
+  if (!baseUrl && !didWarnAboutBaseURL) {
+    didWarnAboutBaseURL = true;
     log?.warning("Base URL not set, using default value");
+  }
+  if (!baseUrl) {
     baseUrl = "http://localhost";
   }
   return (relativeEntryPath: string): URL => {
