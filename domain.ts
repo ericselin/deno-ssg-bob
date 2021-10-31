@@ -90,7 +90,7 @@ export type BuildOptions = {
   contentDir: string;
   layoutDir: string;
   publicDir: string;
-  buildDrafts?: boolean,
+  buildDrafts?: boolean;
   force?: boolean;
   baseUrl?: string;
   log?: Logger;
@@ -154,7 +154,8 @@ export type ContentBase<T> = {
     draft?: boolean;
   };
   title?: string;
-  date?: Date,
+  date?: Date;
+  summary?: string;
   content: Html;
 };
 
@@ -193,7 +194,9 @@ export type FileWriter = (
 // Utilities
 
 export type PageGetterCreator = (options: BuildOptions) => PageGetter;
-export type PageGetter = (filepath: FilePath) => Awaitable<ContentUnknown | undefined>;
+export type PageGetter = (
+  filepath: FilePath,
+) => Awaitable<ContentUnknown | undefined>;
 
 export type AnyObject = Record<string, unknown>;
 type Awaitable<T> = T | Promise<T>;

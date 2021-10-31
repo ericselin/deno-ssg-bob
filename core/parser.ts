@@ -28,6 +28,22 @@ export const getContentFileParser = (
         filepath: contentFile.filepath,
         frontmatter: frontmatter || {},
         content: parseContent(rawContent),
+        get summary() {
+          // here we're assuming `content` is HTML
+          let summary = this.content
+            // get first 500 characters
+            .substr(0, 500)
+            // strip html tags
+            .replace(/<[^>]*>?/g, "")
+            // replace newlines with space
+            .replace(/\n+/g, " ");
+          // if we have sentences, remove the last (partial) sentence
+          if (summary.includes(".")) {
+            summary = summary.split(".").slice(0, -1).join(".").concat(".");
+          }
+          // return without whitespace
+          return summary.trim();
+        },
       } as ContentUnknown;
 
       if (frontmatter?.title) content.title = frontmatter.title as string;
