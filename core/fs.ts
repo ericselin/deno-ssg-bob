@@ -1,5 +1,6 @@
 import { path } from "../deps.ts";
 import type { FileReader, FileWriter } from "../domain.ts";
+import { FileType } from "../domain.ts";
 
 export type DirectoryPath = string;
 
@@ -11,6 +12,7 @@ export const readContentFile: FileReader = () =>
       path.join(filepath.contentDir, filepath.relativePath),
     );
     return {
+      type: FileType.Page,
       filepath,
       content,
     };

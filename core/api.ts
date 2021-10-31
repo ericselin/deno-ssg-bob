@@ -1,12 +1,12 @@
 import type {
   Builder,
   BuildOptions,
-  Page,
+  ContentGetter,
   FilePath,
-  PageGetter,
-  PageGetterCreator,
+  Page,
   PagesGetter,
 } from "../domain.ts";
+import { ContentType, FileType } from "../domain.ts";
 import { exists, expandGlob } from "../deps.ts";
 import { readContentFile, writeContentFile } from "./fs.ts";
 import dirtyFileMod from "./dirty-checkers/file-mod.ts";
@@ -22,28 +22,15 @@ type Processor = (
   options: BuildOptions,
 ) => (filepath: FilePath) => Promise<boolean>;
 
-export const createPageGetter: PageGetterCreator = (options) => {
-  const readFile = readContentFile(options);
-  const parse = getParser(options);
-  const { log, buildDrafts } = options;
+type ContentGetterCreator = (options: BuildOptions) => ContentGetter;
 
-  buildDrafts && log?.info("Building draft pages");
-
-  return (filepath) =>
-    Promise
-      .resolve(filepath)
-      .then(readFile)
-      .then(parse)
-      .then((page) =>
-        // if page is a draft and not building drafts, return undefined
-        // i.e. no page found
-        (page.frontmatter?.draft && !buildDrafts) ? undefined : page
-      );
-};
+export type PageGetter = (
+  filepath: FilePath,
+) => Promise<Page | undefined>;
 
 const createPagesGetter = (
   options: BuildOptions,
-  getPage: PageGetter,
+  getContent: ContentGetter,
 ): PagesGetter => {
   const processWalkEntry = getWalkEntryProcessor(options);
   const { log } = options;
@@ -52,8 +39,8 @@ const createPagesGetter = (
     log?.debug(`Getting pages with glob "${contentGlob}"`);
     const pages: Page[] = [];
     for await (const walkEntry of expandGlob(contentGlob)) {
-      const page = await getPage(processWalkEntry(walkEntry));
-      if (page) {
+      const page = await getContent(processWalkEntry(walkEntry));
+      if (page?.type === ContentType.Page) {
         log?.debug(`Found page ${page.filepath.relativePath}`);
         pages.push(page);
       }
@@ -62,21 +49,46 @@ const createPagesGetter = (
   };
 };
 
+const createContentGetter: ContentGetterCreator = (options) => {
+  const { buildDrafts } = options;
+  const readFile = readContentFile(options);
+  const parse = getParser(options);
+  return (filePath) =>
+    Promise
+      .resolve(filePath)
+      .then(readFile)
+      .then((file) => {
+        switch (file.type) {
+          case FileType.Page:
+            return Promise
+              .resolve(file)
+              .then(parse)
+              .then((page) =>
+                // if page is a draft and not building drafts, return undefined
+                // i.e. no page found
+                (page.frontmatter?.draft && !buildDrafts) ? undefined : page
+              );
+          default:
+            return undefined;
+        }
+      });
+};
+
 export const getProcessor: Processor = (options) => {
-  const getPage = createPageGetter(options);
+  const getContent = createContentGetter(options);
   const loadLayout = getLayoutLoader(
     options,
-    createPagesGetter(options, getPage),
+    createPagesGetter(options, getContent),
   );
 
-  return (walkEntry) =>
+  return (filePath) =>
     // run workflow
     Promise
-      .resolve(walkEntry)
-      .then(getPage)
+      .resolve(filePath)
+      .then(getContent)
       .then((page) =>
         // continue if page found, otherwise return false
-        page
+        page?.type === ContentType.Page
           ? Promise.resolve(page)
             .then(loadLayout)
             .then(render)

@@ -75,6 +75,35 @@ declare global {
   }
 }
 
+// Main content types and getter
+
+export type ContentGetter = (filePath: FilePath) => Awaitable<Content | undefined>;
+
+export type Content = Page | StaticContent;
+
+export type Page<T = unknown> = {
+  type: ContentType.Page;
+  filepath: FilePath;
+  frontmatter: T & {
+    layout?: string;
+    draft?: boolean;
+  };
+  title?: string;
+  date?: Date;
+  summary?: string;
+  content: Html;
+};
+
+export type StaticContent = {
+  type: ContentType.Static;
+  filepath: FilePath;
+};
+
+export enum ContentType {
+  Page = "PAGE_CONTENT",
+  Static = "STATIC_CONTENT",
+}
+
 // External dependencies
 
 import type { Logger } from "./deps.ts";
@@ -132,30 +161,31 @@ export type FilePathGenerator = AsyncGenerator<FilePath>;
 
 export type FileReader = (
   options: BuildOptions,
-) => (filepath: FilePath) => Promise<PageFile>;
+) => (filepath: FilePath) => Promise<File>;
+
+export type File = PageFile | StaticFile;
 
 export type PageFile = {
+  type: FileType.Page;
   filepath: FilePath;
   content: RawFile;
 };
+
+export type StaticFile = {
+  type: FileType.Static;
+  filepath: FilePath;
+};
+
+export enum FileType {
+  Page = "PAGE_FILE",
+  Static = "STATIC_FILE",
+}
 
 export type RawFile = string;
 
 // Parsers
 
 export type Parser = (file: PageFile) => Page;
-
-export type Page<T = unknown> = {
-  filepath: FilePath;
-  frontmatter: T & {
-    layout?: string;
-    draft?: boolean;
-  };
-  title?: string;
-  date?: Date;
-  summary?: string;
-  content: Html;
-};
 
 export type Html = string;
 
@@ -190,11 +220,6 @@ export type FileWriter = (
 ) => (file: OutputFile) => Promise<void>;
 
 // Utilities
-
-export type PageGetterCreator = (options: BuildOptions) => PageGetter;
-export type PageGetter = (
-  filepath: FilePath,
-) => Awaitable<Page | undefined>;
 
 export type AnyObject = Record<string, unknown>;
 type Awaitable<T> = T | Promise<T>;
