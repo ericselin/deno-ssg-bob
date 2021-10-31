@@ -54,7 +54,7 @@ export const createRenderer: ElementRendererCreator = (_options, getPages) =>
         if (component.needsCss) {
           renderContext.needsCss = [
             ...renderContext.needsCss,
-            (`layouts/${component.needsCss}`),
+            `layouts/${component.needsCss}`,
           ];
         }
         const context: Context = {
@@ -62,7 +62,16 @@ export const createRenderer: ElementRendererCreator = (_options, getPages) =>
           needsCss: renderContext.needsCss,
         };
         if (component.wantsPages) {
-          context.wantedPages = getPages && await getPages(component.wantsPages);
+          context.wantedPages = getPages &&
+            // get all wanted pages
+            await getPages(component.wantsPages)
+              .then((wantedPages) =>
+                // filter out the current page from wanted pages
+                wantedPages.filter((page) =>
+                  page.filepath.relativePath !==
+                    context.page.filepath.relativePath
+                )
+              );
         }
         component = await component.type(props, context);
         return render(component);
