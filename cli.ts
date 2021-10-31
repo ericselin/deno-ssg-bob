@@ -1,4 +1,5 @@
-import { build } from "./mod.ts";
+import type { BuildOptions } from "./domain.ts";
+import { build, serve } from "./mod.ts";
 import { log, parseFlags } from "./deps.ts";
 
 const usage = `bob the static site builder
@@ -10,15 +11,24 @@ into the output directory \`public\`.
 Builds are by default incremental, i.e. build only
 what is needed.
 
+USAGE:
+  bob [server] [options]
+
 OPTIONS:
+  -f    force build everything
+        will clean the current public directory
+  -d    build draft pages
+  -v    verbose logging
+  -h    show help`;
 
--f    force build everything
-      will clean the current public directory
--d    build draft pages
--v    verbose logging
--h    show help`;
-
-const { v: verbose, f: force, h: help, d: buildDrafts } = parseFlags(Deno.args);
+const {
+  v: verbose,
+  f: force,
+  h: help,
+  d: buildDrafts,
+  _: [arg],
+} = parseFlags(Deno.args);
+const server = arg === "server";
 
 if (help) {
   console.log(usage);
@@ -40,13 +50,22 @@ await log.setup({
   },
 });
 
-const results = await build({
+const buildOptions: BuildOptions = {
   contentDir: "content",
   layoutDir: "layouts",
   publicDir: "public",
   force,
   buildDrafts,
   log,
-});
+};
 
-log.info(`Built ${results.renderCount} pages in ${results.durationMs} ms`);
+await build(buildOptions);
+
+if (server) {
+  serve({ directory: "public", log });
+  const watcher = Deno.watchFs([ buildOptions.layoutDir, buildOptions.contentDir ]);
+  for await (const event of watcher) {
+    log.info(`Files changed: ${event.kind} ${event.paths}`);
+    await build(buildOptions);
+  }
+}

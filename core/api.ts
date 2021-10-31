@@ -129,8 +129,12 @@ export const build: Builder = async (options) => {
     }
   }
 
-  return {
+  const results = {
     durationMs: Date.now() - startTime,
     renderCount,
   };
+
+  log?.info(`Built ${results.renderCount} pages in ${results.durationMs} ms`);
+
+  return results;
 };
