@@ -72,7 +72,7 @@ export type ElementRenderer = (
 
 /** Creates a renderer. */
 export type ElementRendererCreator = (
-  options?: BuildOptions,
+  options: BuildOptions,
   getPages?: PagesGetter,
 ) => (
   page?: Page,

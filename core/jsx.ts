@@ -7,6 +7,7 @@ import type {
   ElementRendererCreator,
   Props,
 } from "../domain.ts";
+import { path } from "../deps.ts";
 
 export const h: ElementCreator = (type, props, ...children) => {
   const element: Element = { type, props, children };
@@ -25,7 +26,7 @@ const renderProps = (props?: Props): string => {
   );
 };
 
-export const createRenderer: ElementRendererCreator = (_options, getPages) =>
+export const createRenderer: ElementRendererCreator = (options, getPages) =>
   (contentPage) => {
     const renderContext = {
       needsCss: [] as string[],
@@ -54,7 +55,7 @@ export const createRenderer: ElementRendererCreator = (_options, getPages) =>
         if (component.needsCss) {
           renderContext.needsCss = [
             ...renderContext.needsCss,
-            `layouts/${component.needsCss}`,
+            path.join(options.layoutDir, component.needsCss),
           ];
         }
         const context: Context = {
