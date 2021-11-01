@@ -29,10 +29,7 @@ export const Base: Component = async (
         <a href="/">bob</a>
         <ul>
           <li>
-            <a href="/getting-started/">Getting started</a>
-          </li>
-          <li>
-            <a href="/scenarios/">Common scenarios</a>
+            <a href="/docs/">Documentation</a>
           </li>
         </ul>
       </header>

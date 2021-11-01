@@ -7,3 +7,7 @@ body > nav ul {
   justify-content: center;
   gap: 1rem;
 }
+
+[aria-current=page] {
+  font-weight: 700;
+}

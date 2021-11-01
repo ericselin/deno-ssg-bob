@@ -40,7 +40,6 @@ const testExampleDir = (dir: string) =>
   async () => {
     const publicDir = await Deno.makeTempDir({ prefix: "bob-" });
     const paths = getPaths(dir);
-    console.log(paths);
     try {
       await build(
         {

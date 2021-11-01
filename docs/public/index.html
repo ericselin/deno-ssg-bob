@@ -17,7 +17,7 @@
   --nord15: #b48ead;
 
   --margin: 1rem;
-  --max-width: min(600px, 100% - 4 * var(--margin));
+  --max-width: min(700px, 100% - 4 * var(--margin));
 
   --color-bg: var(--nord0);
   --color-fg: var(--nord6);
@@ -98,7 +98,7 @@ main {
   padding: 0 var(--margin);
   background: var(--color-bg);
   border-radius: 1rem;
-  line-height: 1.25;
+  line-height: 1.5;
 }
 
 main::before,
@@ -131,11 +131,19 @@ pre {
   max-width: 100%;
   display: block;
   overflow: auto;
+  outline: 1px solid var(--nord13);
+  outline-offset: 0.5em;
 }
 
 code {
   font-family: var(--font-mono);
   line-height: initial;
+}
+
+:not(pre) > code {
+  color: var(--nord0);
+  background: var(--nord13);
+  padding: 0 0.1875em;
 }
 
 article + article {
@@ -207,7 +215,7 @@ body > footer {
   font-weight: 400;
   margin-top: 1rem;
 }
-</style></head><body><header><a href="/">bob</a><ul><li><a href="/getting-started/">Getting started</a></li><li><a href="/scenarios/">Common scenarios</a></li></ul></header><section class="hero"><h1><span>bob</span> the static site builder</h1><h2>Extremely fast content updating</h2></section><main><h1 id="bob-the-static-site-builder">bob the static site builder</h1>
+</style></head><body><header><a href="/">bob</a><ul><li><a href="/docs/">Documentation</a></li></ul></header><section class="hero"><h1><span>bob</span> the static site builder</h1><h2>Extremely fast content updating</h2></section><main><h1 id="bob-the-static-site-builder">bob the static site builder</h1>
 <p><code>bob</code> is a static site generator built on top of the <a href="https://deno.land">Deno</a> runtime.</p>
 <h2 id="features">Features</h2>
 <p>Bob is designed for creating extremely performant websites that require near-instant content updating and network edge personalization. All with best-in-class developer experience.</p>

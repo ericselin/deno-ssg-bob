@@ -17,7 +17,7 @@
   --nord15: #b48ead;
 
   --margin: 1rem;
-  --max-width: min(600px, 100% - 4 * var(--margin));
+  --max-width: min(700px, 100% - 4 * var(--margin));
 
   --color-bg: var(--nord0);
   --color-fg: var(--nord6);
@@ -98,7 +98,7 @@ main {
   padding: 0 var(--margin);
   background: var(--color-bg);
   border-radius: 1rem;
-  line-height: 1.25;
+  line-height: 1.5;
 }
 
 main::before,
@@ -131,11 +131,19 @@ pre {
   max-width: 100%;
   display: block;
   overflow: auto;
+  outline: 1px solid var(--nord13);
+  outline-offset: 0.5em;
 }
 
 code {
   font-family: var(--font-mono);
   line-height: initial;
+}
+
+:not(pre) > code {
+  color: var(--nord0);
+  background: var(--nord13);
+  padding: 0 0.1875em;
 }
 
 article + article {
@@ -180,11 +188,73 @@ body > nav ul {
   justify-content: center;
   gap: 1rem;
 }
-</style></head><body><header><a href="/">bob</a><ul><li><a href="/getting-started/">Getting started</a></li><li><a href="/scenarios/">Common scenarios</a></li></ul></header><nav><ul><li><a href="/docs/styling/">Styling and CSS</a></li><li><a href="/docs/">Getting started</a></li></ul></nav><main><h1>Styling and CSS</h1><p>Style your component with a good ol&#39; CSS file and mark it as a dependency to your component. Then, render the needed (and only the needed) CSS directly into the HTML <code>&lt;head&gt;</code>.</p>
+
+[aria-current=page] {
+  font-weight: 700;
+}
+</style></head><body><header><a href="/">bob</a><ul><li><a href="/docs/">Documentation</a></li></ul></header><nav><ul><li><a href="/docs/styling/content/"></a></li><li><a href="/docs/">Getting started</a></li><li><a href="/docs/styling/" aria-current="page">Styling and CSS</a></li></ul></nav><h1>Styling and CSS</h1><main><p>Style your component with a good ol&#39; CSS file and mark it as a dependency to your component. Then, render the needed (and only the needed) CSS directly into the HTML <code>&lt;head&gt;</code>.</p>
 
 <ol>
 <li>Add the layout-directory-relative path to the CSS file in the <code>needsCss</code> property of your <code>Component</code>.</li>
 <li>In your base layout (or wherever you render into the <code>&lt;head&gt;</code>, use the <code>Contenxt.neededCss</code> property to get a list of needed CSS filenames.</li>
 <li>Render the content of the CSS files into the head using the <code>readContents()</code> helper.</li>
 </ol>
-</main><footer>Static sites should be fast, including updating content</footer></body></html>
+<p><a href="layouts/index.css">See the example <code>layouts/index.css</code></a></p>
+<p><code>layouts/index.css</code><pre><code>h1 {
+  color: blue;
+}
+
+main {
+  margin: 1rem;
+  padding: 0 1rem;
+  border: 1px solid green;
+}
+</code></pre></p><p><code>layouts/_base.tsx</code><pre><code>/** @jsx h */
+
+import { Component, h, readContents } from &quot;../../../../../mod.ts&quot;;
+
+export const Base: Component = async (
+  { children },
+  { needsCss },
+) =&gt; (
+  &lt;html lang=&quot;en&quot;&gt;
+    &lt;head&gt;
+      &lt;title&gt;This is my page&lt;/title&gt;
+      &lt;style&gt;
+        {await readContents(needsCss)}
+      &lt;/style&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+      {children}
+    &lt;/body&gt;
+  &lt;/html&gt;
+);
+
+// Tip! You can add CSS files to any component, also this one
+Base.needsCss = &quot;_base.css&quot;;
+</code></pre></p><p><code>layouts/index.tsx</code><pre><code>/** @jsx h */
+
+import { Component, h } from &quot;../../../../../mod.ts&quot;;
+import { Base } from &quot;./_base.tsx&quot;;
+
+const Index: Component = (
+  _props,
+  {page: {content}}
+) =&gt; (
+  &lt;Base&gt;
+    &lt;main&gt;
+      {content}
+    &lt;/main&gt;
+  &lt;/Base&gt;
+);
+
+// 1. Set the needed CSS filename here
+Index.needsCss = &quot;index.css&quot;;
+
+export default Index;
+</code></pre></p><p><code>layouts/_base.css</code><pre><code>body {
+  font-family: serif;
+  margin: 1rem auto;
+  max-width: 50rem;
+}
+</code></pre></p></main><footer>Static sites should be fast, including updating content</footer></body></html>
