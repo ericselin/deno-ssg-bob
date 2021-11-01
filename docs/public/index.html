@@ -207,8 +207,8 @@ body > footer {
   font-weight: 400;
   margin-top: 1rem;
 }
-</style></head><body><header><a href="/">bob</a><ul><li><a href="/getting-started/">Getting started</a></li><li><a href="/scenarios/">Common scenarios</a></li></ul></header><section class="hero"><h1><span>bob</span> the static site builder</h1><h2>Extremely fast content updating</h2></section><main><h1 id="bob-the-static-site-builder">Bob the static site builder</h1>
-<p>Bob is a static site generator built on top of the <a href="https://deno.land">Deno</a> runtime.</p>
+</style></head><body><header><a href="/">bob</a><ul><li><a href="/getting-started/">Getting started</a></li><li><a href="/scenarios/">Common scenarios</a></li></ul></header><section class="hero"><h1><span>bob</span> the static site builder</h1><h2>Extremely fast content updating</h2></section><main><h1 id="bob-the-static-site-builder">bob the static site builder</h1>
+<p><code>bob</code> is a static site generator built on top of the <a href="https://deno.land">Deno</a> runtime.</p>
 <h2 id="features">Features</h2>
 <p>Bob is designed for creating extremely performant websites that require near-instant content updating and network edge personalization. All with best-in-class developer experience.</p>
 <h3 id="-extremely-performant-websites">🚀 Extremely performant websites</h3>
@@ -234,24 +234,26 @@ Create complex rules and change the page based on request parameters, such as vi
 <h3 id="-best-in-class-developer-experience">🤓 Best-in-class developer experience</h3>
 
 <ul>
-<li>Fully typed using TypeScript
+<li>Fully typed using TypeScript and TSX
 Intellisense and type checking in layout templates.</li>
 <li>Highly modular
-Everything is a module internally, increasing customizability and maintainability.</li>
-<li>Structure your layouts any way you like
-The only thing that is needed is a function that takes a content page and renders it into HTML. The rest is up to you. Use template literals, JSX (example coming soon), or any other way to make this happen.</li>
+Layouts are just TSX components. Import any additional components or libraries as you wish.</li>
 <li>Easily create client-side components (coming soon)
 Create client-side code right in your layout files.</li>
 </ul>
 <h2 id="installation">Installation</h2>
 <p>You need to have the <a href="https://deno.land">Deno</a> runtime installed. When you have it installed, just run:</p>
 
-<pre><code>deno install -A [PATH TO CMD.TS]
+<pre><code>deno install --allow-read --allow-write --allow-net https://deno.land/x/bob/cli.ts
 </code></pre>
 <h2 id="usage">Usage</h2>
-<p>See the <code>demo</code> directory for an example implementation.</p>
+<p>To build your site, in the site root, just run:</p>
+
+<pre><code>$&gt; bob
+</code></pre>
+<p>See the <code>docs</code> directory for an example implementation. See CLI help with <code>bob -h</code>.</p>
 <h3 id="layout-files">Layout files</h3>
-<p>Structure your layout files as you wish, and export a renderer function from a file named <code>site.ts</code>. This function will be called with a <code>ContentFile</code> for each content page that should be rendered.</p>
+<p>Layouts are just TSX components, exported as a default export from different files. Structure your code and components as you wish, but make sure you have a default layout located in <code>layouts/_default.tsx</code>.</p>
 <h3 id="content-files">Content files</h3>
 <p>Add Markdown content files to the <code>content</code> directory as needed. Each content file will be rendered into an HTML file using the corresponding path into the <code>public</code> directory.</p>
 </main><footer>Static sites should be fast, including updating content</footer></body></html>

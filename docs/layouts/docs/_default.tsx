@@ -3,12 +3,10 @@
 import { Component, h } from "../../../mod.ts";
 import { Base } from "../_base.tsx";
 
-type ScenarioData = { title?: string; url?: string };
-
 const Scenarios: Component<
-  { title?: string },
-  ScenarioData,
-  ScenarioData
+  Record<string, never>,
+  Record<string, never>,
+  Record<string, never>
 > = (
   _props,
   { wantedPages, page },
@@ -16,9 +14,12 @@ const Scenarios: Component<
   <Base>
     <nav>
       <ul>
+        <li>
+          <a href={page.location.url.pathname}>{page.title}</a>
+        </li>
         {wantedPages?.map((page) => (
           <li>
-            <a href={page.frontmatter.url}>{page.frontmatter.title}</a>
+            <a href={page.location.url.pathname}>{page.title}</a>
           </li>
         ))}
       </ul>
@@ -30,7 +31,7 @@ const Scenarios: Component<
   </Base>
 );
 
-Scenarios.needsCss = "scenarios/_default.css";
-Scenarios.wantsPages = "scenarios/*.md";
+Scenarios.needsCss = "docs/_default.css";
+Scenarios.wantsPages = "docs/*.md";
 
 export default Scenarios;

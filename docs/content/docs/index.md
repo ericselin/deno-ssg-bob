@@ -1,4 +1,6 @@
-# Getting started
+---
+title: Getting started
+---
 
 Define your layout(s) and write some content. It could not be easier to get going - it "just works".
 
