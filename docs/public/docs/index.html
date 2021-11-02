@@ -131,8 +131,9 @@ pre {
   max-width: 100%;
   display: block;
   overflow: auto;
-  outline: 1px solid var(--nord13);
-  outline-offset: 0.5em;
+  border: 1px solid var(--nord13);
+  padding: 1em;
+  margin: 1em 0;
 }
 
 code {
@@ -191,6 +192,14 @@ body > nav ul {
 
 [aria-current=page] {
   font-weight: 700;
+}
+
+iframe {
+	background: white;
+	display: block;
+	width: 100%;
+	height: max(10rem, 20vh);
+	margin: 1em 0;
 }
 </style></head><body><header><a href="/">bob</a><ul><li><a href="/docs/">Documentation</a></li></ul></header><nav><ul><li><a href="/docs/styling/content/"></a></li><li><a href="/docs/" aria-current="page">Getting started</a></li><li><a href="/docs/styling/">Styling and CSS</a></li></ul></nav><h1>Getting started</h1><main><p>Define your layout(s) and write some content. It could not be easier to get going - it &quot;just works&quot;.</p>
 <h2 id="introduction">Introduction</h2>
@@ -286,4 +295,4 @@ This site is based on
 You should check it out too!
 </code></pre>
 <p>Please create (or copy over!) more content and make something awesome 😎.</p>
-<p>No example :(</p></main><footer>Static sites should be fast, including updating content</footer></body></html>
+</main><footer>Static sites should be fast, including updating content</footer></body></html>

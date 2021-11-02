@@ -11,3 +11,11 @@ body > nav ul {
 [aria-current=page] {
   font-weight: 700;
 }
+
+iframe {
+	background: white;
+	display: block;
+	width: 100%;
+	height: max(10rem, 20vh);
+	margin: 1em 0;
+}
