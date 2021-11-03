@@ -101,6 +101,6 @@ const Scenarios: Component<
 };
 
 Scenarios.needsCss = "docs/_default.css";
-Scenarios.wantsPages = "docs/**/*.md";
+Scenarios.wantsPages = "docs/*/*.md";
 
 export default Scenarios;
