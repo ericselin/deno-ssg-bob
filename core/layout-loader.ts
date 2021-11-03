@@ -6,7 +6,7 @@ import type {
   PagesGetter,
   RenderablePage,
 } from "../domain.ts";
-import { exists, path } from "../deps.ts";
+import { path } from "../deps.ts";
 import { createRenderer, h } from "./jsx.ts";
 
 type LayoutModuleBase<t, T> = {
@@ -24,8 +24,17 @@ type LayoutModule =
   | undefined;
 
 const loadIfExists = async (scriptPath: string) => {
-  const fullPath = path.join(Deno.cwd(), scriptPath);
-  if (await exists(fullPath)) return import(fullPath);
+  try {
+    // Construct a file URL in order to be able to load
+    // local modules from remote scripts
+    const fullPath = path.toFileUrl(
+      path.join(Deno.cwd(), scriptPath),
+    ).toString();
+    return await import(fullPath);
+  } catch (e) {
+    if (e.message.startsWith("Cannot load module")) return undefined;
+    throw e;
+  }
 };
 
 const loadFirstLayout = async (
