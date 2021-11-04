@@ -173,6 +173,12 @@ img {
   text-decoration: none;
 }
 
+blockquote {
+  border: 1px solid var(--color-accent);
+  margin: 1rem;
+  padding: 0 1rem;
+}
+
 body > footer {
   margin: var(--margin);
   text-align: center;

@@ -173,6 +173,12 @@ img {
   text-decoration: none;
 }
 
+blockquote {
+  border: 1px solid var(--color-accent);
+  margin: 1rem;
+  padding: 0 1rem;
+}
+
 body > footer {
   margin: var(--margin);
   text-align: center;
@@ -201,7 +207,7 @@ iframe {
 	height: max(10rem, 20vh);
 	margin: 1em 0;
 }
-</style></head><body><header><a href="/">bob</a><ul><li><a href="/docs/getting-started/">Documentation</a></li></ul></header><nav><ul><li><a href="/docs/getting-started/" aria-current="page">Getting started</a></li><li><a href="/docs/list-pages/">List pages</a></li><li><a href="/docs/styling/">Styling and CSS</a></li></ul></nav><h1>Getting started</h1><main><p>Define your layout(s) and write some content. It could not be easier to get going - it &quot;just works&quot;.</p>
+</style></head><body><header><a href="/">bob</a><ul><li><a href="/docs/getting-started/">Documentation</a> <a href="/blog/">Blog</a></li></ul></header><nav><ul><li><a href="/docs/getting-started/" aria-current="page">Getting started</a></li><li><a href="/docs/list-pages/">List pages</a></li><li><a href="/docs/styling/">Styling and CSS</a></li></ul></nav><h1>Getting started</h1><main><p>Define your layout(s) and write some content. It could not be easier to get going - it &quot;just works&quot;.</p>
 <h2 id="introduction">Introduction</h2>
 <p><code>bob</code> uses TSX for templating, which lends itself very well for a modern workflow. Everything is fully typed via Typescript, and as modular as you like.</p>
 <p>All of your content lives in the same folder, which mirrors your website structure. E.g. a <code>blog/post.md</code> content file gets the full URL <code>/blog/post/index.html</code>.</p>

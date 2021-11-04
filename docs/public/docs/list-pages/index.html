@@ -173,6 +173,12 @@ img {
   text-decoration: none;
 }
 
+blockquote {
+  border: 1px solid var(--color-accent);
+  margin: 1rem;
+  padding: 0 1rem;
+}
+
 body > footer {
   margin: var(--margin);
   text-align: center;
@@ -201,7 +207,7 @@ iframe {
 	height: max(10rem, 20vh);
 	margin: 1em 0;
 }
-</style></head><body><header><a href="/">bob</a><ul><li><a href="/docs/getting-started/">Documentation</a></li></ul></header><nav><ul><li><a href="/docs/getting-started/">Getting started</a></li><li><a href="/docs/list-pages/" aria-current="page">List pages</a></li><li><a href="/docs/styling/">Styling and CSS</a></li></ul></nav><h1>List pages</h1><main><p>Most websites have list pages of some sort - lists of blog posts on a marketing site or lists products on an ecommerce site. In order to create these list pages, your layout needs to know about not only the list page itself, but also the pages that should be rendered into the list. In <code>bob</code> this can be solved by providing a glob of content files to use in the layout. This is done by setting the <code>wantsPages</code> parameter on the layout <code>Component</code>.</p>
+</style></head><body><header><a href="/">bob</a><ul><li><a href="/docs/getting-started/">Documentation</a> <a href="/blog/">Blog</a></li></ul></header><nav><ul><li><a href="/docs/getting-started/">Getting started</a></li><li><a href="/docs/list-pages/" aria-current="page">List pages</a></li><li><a href="/docs/styling/">Styling and CSS</a></li></ul></nav><h1>List pages</h1><main><p>Most websites have list pages of some sort - lists of blog posts on a marketing site or lists products on an ecommerce site. In order to create these list pages, your layout needs to know about not only the list page itself, but also the pages that should be rendered into the list. In <code>bob</code> this can be solved by providing a glob of content files to use in the layout. This is done by setting the <code>wantsPages</code> parameter on the layout <code>Component</code>.</p>
 <h2 id="example">Example</h2>
 <p>Given the below folder structure, we want to get all pages to show in a listing on the index / home page.</p>
 
