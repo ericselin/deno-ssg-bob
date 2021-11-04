@@ -24,15 +24,15 @@ type LayoutModule =
   | undefined;
 
 const loadIfExists = async (scriptPath: string) => {
+  // Construct a file URL in order to be able to load
+  // local modules from remote scripts
+  const fullPath = path.toFileUrl(
+    path.join(Deno.cwd(), scriptPath),
+  ).toString();
   try {
-    // Construct a file URL in order to be able to load
-    // local modules from remote scripts
-    const fullPath = path.toFileUrl(
-      path.join(Deno.cwd(), scriptPath),
-    ).toString();
     return await import(fullPath);
   } catch (e) {
-    if (e.message.startsWith("Cannot load module")) return undefined;
+    if (e.message === `Cannot load module "${fullPath}".`) return undefined;
     throw e;
   }
 };
