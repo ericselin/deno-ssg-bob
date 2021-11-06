@@ -222,39 +222,49 @@ body > footer {
   font-weight: 400;
   margin-top: 1rem;
 }
-</style></head><body><header><a href="/">bob</a><ul><li><a href="/docs/getting-started/">Documentation</a> <a href="/blog/">Blog</a></li></ul></header><section class="hero"><h1><span>bob</span> the static site builder</h1><h2>Extremely fast content updating</h2></section><main><h1 id="bob-the-static-site-builder">bob the static site builder</h1>
+</style></head><body><header><a href="/">bob</a><ul><li><a href="/docs/getting-started/">Documentation</a> <a href="/blog/">Blog</a></li></ul></header><section class="hero"><h1><span>bob</span> the static site builder</h1><h2>A static site generator for the dynamic web</h2></section><main><h1 id="bob-the-static-site-builder">bob the static site builder</h1>
 <p><code>bob</code> is a static site generator built on top of the <a href="https://deno.land">Deno</a> runtime.</p>
 <h2 id="features">Features</h2>
 <p>Bob is designed for creating extremely performant websites that require near-instant content updating and network edge personalization. All with best-in-class developer experience.</p>
 <h3 id="-extremely-performant-websites">🚀 Extremely performant websites</h3>
 
 <ul>
-<li>Minimal CSS footprint (coming soon)
-Include only the CSS needed for each page to keep CSS size as small as possible.</li>
+<li><p>No JavaScript on page load</p>
+<p>  Network-edge personalization means no client-side JavaScript is needed in order to construct pages for the user.</p>
+</li>
+<li><p>Minimal CSS footprint</p>
+<p>  Include only the CSS needed for each page to keep CSS size as small as possible. Inline CSS for optimal first load.</p>
+</li>
 </ul>
 <h3 id="-near-instant-content-updating">⚡ Near-instant content updating</h3>
 
 <ul>
-<li>Incremental builds
-Build only what is needed in order to be extremely fast.</li>
-<li>Incremental deploy (coming soon)
-Deploy only changed content.</li>
+<li><p>Incremental builds (currently experimental)</p>
+<p>  Build only what is needed in order to be extremely fast.</p>
+</li>
+<li><p>Incremental deploy (coming soon)</p>
+<p>  Deploy only changed content.</p>
+</li>
 </ul>
 <h3 id="-network-edge-personalization">🌐 Network-edge personalization</h3>
 
 <ul>
-<li>Personalize pages on the edge, without client-side Javascript (coming soon)
-Create complex rules and change the page based on request parameters, such as visitor country or cookie values. Use this to create A/B tests, GDPR banners, or product recommendations. This requires the Cloudflare hosting plugin.</li>
+<li><p>Personalize pages on the edge, without client-side Javascript (coming soon)</p>
+<p>  Create complex rules and change the page based on request parameters, such as visitor country or cookie values. Use this to create A/B tests, GDPR banners, or product recommendations. This requires the Cloudflare hosting plugin.</p>
+</li>
 </ul>
 <h3 id="-best-in-class-developer-experience">🤓 Best-in-class developer experience</h3>
 
 <ul>
-<li>Fully typed using TypeScript and TSX
-Intellisense and type checking in layout templates.</li>
-<li>Highly modular
-Layouts are just TSX components. Import any additional components or libraries as you wish.</li>
-<li>Easily create client-side components (coming soon)
-Create client-side code right in your layout files.</li>
+<li><p>Fully typed using TypeScript and TSX</p>
+<p>  Intellisense and type checking in layout templates.</p>
+</li>
+<li><p>Highly modular</p>
+<p>  Layouts are just TSX components. Import any additional components or libraries as you wish.</p>
+</li>
+<li><p>Easily create client-side components (coming soon)</p>
+<p>  Create client-side code right in your layout files.</p>
+</li>
 </ul>
 <h2 id="installation">Installation</h2>
 <p>You need to have the <a href="https://deno.land">Deno</a> runtime installed. When you have it installed, just run:</p>

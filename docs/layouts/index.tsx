@@ -12,7 +12,7 @@ const Index: Component = (
       <h1>
         <span>bob</span> the static site builder
       </h1>
-      <h2>Extremely fast content updating</h2>
+      <h2>A static site generator for the dynamic web</h2>
     </section>
 
     <main>
