@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>{{default site.Title .Title}} | ericselin.dev</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Source+Code+Pro:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    {{(resources.Get "style.css").Content | safeCSS}}
+  </style>
+</head>
+
+<body>
+  <header>
+    <a href="/">e</a>
+    <ul>
+      <li><a href="/blog/">Blog</a></li>
+      <li><a href="/experiments/">Experiments</a></li>
+    </ul>
+  </header>
+  {{ block "main" . }}
+  {{ end }}
+  <footer>
+    There's no such thing as the cloud - it's just someone else's computer.
+  </footer>
+</body>
+
+</html>

@@ -1,0 +1,29 @@
+html {
+  height: 100%;
+}
+
+body {
+  font-family: 'Quicksand', sans-serif;
+  background-image: linear-gradient(to top, #a3bded 0%, #6991c7 100%);
+  margin: 0;
+  padding: 4rem;
+  min-height: 100%;
+  text-align: center;
+  background: #87ceeb;
+  box-sizing: border-box;
+  color: hsla(0, 0%, 25%, 1);
+}
+
+h1 {
+  font-size: 7rem;
+  margin-bottom: 0;
+}
+
+h2 {
+  text-transform: uppercase;
+  font-size: 2rem;
+}
+
+.attribution {
+  display: none;
+}

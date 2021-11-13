@@ -1,0 +1,57 @@
+/* CSS files add styling rules to your content */
+
+body {
+  font-family: "Ubuntu", sans-serif;
+  margin: 4rem;
+  display: grid;
+  grid-template-columns: fit-content(500px);
+  justify-content: center;
+}
+
+header {
+  display: flex;
+  align-items: center;
+}
+
+h1 {
+  flex: 1;
+}
+
+button {
+  font-family: inherit;
+  padding: 0.25em 0.5em;
+  background: none;
+  border: 1px solid;
+  cursor: pointer;
+}
+
+main {
+  margin: 2rem auto;
+  padding: 2rem;
+  border: 1px solid;
+  border-radius: 5px;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5);
+  display: grid;
+  grid-template-columns: repeat(2, max-content) 1fr;
+}
+
+section {
+  min-width: 200px;
+  text-align: center;
+}
+
+main > div {
+  display: contents;
+}
+
+main > div.past {
+  text-decoration: line-through;
+}
+
+main > div.current {
+  font-weight: 700;
+}
+
+main > div > div:last-child {
+  margin-left: 1rem;
+}

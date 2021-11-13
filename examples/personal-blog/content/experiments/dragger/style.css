@@ -1,0 +1,28 @@
+body {
+  font-family: helvetica, arial, sans-serif;
+  margin: 2em;
+}
+
+h1 {
+  font-style: italic;
+  color: #373fff;
+}
+
+.parent {
+  border: 1px solid green;
+}
+
+.parent:nth-last-child(2) {
+  padding-bottom: 0;
+}
+
+.item {
+  border: 1px solid;
+  border-radius: 0.5rem;
+  padding: 1rem 0.5rem;
+  margin: 1rem 0;
+}
+
+.item--dragging {
+  opacity: 0.5;
+}

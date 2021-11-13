@@ -1,0 +1,86 @@
+:root {
+  --bg: #CCE6F4;
+  --text: #175676;
+  --bg-receiver: #175676;
+  --text-receiver: #CCE6F4;
+  --primary: #BA324F;
+  --text-on-primary: white;
+}
+
+html {
+  background: var(--bg);
+}
+
+html.receiver {
+  height: 100%;
+  background: var(--bg-receiver);
+}
+
+google-cast-launcher {
+  position: absolute;
+  right: 1.5em;
+  top: 1.5em;
+  height: 1.5em;
+  width: 1.5em;
+  cursor: pointer;
+}
+
+body {
+  font-family: "Josefin Sans", sans-serif;
+  color: var(--text);
+  margin: 2em auto;
+  max-width: 400px;
+  padding: 0 2em;
+  text-align: center;
+}
+
+html.receiver body {
+  height: 100%;
+  color: var(--text-receiver);
+  margin: 0 5rem;
+  max-width: unset;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+h1 {
+  margin: 5rem 0;
+}
+
+form {
+  margin: 2rem 0;
+  display: flex;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+input {
+  width: 100%;
+  padding: 0.5em;
+  border: none;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+
+button {
+  margin: 0;
+  font-family: inherit;
+  background: var(--primary);
+  color: var(--text-on-primary);
+  padding: 0.5em 1.5em;
+  border: none;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+  cursor: pointer;
+}
+
+footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1em;
+  text-align: center;
+  font-style: italic;
+}

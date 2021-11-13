@@ -1,0 +1,187 @@
+<html lang="en"><head><meta charSet="UTF-8"></meta><meta name="viewport" content="width=device-width, initial-scale=1.0"></meta><meta http-equiv="X-UA-Compatible" content="ie=edge"></meta><title>Web vitals real user monitoring with Elasticsearch and Kibana | ericselin.dev</title><link rel="preconnect" href="https://fonts.gstatic.com"></link><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Source+Code+Pro:wght@400;700;900&display=swap" rel="stylesheet"></link><style>:root {
+  --nord0: #2e3440;
+  --nord1: #3b4252;
+  --nord2: #434c5e;
+  --nord3: #4c566a;
+  --nord4: #d8dee9;
+  --nord5: #e5e9f0;
+  --nord6: #eceff4;
+  --nord7: #8fbcbb;
+  --nord8: #88c0d0;
+  --nord9: #81a1c1;
+  --nord10: #5e81ac;
+  --nord11: #bf616a;
+  --nord12: #d08770;
+  --nord13: #ebcb8b;
+  --nord14: #a3be8c;
+  --nord15: #b48ead;
+
+  --margin: 1rem;
+  --max-width: min(600px, 100% - 4 * var(--margin));
+
+  --color-bg: var(--nord0);
+  --color-fg: var(--nord6);
+  --color-body: var(--nord1);
+  --color-indent: var(--nord3);
+  --color-muted: var(--nord4);
+  --color-accent: var(--nord8);
+
+  --font-text: 'Inter', sans-serif;
+  --font-heading: 'Source Code Pro', monospace;
+  --font-mono: 'Source Code Pro', monospace;
+}
+
+@media (min-width: 500px) {
+  :root {
+    --margin: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  :root {
+    --margin: 2rem;
+  }
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  font-family: var(--font-text);
+  background: var(--color-body);
+  color: var(--color-fg);
+}
+
+body > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: var(--margin);
+  color: var(--color-muted);
+  font-family: var(--font-heading);
+}
+
+body > header > a {
+  text-decoration: none;
+  font-weight: 900;
+  font-size: 2rem;
+  background: var(--color-accent);
+  width: 2rem;
+  height: 2rem;
+  line-height: 1.5rem;
+  text-align: center;
+  border-radius: 25%;
+  color: var(--color-body);
+}
+
+body > header > a:hover {
+  color: var(--color-bg);
+}
+
+body > header ul {
+  display: grid;
+  grid-auto-flow: column;
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+body > h1 {
+  max-width: var(--max-width);
+  margin: calc(2 * var(--margin)) auto;
+  padding: 0 var(--margin);
+  color: var(--color-fg);
+  font-family: var(--font-heading);
+}
+
+main {
+  max-width: var(--max-width);
+  margin: var(--margin) auto;
+  padding: 0 var(--margin);
+  background: var(--color-bg);
+  border-radius: 1rem;
+  line-height: 1.25;
+}
+
+main::before,
+main::after {
+  content: ' ';
+  display: block;
+  contain: layout;
+  margin: var(--margin) 0;
+}
+
+h1 a,
+h2 a,
+h3 a,
+h4 a,
+h5 a,
+h6 a {
+  text-decoration: none;
+}
+
+a {
+  color: inherit;
+  transition: color ease-in 200ms;
+}
+
+a:hover {
+  color: var(--color-accent);
+}
+
+pre {
+  max-width: 100%;
+  display: block;
+  overflow: auto;
+}
+
+code {
+  font-family: var(--font-mono);
+  line-height: initial;
+}
+
+article + article {
+  margin-top: calc(2 * var(--margin));
+}
+
+article + article::before {
+  content: '';
+  display: block;
+  height: 1px;
+  width: 50%;
+  background: var(--color-indent);
+  margin: 0 auto calc(2 * var(--margin));
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+.button-link {
+  border: 1px solid var(--color-accent);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  display: inline-block;
+  text-decoration: none;
+}
+
+body > footer {
+  margin: var(--margin);
+  text-align: center;
+  color: var(--color-muted);
+  font-family: var(--font-heading);
+}
+</style></head><body><header><a href="/">e</a><ul><li><a href="/blog/">Blog</a></li><li><a href="/experiments/">Experiments</a></li></ul></header><h1>Web vitals real user monitoring with Elasticsearch and Kibana</h1><main><p>Elasticsearch is awesome. I had it on my &quot;things to learn&quot; list for quite a while, and I finally got to it when an ecommerce site I&#39;m working on needed some real user monitoring (RUM) to make sure performance stays superb. This is the story of how easy this was to set up with Elasticsearch and Kibana (ELK - or at least EK).</p>
+<p>Web vitals is a term for some new metrics surrounding site usability. There are three &quot;core&quot; web vitals metrics: Largest Contentful Paint, First Input Delay and Cumulative Layout Shift. These represent the percieved loading time, interactivity and layout stability. All super critical, and all super annoying if you get them wrong. I won&#39;t write more than that about these, so if you&#39;re not familiar with them, you&#39;ll benefit from <a href="https://web.dev/web-vitals">reading up a little bit</a>.</p>
+<p>If you&#39;re not optimizing your site for performance, you need to do that now. And I really mean now in a literal sense. Performance impacts organic search, paid ads, and all kinds of business metrics. And most importantly, it impacts your users. Please respect your users. The importance of performance is the topic of another blog post, but I really needed to get that said.</p>
+<p>These are the steps I took in order to get an awesome dashboard of the core web vitals in the field, complete with histograms and percentile gauges of Google&#39;s recommended performance values:</p>
+
+<ol>
+<li>Sign up at a cloud ELK provider</li>
+<li>Create your deployment and an API key</li>
+<li>Create a <a href="https://workers.dev">Cloudflare Worker</a> for sending data into Elasticsearch</li>
+<li>Write a few lines of client-side JavaScript</li>
+<li>Create your dashboard in Kibana</li>
+</ol>
+</main><footer>There's no such thing as the cloud - it's just someone else's computer.</footer></body></html>

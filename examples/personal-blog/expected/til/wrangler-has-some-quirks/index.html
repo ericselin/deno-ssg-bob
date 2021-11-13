@@ -1,0 +1,181 @@
+<html lang="en"><head><meta charSet="UTF-8"></meta><meta name="viewport" content="width=device-width, initial-scale=1.0"></meta><meta http-equiv="X-UA-Compatible" content="ie=edge"></meta><title>Cloudflare Wrangler has some quirks | ericselin.dev</title><link rel="preconnect" href="https://fonts.gstatic.com"></link><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Source+Code+Pro:wght@400;700;900&display=swap" rel="stylesheet"></link><style>:root {
+  --nord0: #2e3440;
+  --nord1: #3b4252;
+  --nord2: #434c5e;
+  --nord3: #4c566a;
+  --nord4: #d8dee9;
+  --nord5: #e5e9f0;
+  --nord6: #eceff4;
+  --nord7: #8fbcbb;
+  --nord8: #88c0d0;
+  --nord9: #81a1c1;
+  --nord10: #5e81ac;
+  --nord11: #bf616a;
+  --nord12: #d08770;
+  --nord13: #ebcb8b;
+  --nord14: #a3be8c;
+  --nord15: #b48ead;
+
+  --margin: 1rem;
+  --max-width: min(600px, 100% - 4 * var(--margin));
+
+  --color-bg: var(--nord0);
+  --color-fg: var(--nord6);
+  --color-body: var(--nord1);
+  --color-indent: var(--nord3);
+  --color-muted: var(--nord4);
+  --color-accent: var(--nord8);
+
+  --font-text: 'Inter', sans-serif;
+  --font-heading: 'Source Code Pro', monospace;
+  --font-mono: 'Source Code Pro', monospace;
+}
+
+@media (min-width: 500px) {
+  :root {
+    --margin: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  :root {
+    --margin: 2rem;
+  }
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  font-family: var(--font-text);
+  background: var(--color-body);
+  color: var(--color-fg);
+}
+
+body > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: var(--margin);
+  color: var(--color-muted);
+  font-family: var(--font-heading);
+}
+
+body > header > a {
+  text-decoration: none;
+  font-weight: 900;
+  font-size: 2rem;
+  background: var(--color-accent);
+  width: 2rem;
+  height: 2rem;
+  line-height: 1.5rem;
+  text-align: center;
+  border-radius: 25%;
+  color: var(--color-body);
+}
+
+body > header > a:hover {
+  color: var(--color-bg);
+}
+
+body > header ul {
+  display: grid;
+  grid-auto-flow: column;
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+body > h1 {
+  max-width: var(--max-width);
+  margin: calc(2 * var(--margin)) auto;
+  padding: 0 var(--margin);
+  color: var(--color-fg);
+  font-family: var(--font-heading);
+}
+
+main {
+  max-width: var(--max-width);
+  margin: var(--margin) auto;
+  padding: 0 var(--margin);
+  background: var(--color-bg);
+  border-radius: 1rem;
+  line-height: 1.25;
+}
+
+main::before,
+main::after {
+  content: ' ';
+  display: block;
+  contain: layout;
+  margin: var(--margin) 0;
+}
+
+h1 a,
+h2 a,
+h3 a,
+h4 a,
+h5 a,
+h6 a {
+  text-decoration: none;
+}
+
+a {
+  color: inherit;
+  transition: color ease-in 200ms;
+}
+
+a:hover {
+  color: var(--color-accent);
+}
+
+pre {
+  max-width: 100%;
+  display: block;
+  overflow: auto;
+}
+
+code {
+  font-family: var(--font-mono);
+  line-height: initial;
+}
+
+article + article {
+  margin-top: calc(2 * var(--margin));
+}
+
+article + article::before {
+  content: '';
+  display: block;
+  height: 1px;
+  width: 50%;
+  background: var(--color-indent);
+  margin: 0 auto calc(2 * var(--margin));
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+.button-link {
+  border: 1px solid var(--color-accent);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  display: inline-block;
+  text-decoration: none;
+}
+
+body > footer {
+  margin: var(--margin);
+  text-align: center;
+  color: var(--color-muted);
+  font-family: var(--font-heading);
+}
+</style></head><body><header><a href="/">e</a><ul><li><a href="/blog/">Blog</a></li><li><a href="/experiments/">Experiments</a></li></ul></header><h1>Cloudflare Wrangler has some quirks</h1><main><h2 id="wrangler-production-log-tail-not-working-with-aur-package">Wrangler production log tail not working with AUR package</h2>
+<p><code>wrangler tail</code>, awesome as it is, doesn&#39;t work with a default install of the <code>cloudflared</code> <a href="https://aur.archlinux.org/packages/cloudflared/#comment-798858">AUR package</a>. The solution is to delete the config file created by the AUR installer, <a href="https://aur.archlinux.org/packages/cloudflared/#comment-776137">as pointed out on the package page</a>.</p>
+<h2 id="building-with-a-custom-command-doesn-t-watch-on-the-root-folder">Building with a custom command doesn&#39;t watch on the root folder</h2>
+<p>Creating a &quot;custom build command&quot; for wrangler is great when working with Deno. And although there is a <code>watch_dir</code> config option, it doesn&#39;t seem to work with the root project dir, i.e. &quot;.&quot; or similar. Watching works nicely when watching a subfolder, e.g. &quot;src&quot;, though!</p>
+<h2 id="github-action-doesn-t-work-with-custom-build-commands">GitHub action doesn&#39;t work with custom build commands</h2>
+<p>If you just install some stuff in a GitHub action (e.g. <a href="https://github.com/denoland/setup-deno"><code>setup-deno</code></a>, that command is not available in <a href="https://github.com/cloudflare/wrangler-action"><code>wrangler-action</code></a>. This is of course because the wrangler action runs inside a container (why?). The solution is of course to install the needed build tools in the <code>preCommands</code> step.</p>
+</main><footer>There's no such thing as the cloud - it's just someone else's computer.</footer></body></html>

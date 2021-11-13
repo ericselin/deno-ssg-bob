@@ -1,0 +1,22 @@
+{
+  "short_name": "Warmer or colder?",
+  "name": "Is it colder or warmer than yesterday?",
+  "description": "Weather temperature forecast in relation to yesterday",
+  "icons": [
+    {
+      "src": "icons/sun-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icons/sun-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/weather/?source=pwa",
+  "background_color": "#3367D6",
+  "display": "standalone",
+  "scope": "/weather/",
+  "theme_color": "#3367D6"
+}

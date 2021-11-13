@@ -1,0 +1,50 @@
+body {
+  font-family: "Share Tech Mono", monospace;
+  height: 100%;
+  background: hsl(0, 0%, 20%);
+  color: white;
+}
+
+header {
+  display: grid;
+  align-items: center;
+  grid-template-columns: min-content min-content 1fr;
+  gap: 0.5em;
+}
+
+button {
+  border: 1px solid white;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+}
+
+button:disabled {
+  --color: hsl(0, 0%, 50%);
+  border-color: var(--color);
+  color: var(--color);
+}
+
+main {
+  margin: 1.5rem 0;
+}
+
+main div {
+  color: hsl(0, 0%, 80%);
+}
+
+pre {
+  display: none;
+  padding: 1em;
+  line-height: 1.5;
+  border: 1px solid white;
+  overflow: auto;
+}
+
+main[open] pre {
+  display: block;
+}
+
+main[open] div {
+  display: none;
+}

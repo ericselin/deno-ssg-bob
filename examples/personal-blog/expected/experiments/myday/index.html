@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My Day from Google Calendar</title>
+    <meta charset="utf-8" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Ubuntu&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>
+        My Day
+      </h1>
+      <!--Add buttons to initiate auth sequence and sign out-->
+      <button id="signout" disabled>Sign Out</button>
+    </header>
+
+    <main>
+      <section>
+        <p>
+          Step one:
+        </p>
+        <button id="signin" disabled>Sign in</button>
+        <p>
+          Step two
+        </p>
+        <button id="authorize" disabled>Authorize</button>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+    <script
+      async
+      defer
+      src="https://apis.google.com/js/api.js"
+      onload="this.onload=function(){};handleClientLoad()"
+      onreadystatechange="if (this.readyState === 'complete') this.onload()"
+    ></script>
+  </body>
+</html>

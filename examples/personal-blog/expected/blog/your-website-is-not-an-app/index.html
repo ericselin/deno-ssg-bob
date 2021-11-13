@@ -1,0 +1,190 @@
+<html lang="en"><head><meta charSet="UTF-8"></meta><meta name="viewport" content="width=device-width, initial-scale=1.0"></meta><meta http-equiv="X-UA-Compatible" content="ie=edge"></meta><title>Your website is not an app 🙄 | ericselin.dev</title><link rel="preconnect" href="https://fonts.gstatic.com"></link><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Source+Code+Pro:wght@400;700;900&display=swap" rel="stylesheet"></link><style>:root {
+  --nord0: #2e3440;
+  --nord1: #3b4252;
+  --nord2: #434c5e;
+  --nord3: #4c566a;
+  --nord4: #d8dee9;
+  --nord5: #e5e9f0;
+  --nord6: #eceff4;
+  --nord7: #8fbcbb;
+  --nord8: #88c0d0;
+  --nord9: #81a1c1;
+  --nord10: #5e81ac;
+  --nord11: #bf616a;
+  --nord12: #d08770;
+  --nord13: #ebcb8b;
+  --nord14: #a3be8c;
+  --nord15: #b48ead;
+
+  --margin: 1rem;
+  --max-width: min(600px, 100% - 4 * var(--margin));
+
+  --color-bg: var(--nord0);
+  --color-fg: var(--nord6);
+  --color-body: var(--nord1);
+  --color-indent: var(--nord3);
+  --color-muted: var(--nord4);
+  --color-accent: var(--nord8);
+
+  --font-text: 'Inter', sans-serif;
+  --font-heading: 'Source Code Pro', monospace;
+  --font-mono: 'Source Code Pro', monospace;
+}
+
+@media (min-width: 500px) {
+  :root {
+    --margin: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  :root {
+    --margin: 2rem;
+  }
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  font-family: var(--font-text);
+  background: var(--color-body);
+  color: var(--color-fg);
+}
+
+body > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: var(--margin);
+  color: var(--color-muted);
+  font-family: var(--font-heading);
+}
+
+body > header > a {
+  text-decoration: none;
+  font-weight: 900;
+  font-size: 2rem;
+  background: var(--color-accent);
+  width: 2rem;
+  height: 2rem;
+  line-height: 1.5rem;
+  text-align: center;
+  border-radius: 25%;
+  color: var(--color-body);
+}
+
+body > header > a:hover {
+  color: var(--color-bg);
+}
+
+body > header ul {
+  display: grid;
+  grid-auto-flow: column;
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+body > h1 {
+  max-width: var(--max-width);
+  margin: calc(2 * var(--margin)) auto;
+  padding: 0 var(--margin);
+  color: var(--color-fg);
+  font-family: var(--font-heading);
+}
+
+main {
+  max-width: var(--max-width);
+  margin: var(--margin) auto;
+  padding: 0 var(--margin);
+  background: var(--color-bg);
+  border-radius: 1rem;
+  line-height: 1.25;
+}
+
+main::before,
+main::after {
+  content: ' ';
+  display: block;
+  contain: layout;
+  margin: var(--margin) 0;
+}
+
+h1 a,
+h2 a,
+h3 a,
+h4 a,
+h5 a,
+h6 a {
+  text-decoration: none;
+}
+
+a {
+  color: inherit;
+  transition: color ease-in 200ms;
+}
+
+a:hover {
+  color: var(--color-accent);
+}
+
+pre {
+  max-width: 100%;
+  display: block;
+  overflow: auto;
+}
+
+code {
+  font-family: var(--font-mono);
+  line-height: initial;
+}
+
+article + article {
+  margin-top: calc(2 * var(--margin));
+}
+
+article + article::before {
+  content: '';
+  display: block;
+  height: 1px;
+  width: 50%;
+  background: var(--color-indent);
+  margin: 0 auto calc(2 * var(--margin));
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+.button-link {
+  border: 1px solid var(--color-accent);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  display: inline-block;
+  text-decoration: none;
+}
+
+body > footer {
+  margin: var(--margin);
+  text-align: center;
+  color: var(--color-muted);
+  font-family: var(--font-heading);
+}
+</style></head><body><header><a href="/">e</a><ul><li><a href="/blog/">Blog</a></li><li><a href="/experiments/">Experiments</a></li></ul></header><h1>Your website is not an app 🙄</h1><main><p>We made everything too complicated. We do this, us developers. It&#39;s fun to invent a new and better way to do things. And to use all the &quot;new things&quot;. But I think this is the time to stop and think about what we are doing. One of those things is treating every website like an app - although most sites are nothing of the sort.</p>
+<h2 id="the-web-was-designed-for-documents">The web was designed for documents</h2>
+<p>The World Wide Web (www) was designed to be a collection of documents that could be linked together. And ever since its inception, the www worked this way. Even the most cutting edge modern browsers are optimized for this.</p>
+<p>At first (think the 90&#39;s), we hacked a lot of things on top of these documents with client-side code because that made them better. But browser are pretty good these days, and now we do it just because we can - and because it&#39;s cool. But problems started popping up. We solved them in very intricate ways (looking at you, Webpack). We came up with new ways of developing (looking at you, React and friends). This made everything a lot more complicated and moved us away from thinking about documents.</p>
+<p>We forgot why we started down this path: to make it better for our users. We&#39;re releasing more and more things on top of other things, and for what? Who decided users want these things? Not the users, that&#39;s for sure! But most of all, we forgot the core of the www: documents.</p>
+<p>So why do we use very complicated and fragile tools and methods in order to show documents to users - something browser vendors have been perfecting for decades?</p>
+<h2 id="most-websites-are-documents">Most websites are documents</h2>
+<p>Sure, we have better and better possibilities to do almost anything with JavaScript and WebAssembly, but at its core, the www is for documents. And while some websites really are more &quot;apps&quot; than &quot;documents&quot;, and thus benefit from this evolution, most websites are not &quot;apps&quot;. Is a blog an app? Most certainly no. Is an ecom store and app? Also no. I absolutely love the possibilities the web platform gives us to build apps, I&#39;m just saying that your site is probably not an app.</p>
+<p>Most of the internet is static and not dynamic. Dynamic means that it&#39;s different every time or most of the time (<a href="https://www.merriam-webster.com/dictionary/dynamic">continuous change</a>). But changing the content (and thus the HTML document) every now and again is not continuous. This includes an ecom store updating the number of available products based on current inventory values (unless you sell one of each product every few seconds). Just render an updated document from the content that has changed, upload to a Content Delivery Network (CDN), and be done with it.</p>
+<p>Sometimes you have content that is dynamic because it&#39;s different for each user. Most of the time, this is not the entire site, though. You might show a flag based on the user&#39;s location, for instance. The whole site doesn&#39;t need to be dynamically rendered because of this. Just solve that one problem with as little (total) code as you can.</p>
+<p>So why do we treat our sites in this way - rendering each page every time either on the server or on the client? </p>
+<h2 id="documents-should-be-static">Documents should be static</h2>
+<p>As most of the internet is static, it means we can - and should! - do as much work as possible as early as possible. One page (for a document) is just a bunch of HTML, so you can render it all the way to HTML. Do you need to fetch your reviews, product recommendations, and even page contents itself from a database on every hit? Clearly not. Sure, you have caching but the database is still the end of the line. When the end of the line should just be the HTML document.</p>
+<p>If you buy into the JAMstack you would say that your HTML is static, it&#39;s just enhanced (&quot;hydrated&quot;) with some nice client-side features. Server-Side Rendering (SSR) is what it&#39;s sometimes called. But React on a static site, that&#39;s just not needed. Is your client-side routing better than Chrome&#39;s document navigation? I&#39;m betting that it&#39;s not.</p>
+<p>When you are writing an app out of a document, how are you making the internet better for users? Is React or Vue or Gatsby or Next better? Or is plain and simple HTML the best? There is only one judge: your users. And they don&#39;t care about your tech stack. Just show them the content they want to see.</p>
+</main><footer>There's no such thing as the cloud - it's just someone else's computer.</footer></body></html>

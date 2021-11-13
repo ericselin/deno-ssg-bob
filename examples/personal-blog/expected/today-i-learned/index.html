@@ -1,0 +1,315 @@
+<html lang="en"><head><meta charSet="UTF-8"></meta><meta name="viewport" content="width=device-width, initial-scale=1.0"></meta><meta http-equiv="X-UA-Compatible" content="ie=edge"></meta><title>I'm Eric, and I'm a developer | ericselin.dev</title><link rel="preconnect" href="https://fonts.gstatic.com"></link><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Source+Code+Pro:wght@400;700;900&display=swap" rel="stylesheet"></link><style>:root {
+  --nord0: #2e3440;
+  --nord1: #3b4252;
+  --nord2: #434c5e;
+  --nord3: #4c566a;
+  --nord4: #d8dee9;
+  --nord5: #e5e9f0;
+  --nord6: #eceff4;
+  --nord7: #8fbcbb;
+  --nord8: #88c0d0;
+  --nord9: #81a1c1;
+  --nord10: #5e81ac;
+  --nord11: #bf616a;
+  --nord12: #d08770;
+  --nord13: #ebcb8b;
+  --nord14: #a3be8c;
+  --nord15: #b48ead;
+
+  --margin: 1rem;
+  --max-width: min(600px, 100% - 4 * var(--margin));
+
+  --color-bg: var(--nord0);
+  --color-fg: var(--nord6);
+  --color-body: var(--nord1);
+  --color-indent: var(--nord3);
+  --color-muted: var(--nord4);
+  --color-accent: var(--nord8);
+
+  --font-text: 'Inter', sans-serif;
+  --font-heading: 'Source Code Pro', monospace;
+  --font-mono: 'Source Code Pro', monospace;
+}
+
+@media (min-width: 500px) {
+  :root {
+    --margin: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  :root {
+    --margin: 2rem;
+  }
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  font-family: var(--font-text);
+  background: var(--color-body);
+  color: var(--color-fg);
+}
+
+body > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: var(--margin);
+  color: var(--color-muted);
+  font-family: var(--font-heading);
+}
+
+body > header > a {
+  text-decoration: none;
+  font-weight: 900;
+  font-size: 2rem;
+  background: var(--color-accent);
+  width: 2rem;
+  height: 2rem;
+  line-height: 1.5rem;
+  text-align: center;
+  border-radius: 25%;
+  color: var(--color-body);
+}
+
+body > header > a:hover {
+  color: var(--color-bg);
+}
+
+body > header ul {
+  display: grid;
+  grid-auto-flow: column;
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+body > h1 {
+  max-width: var(--max-width);
+  margin: calc(2 * var(--margin)) auto;
+  padding: 0 var(--margin);
+  color: var(--color-fg);
+  font-family: var(--font-heading);
+}
+
+main {
+  max-width: var(--max-width);
+  margin: var(--margin) auto;
+  padding: 0 var(--margin);
+  background: var(--color-bg);
+  border-radius: 1rem;
+  line-height: 1.25;
+}
+
+main::before,
+main::after {
+  content: ' ';
+  display: block;
+  contain: layout;
+  margin: var(--margin) 0;
+}
+
+h1 a,
+h2 a,
+h3 a,
+h4 a,
+h5 a,
+h6 a {
+  text-decoration: none;
+}
+
+a {
+  color: inherit;
+  transition: color ease-in 200ms;
+}
+
+a:hover {
+  color: var(--color-accent);
+}
+
+pre {
+  max-width: 100%;
+  display: block;
+  overflow: auto;
+}
+
+code {
+  font-family: var(--font-mono);
+  line-height: initial;
+}
+
+article + article {
+  margin-top: calc(2 * var(--margin));
+}
+
+article + article::before {
+  content: '';
+  display: block;
+  height: 1px;
+  width: 50%;
+  background: var(--color-indent);
+  margin: 0 auto calc(2 * var(--margin));
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+.button-link {
+  border: 1px solid var(--color-accent);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  display: inline-block;
+  text-decoration: none;
+}
+
+body > footer {
+  margin: var(--margin);
+  text-align: center;
+  color: var(--color-muted);
+  font-family: var(--font-heading);
+}
+</style></head><body><header><a href="/">e</a><ul><li><a href="/blog/">Blog</a></li><li><a href="/experiments/">Experiments</a></li></ul></header><main><h1 id="gotchas-when-using-custom-elements-in-production">Gotchas when using custom elements in production</h1>
+<p>HTML and CSS needs to be included somehow. The best case is to have the html &quot;template&quot; ready the way it should look, and then just define the custom element, but for encapsulation and usage in other frameworks, you might consider:</p>
+
+<ul>
+<li>External file(s): loading the HTML via a loader (webpack / parcel / etc)</li>
+<li>Inside JS: use template strings in the js file, possibly with an IDE plugin for language services</li>
+</ul>
+<p>Remember, global css doesn&#39;t work inside a shadow root. There are no perfect solutions for this:</p>
+
+<ul>
+<li><code>&lt;link&gt;</code> elements download the stylesheet many times if inserted dynamically</li>
+<li>SASS includes require additional building</li>
+</ul>
+<p>One option is not to use a shadow root in cases with heavy global styling.</p>
+<p><em>1.6.2020</em></p>
+<h1 id="css-modules">CSS Modules</h1>
+<p>Parcel parses style tags as well, transforming style tags inside loaded html files with CSS Modules (if enabled!). In order to use styles normally in e.g. a shadow root, mark the selector as global with <code>:global</code>.</p>
+<p><em>1.6.2020</em></p>
+<h1 id="google-calendar-on-mobile">Google Calendar on mobile</h1>
+<p>Tasks are not visible in the mobile calendar. Neither are cal feeds (those under &quot;other calendars&quot; on desktop).</p>
+<p><em>1.6.2020</em></p>
+<h1 id="webvitals-are-brutal">WebVitals are brutal</h1>
+<p>Need to pay very close attention to LCP! Hero images are particularly crucial here.</p>
+<p>External (async!) CSS slows down LCP from 1.6s to 3.1s on Reima US (small sample!). Putting everything in the internal CSS takes it to 1.7s.</p>
+<p>External JS also slows down LCP a lot, even though it&#39;s async. Need to investigate further, but now it seems impossible to get a perfect Lighthouse score with any JS.</p>
+<p><em>2.6.2020</em></p>
+<h1 id="rollup-chunks">Rollup chunks</h1>
+<p>Rollup creates a chunk of imported files if it&#39;s imported from many entry points.</p>
+<p><em>3.6.2020</em></p>
+<h1 id="cms-organization">CMS organization</h1>
+<p>Things you want from a CMS: scale. Scale in terms of what? Reusability. This is slightly difficult to attain in practice, though. For a headless ecom site, for instance, you need a checkout with the products (Shopify), the store content (CMS 1), and possibly some brand / shared content (CMS 2). All of these get input from a media bank, a PIM, and what not. Impossible to centralize for reusability. Or consistency, or auditability.</p>
+<p>So what&#39;s wrong with having stuff in different places? Nothing, if the content is logically separated anyway. SSO is the only benefit, and a very small one at that. Having to change &quot;spaces&quot; or whatever instead of navigating to a different site when editing different kinds of content is even smaller (remember, brand content and ecom site content are anyway completely different &quot;contexts&quot;).</p>
+<h1 id="forestry-io-content-organization-and-hu-go-modules">forestry.io, content organization and (hu)go modules</h1>
+<p>So should you do mono- or multirepo for ecom sites with different content but the same layout?</p>
+<h2 id="monorepo">Monorepo</h2>
+<p>Pros:</p>
+
+<ul>
+<li>Easier dependency management, especially when working on the layouts and code.</li>
+<li>Ability to share content and media in forestry.</li>
+</ul>
+<p>Cons:</p>
+
+<ul>
+<li>Preview in forestry needs to be done via a special proxy server.</li>
+<li>Sidebar in forestry might get messy, and logically these are different sites.</li>
+</ul>
+<p>What could be possible is to create two different sites from the same repo. For instance &quot;us&quot; and &quot;ca&quot;. However, since <em>all</em> the settings will be shared, including site preview and sidebar settings, this doesn&#39;t work.</p>
+<h2 id="multirepo">Multirepo</h2>
+<p>Pros:</p>
+
+<ul>
+<li>Easy access management per repo.</li>
+<li>Logically separate sites have separate err... sites in forestry.</li>
+</ul>
+<p>Cons:</p>
+
+<ul>
+<li>Updating dependencies on updates becomes harder.</li>
+<li>Sharing frontmatter templates in forestry is really hard.</li>
+<li>No media or content sharing (cannot edit git submodules in forestry).</li>
+</ul>
+<h2 id="specific-highlights-related-to-go-modules">Specific highlights related to go modules</h2>
+
+<ul>
+<li>hugo modules work in forestry preview</li>
+<li>hugo modules <code>replace</code> doesn&#39;t seem to work for subdirectories of a git repo</li>
+</ul>
+<p><em>10.6.2020</em></p>
+<h1 id="typescript-can-do-anything">Typescript can do anything</h1>
+<p>So, say you want to create a function that groups an array into an object by some key and puts the array part into another key. Sounds weird, but it&#39;s simple:</p>
+
+<pre><code class="lang-js">// original array
+const arr = [
+  { key: &#39;a&#39;, hello: &#39;world&#39; },
+  { key: &#39;b&#39;, hello: &#39;there&#39; },
+  { key: &#39;a&#39;, hello: &#39;you&#39; }
+];
+
+group(arr, &#39;key&#39;, &#39;prop&#39;);
+
+// new object
+const result = {
+  a: {
+    prop: [
+      { key: &#39;a&#39;, hello: &#39;world&#39; },
+      { key: &#39;a&#39;, hello: &#39;you&#39; }     
+    ]
+  },
+  b: {
+    prop: [
+      { key: &#39;b&#39;, hello: &#39;there&#39; }     
+    ]
+  }
+}
+</code></pre>
+<p>Trust me, there are legitimate use cases for this! Anyway, using TS, you can type check the function based on what you&#39;re trying to do:</p>
+
+<ol>
+<li>First argument should be an array of any type, let&#39;s call the type T.</li>
+<li>Second argument should be the string representation of a key of type T.</li>
+<li>Third argument specifies the property name of the returned (sub)object, visible in the resulting return type.</li>
+</ol>
+<p>To achieve this:</p>
+
+<pre><code class="lang-ts">function group&lt;T, K extends keyof T, PropName extends string&gt;
+  (array: T[], key: K, prop: PropName): {
+    [key: string]: {
+      [P in PropName]: T[]
+    }
+  }
+</code></pre>
+<p>This works flawlessly in type checking and IntelliSense. This uses <a href="https://www.typescriptlang.org/docs/handbook/generics.html">generics</a> and <a href="https://www.typescriptlang.org/docs/handbook/advanced-types.html#mapped-types">mapped types</a> and is pretty darn cool!</p>
+<h1 id="ditching-the-online-store-in-shopify-is-hard">Ditching the online store in Shopify is hard</h1>
+<p>Shopify apps use products for different things, e.g. sending out emails after purchase and syncing products with data feeds of different sorts. This becomes pretty hard to manage when the &quot;online store&quot; is a separate static site and not the default Shopify version. One needs to carefully migrate apps and services to use URLs from the new site, and delete apps which only relate to the frontend.</p>
+<p>While the online store cannot be deleted (on plans higher than &quot;Lite&quot;), it&#39;s possible to password protect the site, or <code>noindex</code> the whole site. Regardless of the method used, no apps should use the &quot;online store URLs&quot; from Shopify. This is especially important so that search engines don&#39;t get a hold of the deprecated URLs.</p>
+<p><strong>This migration needs to be part of the overall strategy.</strong></p>
+<h1 id="elixir-is-awesome-but-suitable-for-specific-things">Elixir is awesome, but suitable for specific things</h1>
+<p>Elixir is a pretty neat language indeed! The language itself has many great advantages:</p>
+
+<ul>
+<li>Functional programming
+This is at the core of Elixir. I&#39;ve grown to like functional programming quite a lot, so this is awesome.</li>
+<li>Pattern matching
+Overloading functions based not only on the number (and possibly type) of arguments (this is called airity), but the values of those arguments. Like an if statement for overloading.</li>
+<li>Great metaprogramming
+Macros are pretty great and allow you to customize the language basically in any way you like. Pretty complicated stuff, though.</li>
+<li>Mature ecosystem and runtime
+The Erlang runtime (BEAM) has a ton of advanced functionality, like concurrency, distributed computing, and hot code swapping.</li>
+</ul>
+<p>The big but (one T) is that, like most languages, it has its pretty specific use cases. Since Erlang was built for highly distributed, concurrent, and fault tolerant telecom network systems, this is the sweet spot. With Phoenix you can take these advantages to the web, but again in pretty specific use cases. A simple CLI tool is not a great fit. Choose the right language for the right task!</p>
+<p>Some things to look out for:</p>
+
+<ul>
+<li>The big one: complexity
+In order to be productive, you have to learn how Elixir/Erlang does stuff, how all the libraries work, how <code>mix</code> works, how to release stuff. Not very different from any other language, sure. But compare this with a scripting language for doing simple things.</li>
+<li>Tooling
+The tooling around Elixir/Erlang is awesome indeed, but for instance VSCode is pretty focused on web development, and the support for Elixir is not as good as support for TypeScript. E.g. renaming functions and code navigation is not there.</li>
+</ul>
+<p>Elixir is a very cool language based on very cool tech with very cool capabilities. It&#39;s just a matter of finding a project that needs all the nice things it offers.</p>
+</main><footer>There's no such thing as the cloud - it's just someone else's computer.</footer></body></html>
