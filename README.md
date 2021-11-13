@@ -71,3 +71,7 @@ Layouts are just TSX components, exported as a default export from different fil
 ### Content files
 
 Add Markdown content files to the `content` directory as needed. Each content file will be rendered into an HTML file using the corresponding path into the `public` directory.
+
+## License
+
+This program is licensed under the "GNU Lesser General Public License". See LICENSE and LICENSE.LESSER for details.

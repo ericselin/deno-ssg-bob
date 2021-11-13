@@ -1,3 +1,25 @@
+/*
+Copyright 2021 Eric Selin
+
+This file is part of `bob`.
+
+`bob` is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+`bob` is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with `bob`. If not, see <https://www.gnu.org/licenses/>.
+
+Please contact the developers via GitHub <https://www.github.com/ericselin>
+or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>
+*/
+
 import type { BuildOptions } from "./domain.ts";
 import { build, serve } from "./mod.ts";
 import { log, parseFlags } from "./deps.ts";
@@ -19,18 +41,52 @@ OPTIONS:
         will clean the current public directory
   -d    build draft pages
   -v    verbose logging
-  -h    show help`;
+  -h    show help
+  -l    show license information`;
+
+const license = `Copyright 2021 Eric Selin
+
+\`bob\` is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+\`bob\` is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with \`bob\`. If not, see <https://www.gnu.org/licenses/>.
+
+Please contact the developers via GitHub <https://www.github.com/ericselin>
+or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>`
+
+const licenseShort = `\`bob\` Copyright 2021 Eric Selin
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to
+redistribute it under certain conditions.
+For details run the program with the \`-l\` argument.
+`
 
 const {
   v: verbose,
   f: force,
   h: help,
   d: buildDrafts,
+  l: showLicense,
   _: [arg],
 } = parseFlags(Deno.args);
 
 const SERVER_ARG = "server";
 const server = arg === SERVER_ARG;
+
+if (showLicense) {
+  console.log(license);
+  Deno.exit();
+}
+
+console.log(licenseShort);
 
 if (help) {
   console.log(usage);
