@@ -1,5 +1,5 @@
 ---
-date: 2021-05-17T00:00:00+02:00
+date: 2021-05-17
 title: 'Servers are cool again - they''re just a bit different now'
 modified: 2021-05-17T20:07:45+02:00
 ---
