@@ -278,6 +278,13 @@ Helpers, utilities and other.
 
 */
 
+// Cache provider
+
+export type Cache = {
+  get: <T>(key: string) => Promise<T>;
+  put: <T>(key: string, value: T) => Promise<unknown>;
+};
+
 // Utility types
 
 export type AnyObject = Record<string, unknown>;

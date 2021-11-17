@@ -77,7 +77,7 @@ const createDependencyCacheWriter = (options: BuildOptions) => {
   const { log } = options;
   return async (page: Page, deps: ContentDependencies): Promise<void> => {
     await Promise.resolve();
-    log?.info(`Dependencies for "${page.location.inputPath}": ${JSON.stringify(deps, undefined, 2)}`);
+    log?.debug(`Dependencies for "${page.location.inputPath}": ${JSON.stringify(deps, undefined, 2)}`);
   };
 };
 
