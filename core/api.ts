@@ -30,6 +30,8 @@ import type {
 } from "../domain.ts";
 import { ContentType } from "../domain.ts";
 import { exists, expandGlob, path } from "../deps.ts";
+import { MemoryCache } from "./cache.ts";
+import { createDependencyWriter } from "./content-dependencies.ts";
 import {
   createOutputFileWriter,
   createStaticFileWriter,
@@ -54,53 +56,25 @@ export type PageGetter = (
   location: Location,
 ) => Promise<Page | undefined>;
 
-type ContentDependencies = {
-  [dependencyPath: string]: {
-    [property: string]: string;
-  };
-};
-
-const createDependencyProxy = (target: Page, deps: ContentDependencies) =>
-  new Proxy(target, {
-    get: function (page: Page, prop: string) {
-      const value = Reflect.get(page, prop);
-      const dependencyPath = page.location.inputPath;
-      deps[dependencyPath] ??= {};
-      deps[dependencyPath][prop] = typeof value === "object"
-        ? "[object]"
-        : value;
-      return value;
-    },
-  });
-
-const createDependencyCacheWriter = (options: BuildOptions) => {
-  const { log } = options;
-  return async (page: Page, deps: ContentDependencies): Promise<void> => {
-    await Promise.resolve();
-    log?.debug(`Dependencies for "${page.location.inputPath}": ${JSON.stringify(deps, undefined, 2)}`);
-  };
-};
-
 const createPagesGetter = (
   options: BuildOptions,
   getContent: ContentGetter,
-) => {
+): PagesGetter => {
   const processWalkEntry = getWalkEntryProcessor(options);
   const { log } = options;
-  return (dependencies: ContentDependencies): PagesGetter =>
-    async (glob) => {
-      const contentGlob = path.join(options.contentDir, glob);
-      log?.debug(`Getting pages with glob "${contentGlob}"`);
-      const pages: Page[] = [];
-      for await (const walkEntry of expandGlob(contentGlob)) {
-        const content = await getContent(processWalkEntry(walkEntry));
-        if (content?.type === ContentType.Page) {
-          log?.debug(`Found page ${content.location.inputPath}`);
-          pages.push(createDependencyProxy(content, dependencies));
-        }
+  return async (glob) => {
+    const contentGlob = path.join(options.contentDir, glob);
+    log?.debug(`Getting pages with glob "${contentGlob}"`);
+    const pages: Page[] = [];
+    for await (const walkEntry of expandGlob(contentGlob)) {
+      const content = await getContent(processWalkEntry(walkEntry));
+      if (content?.type === ContentType.Page) {
+        log?.debug(`Found page ${content.location.inputPath}`);
+        pages.push(content);
       }
-      return pages;
-    };
+    }
+    return pages;
+  };
 };
 
 const createContentGetter: ContentGetterCreator = (options) => {
@@ -135,15 +109,12 @@ export const getProcessor: Processor = (options) => {
   const pagesGetter = createPagesGetter(options, getContent);
   const writeOutputFile = createOutputFileWriter(options);
   const writeStaticFile = createStaticFileWriter(options);
-  const writeDependencies = createDependencyCacheWriter(options);
+  const memCache = new MemoryCache();
 
-  return (location) => {
-    const dependencies: ContentDependencies = {};
-    const loadLayout = getLayoutLoader(
-      options,
-      pagesGetter(dependencies),
-    );
     // run workflow
+  return (location) => {
+    const dependencyWriter = createDependencyWriter(memCache, pagesGetter, options.log);
+    const loadLayout = getLayoutLoader(options, dependencyWriter.getPages);
     return Promise
       .resolve(location)
       .then(getContent)
@@ -154,7 +125,7 @@ export const getProcessor: Processor = (options) => {
             .then(loadLayout)
             .then(render)
             .then(writeOutputFile)
-            .then(() => writeDependencies(content, dependencies))
+            .then(() => dependencyWriter.write(content))
             .then(() => true)
           : content?.location.type === ContentType.Static
           ? Promise.resolve(content)

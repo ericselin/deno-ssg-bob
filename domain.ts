@@ -280,10 +280,13 @@ Helpers, utilities and other.
 
 // Cache provider
 
-export type Cache = {
-  get: <T>(key: string) => Promise<T>;
-  put: <T>(key: string, value: T) => Promise<unknown>;
-};
+export interface Cache {
+  get<T>(key: string): Promise<T>;
+  put<T>(key: string, value: T): Promise<unknown>;
+  transaction(key: string, fn: CacheTransactionCallback): Promise<void>;
+}
+
+export type CacheTransactionCallback = (cache: Cache, lockedKey: string) => Promise<void>;
 
 // Utility types
 

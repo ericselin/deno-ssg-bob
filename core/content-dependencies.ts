@@ -1,10 +1,4 @@
-import type {
-  BuildOptions,
-  Cache,
-  Logger,
-  Page,
-  PagesGetter,
-} from "../domain.ts";
+import type { Cache, Logger, Page, PagesGetter } from "../domain.ts";
 
 type ContentDependencies = {
   [dependencyPath: string]: {
@@ -53,11 +47,23 @@ export const createDependencyWriter = (
         }`,
       );
       await Promise.all(
-        Object.entries(deps).map(async ([depencencyPath, accessedProps]) => {
-          await cache.put<ContentDependants>(`${depencencyPath}.dependants`, {
-            [dependantPage.location.inputPath]: accessedProps,
-          });
-        }),
+        Object.entries(deps)
+          // don't create a dependency to the page itself
+          .filter(([depencencyPath]) =>
+            depencencyPath !== dependantPage.location.inputPath
+          )
+          // create cache transactions for each write
+          .map(async ([depencencyPath, accessedProps]) => {
+            await cache.transaction(
+              `${depencencyPath}.dependants`,
+              async (cache, key) => {
+                await cache.put(key, {
+                  ...(await cache.get<ContentDependants>(key)),
+                  [dependantPage.location.inputPath]: accessedProps,
+                });
+              },
+            );
+          }),
       );
     },
   };
@@ -74,27 +80,13 @@ export const createDependencyChecker = (cache: Cache, log?: Logger) =>
     const dependants = await cache.get<ContentDependants>(
       `${page.location.inputPath}.dependants`,
     );
-    console.log("dependants", dependants);
+    log?.debug(`Page "${page.location.inputPath}" dependants: ${dependants}`);
     return Object.entries(dependants).filter(
       ([_dependantPath, accessedProps]) => {
-        console.log("page", page, "accessed", accessedProps);
         for (const [key, value] of Object.entries(accessedProps)) {
-          console.log("key", key, "value", value, "page", page[key as keyof Page]);
           if (page[key as keyof Page] !== value) return true;
         }
         return false;
       },
     ).map(([dependantPath]) => dependantPath);
   };
-
-const createDependencyCacheWriter = (options: BuildOptions) => {
-  const { log } = options;
-  return async (page: Page, deps: ContentDependencies): Promise<void> => {
-    await Promise.resolve();
-    log?.debug(
-      `Dependencies for "${page.location.inputPath}": ${
-        JSON.stringify(deps, undefined, 2)
-      }`,
-    );
-  };
-};
