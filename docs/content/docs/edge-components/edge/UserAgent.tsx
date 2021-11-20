@@ -1,7 +1,7 @@
-/** @jsx edge */
+/** @jsx h */
 
-import { edge } from "../../../../../mod.ts";
-import type { EdgeComponent } from "../../../../../mod.ts";
+import { h } from "../../../../../edge/mod.ts";
+import type { EdgeComponent } from "../../../../../edge/mod.ts";
 
 const UserAgent: EdgeComponent = (_props, req) => (
     <p>

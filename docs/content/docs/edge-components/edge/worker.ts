@@ -1,4 +1,4 @@
-import { edgeRequestHandler } from "../../../../../mod.ts";
+import { edgeRequestHandler } from "../../../../../edge/mod.ts";
 import UserAgent from "./UserAgent.tsx";
 
 const components = {

@@ -1,4 +1,6 @@
 import "https://deno.land/x/worker_types@v1.0.1/cloudflare-worker-types.ts";
+// importing domain to get JSX.IntrinsicElements in scope
+import "../domain.ts";
 
 export interface EdgeComponent<P extends Props = Record<string, never>> {
   (props: P, req: Request): EdgeElement | Promise<EdgeElement>;
@@ -23,11 +25,6 @@ type ElementCreator = (
   props?: Props,
   ...children: Children[]
 ) => EdgeElement;
-
-/*
-WARNING!
-Assuming JSX.IntrinsicElements is in scope.
-*/
 
 const renderProps = (props?: Props): string => {
   if (!props) return "";
