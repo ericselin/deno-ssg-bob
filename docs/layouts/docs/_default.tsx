@@ -1,6 +1,6 @@
 /** @jsx h */
 
-import { Component, h } from "../../../mod.ts";
+import { Component, h, sortWeightAsc } from "../../../mod.ts";
 import { path } from "../../../deps.ts";
 import { Base } from "../_base.tsx";
 
@@ -80,7 +80,7 @@ const Scenarios: Component<
     <Base>
       <nav>
         <ul>
-          {pages.map((child) => (
+          {pages.sort(sortWeightAsc).map((child) => (
             <li>
               <a
                 href={child.location.url.pathname}
