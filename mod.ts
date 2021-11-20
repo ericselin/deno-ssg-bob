@@ -22,6 +22,9 @@ or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>
 
 export type { Component, Props } from "./domain.ts";
 export type { Page } from "./domain.ts";
+export type { EdgeComponent } from "./edge/mod.ts";
+export { h as edge, edgeRequestHandler } from "./edge/mod.ts";
+export { EdgeElement } from "./edge/bob.tsx";
 export { build } from "./core/api.ts";
 export { serve } from "./core/server.ts";
 export { h } from "./core/jsx.ts";

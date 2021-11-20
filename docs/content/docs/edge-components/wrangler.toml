@@ -1,0 +1,14 @@
+compatibility_date = "2021-11-19"
+
+type = "javascript"
+name = "edge-components"
+account_id = "a5407b781bec5a58294d3dcaa2c18806"
+zone_id = ""
+route = "bobsite.io/docs/edge-components/expected/index.html"
+
+[build]
+command = "deno bundle edge/worker.ts dist/worker.mjs"
+
+[build.upload]
+format = "modules"
+main = "./worker.mjs"
