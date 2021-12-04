@@ -3,17 +3,10 @@
 import { Component, h, sortWeightAsc } from "../../../mod.ts";
 import { path } from "../../../deps.ts";
 import { Base } from "../_base.tsx";
-
-// TODO make this a library function?
-const htmlEncode = (html: string): string =>
-  html
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+import hljs from "https://esm.sh/highlight.js?no-check";
 
 const codeBlock = (filename: string, rawCode: string): string =>
-  `<code>${filename}</code><pre><code>${htmlEncode(rawCode)}</code></pre>`;
+  `<code>${filename}</code><pre><code>${hljs.highlightAuto(rawCode).value}</code></pre>`;
 
 const iframe = (filename: string): string =>
   `<code>${filename}</code><iframe src="${filename}"></iframe>`;
