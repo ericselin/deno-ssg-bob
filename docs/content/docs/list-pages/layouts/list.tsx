@@ -4,14 +4,14 @@ import { Component, h } from "../../../../../mod.ts";
 
 type EmptyObject = Record<string, never>;
 
-const Index: Component<EmptyObject, unknown, undefined, EmptyObject> = async (
+const Index: Component<EmptyObject, unknown, EmptyObject> = (
   _props,
-  { page: { content }, childPages },
+  { page: { content }, wantedPages },
 ) => (
   <body>
     {content}
     <main>
-      {(await childPages)?.map((page) => (
+      {wantedPages?.map((page) => (
         <article>
           <h2>{page.title}</h2>
           {page.summary}
@@ -20,5 +20,7 @@ const Index: Component<EmptyObject, unknown, undefined, EmptyObject> = async (
     </main>
   </body>
 );
+
+Index.wantsPages = "!(index).md";
 
 export default Index;

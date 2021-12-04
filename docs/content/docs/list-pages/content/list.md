@@ -1,5 +1,5 @@
 ---
-title: Index page
+title: List page
 ---
 
 # Welcome to my page

@@ -1,8 +1,9 @@
 /** @jsx h */
 
 import { assertEquals } from "../deps.ts";
-import { h, createRenderer } from "./jsx.ts";
-import type { BuildOptions, Component } from "../domain.ts";
+import { createRenderer, h } from "./jsx.ts";
+import { ContentType } from "../domain.ts";
+import type { BuildOptions, Component, Page } from "../domain.ts";
 
 const render = createRenderer({} as BuildOptions)();
 
@@ -47,12 +48,11 @@ Deno.test("rendering jsx with spread props works", async () => {
       {children}
     </div>
   );
-  const Sub: Component<{who: string}> = (props) =>
-    (
-      <Base {...props}>
-        <p>Hello {props.who}</p>
-      </Base>
-    );
+  const Sub: Component<{ who: string }> = (props) => (
+    <Base {...props}>
+      <p>Hello {props.who}</p>
+    </Base>
+  );
 
   assertEquals(
     await render(<Sub who="world" />),
@@ -82,5 +82,73 @@ Deno.test("rendering nested custom jsx elements works", async () => {
   assertEquals(
     await render(<Base />),
     "<p>Hello world</p>",
+  );
+});
+
+Deno.test("childPages pages getter run with correct glob", async () => {
+  const getPages = (glob: string | string[]): Promise<Page[]> =>
+    //@ts-ignore this returns string just for the test
+    Promise.resolve(glob);
+
+  const render = createRenderer({
+    contentDir: "../content",
+    layoutDir: "",
+    publicDir: "",
+  }, getPages)({
+    type: ContentType.Page,
+    //@ts-ignore only content path needed
+    location: {
+      contentPath: "page/index.md",
+    },
+    frontmatter: {},
+    content: "",
+  });
+
+  const Children: Component<
+    Record<string, unknown>,
+    undefined,
+    undefined,
+    unknown
+  > = async (_, { childPages }) => (
+    <p>{childPages && (await childPages)?.join(",")}</p>
+  );
+
+  assertEquals(
+    await render(<Children />),
+    "<p>page/!(index).md,page/*/index.md</p>",
+  );
+});
+
+Deno.test("childPages calls getPage only for index.md files", async () => {
+  const getPages = (_glob: string | string[]): Promise<Page[]> => {
+    throw new Error("This should not be called");
+  }
+
+  const render = createRenderer({
+    contentDir: "../content",
+    layoutDir: "",
+    publicDir: "",
+  }, getPages)({
+    type: ContentType.Page,
+    //@ts-ignore only content path needed
+    location: {
+      contentPath: "page/page.md",
+    },
+    frontmatter: {},
+    content: "",
+  });
+
+  const Children: Component<
+    Record<string, unknown>,
+    undefined,
+    undefined,
+    unknown
+  > = async (_, { childPages }) => (
+    <p>{childPages && (await childPages)?.join(",")}</p>
+  );
+
+  assertEquals(
+    await render(<Children />),
+    "<p></p>",
   );
 });

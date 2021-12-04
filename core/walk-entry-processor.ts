@@ -81,6 +81,7 @@ const processWalkEntry: WalkEntryToLocationConverter = (
       type,
       inputPath: path.join(contentDir, inputPath),
       outputPath: path.join(publicDir, outputPath),
+      contentPath: inputPath,
       url: createURL(outputPath),
     };
   };

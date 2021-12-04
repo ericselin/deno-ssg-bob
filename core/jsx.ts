@@ -21,12 +21,13 @@ or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>
 */
 
 import type {
-  Page,
   Context,
   Element,
   ElementCreator,
   ElementRenderer,
   ElementRendererCreator,
+  Location,
+  Page,
   Props,
 } from "../domain.ts";
 import { path } from "../deps.ts";
@@ -46,6 +47,14 @@ const renderProps = (props?: Props): string => {
     (all, [attr, value]) => `${all} ${attr}="${value}"`,
     "",
   );
+};
+
+const _shouldHaveChildPages = ({ contentPath }: Location) =>
+  contentPath.split(path.sep).pop() === "index.md";
+
+const _getChildPagesGlobs = ({ contentPath }: Location): string[] => {
+  const contentDir = path.dirname(contentPath);
+  return [`${contentDir}/!(index).md`, `${contentDir}/*/index.md`];
 };
 
 export const createRenderer: ElementRendererCreator = (options, getPages) =>
@@ -83,6 +92,12 @@ export const createRenderer: ElementRendererCreator = (options, getPages) =>
         const context: Context = {
           page: contentPage as Page,
           needsCss: renderContext.needsCss,
+          get childPages() {
+            if (getPages && _shouldHaveChildPages(this.page.location)) {
+              return getPages(_getChildPagesGlobs(this.page.location));
+            }
+            return undefined;
+          },
         };
         if (component.wantsPages) {
           context.wantedPages = getPages &&
