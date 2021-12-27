@@ -140,6 +140,7 @@ const loadLayout = (
               layout.module.default as Component<
                 DefaultProps,
                 unknown,
+                unknown,
                 unknown
               >,
             ),

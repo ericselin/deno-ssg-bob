@@ -63,14 +63,18 @@ const createPagesGetter = (
   const processWalkEntry = getWalkEntryProcessor(options);
   const { log } = options;
   return async (glob) => {
-    const contentGlob = path.join(options.contentDir, glob);
-    log?.debug(`Getting pages with glob "${contentGlob}"`);
+    let globArray = glob;
+    if (typeof globArray === "string") globArray = [globArray];
     const pages: Page[] = [];
-    for await (const walkEntry of expandGlob(contentGlob)) {
-      const content = await getContent(processWalkEntry(walkEntry));
-      if (content?.type === ContentType.Page) {
-        log?.debug(`Found page ${content.location.inputPath}`);
-        pages.push(content);
+    for (const glob of globArray) {
+      const contentGlob = path.join(options.contentDir, glob);
+      log?.debug(`Getting pages with glob "${contentGlob}"`);
+      for await (const walkEntry of expandGlob(contentGlob, { extended: true })) {
+        const content = await getContent(processWalkEntry(walkEntry));
+        if (content?.type === ContentType.Page) {
+          log?.debug(`Found page ${content.location.inputPath}`);
+          pages.push(content);
+        }
       }
     }
     return pages;

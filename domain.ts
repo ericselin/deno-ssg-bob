@@ -31,27 +31,35 @@ export type Component<
   P extends Props = DefaultProps,
   PageFrontmatter = unknown,
   WantedPagesFrontmatter = undefined,
+  ChildPagesFrontmatter = undefined,
 > =
   & ((
     props: P & { children?: Children },
-    context: Context<PageFrontmatter, WantedPagesFrontmatter>,
+    context: Context<
+      PageFrontmatter,
+      WantedPagesFrontmatter,
+      ChildPagesFrontmatter
+    >,
   ) => Awaitable<Element>)
   & {
     wantsPages?: WantsPages;
     needsCss?: NeedsCss;
   };
 
-export type AnyComponent = Component<DefaultProps, unknown, unknown>;
+export type AnyComponent = Component<DefaultProps, unknown, unknown, unknown>;
 
 /** Context for rendering a specific page. */
 export type Context<
   PageFrontmatter = unknown,
   WantedPagesFrontmatter = unknown,
+  ChildPagesFrontmatter = unknown,
 > = {
   page: Page<PageFrontmatter>;
   needsCss: CssSpecifier[];
   wantedPages?: WantedPagesFrontmatter extends undefined ? undefined
     : WantedPages<WantedPagesFrontmatter>;
+  childPages?: ChildPagesFrontmatter extends undefined ? undefined
+    : ChildPages<ChildPagesFrontmatter>;
 };
 
 /** Component properties. */
@@ -59,8 +67,9 @@ export type Props = Record<string, unknown>;
 /** Default component properties. */
 export type DefaultProps = Props;
 
-type WantsPages = string;
+type WantsPages = string | string[];
 type WantedPages<W = unknown> = Page<W>[];
+type ChildPages<W = unknown> = Promise<Page<W>[]>;
 
 type CssSpecifier = string;
 type NeedsCss = CssSpecifier;
@@ -103,7 +112,7 @@ export type ElementRendererCreator = (
 /** Get an array of the pages wanted by a layout or a content page. */
 export type PagesGetter = (wantsPages: WantsPages) => Promise<Page[]>;
 
-type ElementType = Component<DefaultProps, unknown, unknown> | string;
+type ElementType = Component<DefaultProps, unknown, unknown, unknown> | string;
 
 type Child = Element | string;
 type Children = Child | Child[];
@@ -159,9 +168,15 @@ export type StaticContent = {
 /** Location of the content in different places. */
 export type Location<T extends ContentType = ContentType> = {
   type: T;
+  /** Path of the content file, relative to CWD */
   inputPath: CwdRelativePath;
+  /** Path of the content file within the content directory */
+  contentPath: string;
+  /** Path of the output (e.g. HTML) file, relative to CWD */
   outputPath: CwdRelativePath;
+  /** Final URL of published asset */
   url: URL;
+  /** Flag to mark if asset at this location should be rebuilt */
   dirty?: boolean;
 };
 

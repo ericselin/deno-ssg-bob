@@ -20,14 +20,12 @@ Please contact the developers via GitHub <https://www.github.com/ericselin>
 or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>
 */
 
-export type { Component, Props } from "./domain.ts";
-export type { Page } from "./domain.ts";
-export type { EdgeComponent } from "./edge/mod.ts";
-export { EdgeElement } from "./edge/bob.tsx";
-export { build } from "./core/api.ts";
-export { serve } from "./core/server.ts";
-export { h } from "./core/jsx.ts";
-export * from "./utils/get-path.ts";
-export * from "./utils/read-contents.ts";
-export * from "./utils/sort-date.ts";
-export * from "./utils/sort-weight.ts";
+import type { Page } from "../domain.ts";
+
+type MaybeHasWeight = {
+  weight?: number
+};
+
+export const sortWeightAsc = (a: Page<MaybeHasWeight>, b: Page<MaybeHasWeight>) => {
+  return (a.frontmatter.weight ?? 0) - (b.frontmatter.weight ?? 0);
+};
