@@ -33,7 +33,11 @@ export const createDependencyWriter = (
   cache: Cache,
   pagesGetter: PagesGetter,
   log?: Logger,
-): { getPages: PagesGetter; write: (dependantPage: Page) => Promise<void> } => {
+): {
+  getPages: PagesGetter;
+  write: (dependantPage: Page) => Promise<void>;
+  getDependants: (page: Page) => Promise<string[]>;
+} => {
   const deps: ContentDependencies = {};
   return {
     getPages: (wantsPages) =>
@@ -66,6 +70,17 @@ export const createDependencyWriter = (
           }),
       );
     },
+    getDependants: async (page) => {
+      const deps = await cache.get<ContentDependants | undefined>(
+        `${page.location.inputPath}.dependants`,
+      );
+      if (!deps) return [];
+      const paths = Object.keys(deps);
+      log?.debug(
+        `Got page "${page.location.inputPath} dependants: ${paths.join(", ")}"`,
+      );
+      return paths;
+    },
   };
 };
 
@@ -81,7 +96,7 @@ export const createDependencyChecker = (cache: Cache, log?: Logger) =>
       `${page.location.inputPath}.dependants`,
     );
     log?.debug(`Page "${page.location.inputPath}" dependants: ${dependants}`);
-    return Object.entries(dependants).filter(
+    return Object.entries(dependants || {}).filter(
       ([_dependantPath, accessedProps]) => {
         for (const [key, value] of Object.entries(accessedProps)) {
           if (page[key as keyof Page] !== value) return true;

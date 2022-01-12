@@ -23,6 +23,7 @@ or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>
 import type {
   Builder,
   BuildOptions,
+  Change,
   ContentGetter,
   Location,
   Page,
@@ -30,7 +31,7 @@ import type {
 } from "../domain.ts";
 import { ContentType } from "../domain.ts";
 import { exists, expandGlob, path } from "../deps.ts";
-import { MemoryCache } from "./cache.ts";
+import { FileCache } from "./cache.ts";
 import { createDependencyWriter } from "./content-dependencies.ts";
 import {
   createOutputFileWriter,
@@ -45,10 +46,6 @@ import render from "./renderer.ts";
 import createDirtyFileWalker from "./dirty-file-walk.ts";
 import getLayoutLoader from "./layout-loader.ts";
 import getWalkEntryProcessor from "./walk-entry-processor.ts";
-
-type Processor = (
-  options: BuildOptions,
-) => (location: Location) => Promise<boolean>;
 
 type ContentGetterCreator = (options: BuildOptions) => ContentGetter;
 
@@ -69,7 +66,9 @@ const createPagesGetter = (
     for (const glob of globArray) {
       const contentGlob = path.join(options.contentDir, glob);
       log?.debug(`Getting pages with glob "${contentGlob}"`);
-      for await (const walkEntry of expandGlob(contentGlob, { extended: true })) {
+      for await (
+        const walkEntry of expandGlob(contentGlob, { extended: true })
+      ) {
         const content = await getContent(processWalkEntry(walkEntry));
         if (content?.type === ContentType.Page) {
           log?.debug(`Found page ${content.location.inputPath}`);
@@ -108,16 +107,27 @@ const createContentGetter: ContentGetterCreator = (options) => {
       });
 };
 
-export const getProcessor: Processor = (options) => {
+type Processor = (
+  location: Location,
+  processDependants?: boolean,
+) => Promise<boolean>;
+type ProcessorGetter = (options: BuildOptions) => Processor;
+
+export const getProcessor: ProcessorGetter = (options) => {
   const getContent = createContentGetter(options);
   const pagesGetter = createPagesGetter(options, getContent);
   const writeOutputFile = createOutputFileWriter(options);
   const writeStaticFile = createStaticFileWriter(options);
-  const memCache = new MemoryCache();
+  const cache = new FileCache();
+  const getLocation = getWalkEntryProcessor(options);
 
-    // run workflow
-  return (location) => {
-    const dependencyWriter = createDependencyWriter(memCache, pagesGetter, options.log);
+  // run workflow
+  const process: Processor = (location, processDependants = true) => {
+    const dependencyWriter = createDependencyWriter(
+      cache,
+      pagesGetter,
+      options.log,
+    );
     const loadLayout = getLayoutLoader(options, dependencyWriter.getPages);
     return Promise
       .resolve(location)
@@ -130,6 +140,19 @@ export const getProcessor: Processor = (options) => {
             .then(render)
             .then(writeOutputFile)
             .then(() => dependencyWriter.write(content))
+            .then(async () => {
+              if (!processDependants) return;
+              const deps = await dependencyWriter.getDependants(content);
+              const locations = deps.map((path) => getLocation({ path }));
+              options.log?.debug(
+                `Building "${content.location.inputPath}" dependant pages ${
+                  locations.join(", ")
+                }`,
+              );
+              return Promise.all(
+                locations.map((location) => process(location, false)),
+              );
+            })
             .then(() => true)
           : content?.location.type === ContentType.Static
           ? Promise.resolve(content)
@@ -137,6 +160,18 @@ export const getProcessor: Processor = (options) => {
             .then(() => true)
           : false
       );
+  };
+
+  return process;
+};
+
+type Changer = (change: Change) => Promise<unknown>;
+export const getUpdater = (options: BuildOptions): Changer => {
+  const process = getProcessor(options);
+  const getLocation = getWalkEntryProcessor(options);
+  return async (change) => {
+    const location = getLocation({ path: change.inputPath });
+    await process(location);
   };
 };
 

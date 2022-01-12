@@ -209,6 +209,12 @@ export type StaticFile = {
   location: Location<ContentType.Static>;
 };
 
+/** Represents a change in the content or layout files. */
+export type Change = {
+  inputPath: CwdRelativePath;
+  type: "create" | "update" | "delete";
+};
+
 // Helper types
 
 export type CwdRelativePath = string;
@@ -296,7 +302,7 @@ Helpers, utilities and other.
 // Cache provider
 
 export interface Cache {
-  get<T>(key: string): Promise<T>;
+  get<T>(key: string): Promise<T | undefined>;
   put<T>(key: string, value: T): Promise<unknown>;
   transaction(key: string, fn: CacheTransactionCallback): Promise<void>;
 }
