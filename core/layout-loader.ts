@@ -55,6 +55,7 @@ const loadIfExists = async (scriptPath: string) => {
     return await import(fullPath);
   } catch (e) {
     if (e.message === `Cannot load module "${fullPath}".`) return undefined;
+    if (e.message === `Module not found "${fullPath}".`) return undefined;
     throw e;
   }
 };
