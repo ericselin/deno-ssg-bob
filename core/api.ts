@@ -31,6 +31,7 @@ import type {
 import { ContentType } from "../domain.ts";
 import { exists, expandGlob, path } from "../deps.ts";
 import {
+  cleanDirectory,
   createOutputFileWriter,
   createStaticFileWriter,
   readContentFile,
@@ -67,7 +68,9 @@ const createPagesGetter = (
     for (const glob of globArray) {
       const contentGlob = path.join(options.contentDir, glob);
       log?.debug(`Getting pages with glob "${contentGlob}"`);
-      for await (const walkEntry of expandGlob(contentGlob, { extended: true })) {
+      for await (
+        const walkEntry of expandGlob(contentGlob, { extended: true })
+      ) {
         const content = await getContent(processWalkEntry(walkEntry));
         if (content?.type === ContentType.Page) {
           log?.debug(`Found page ${content.location.inputPath}`);
@@ -152,7 +155,7 @@ export const build: Builder = async (options) => {
 
   if (force && await exists(publicDir)) {
     log?.warning(`Cleaning public directory ${publicDir}`);
-    await Deno.remove(publicDir, { recursive: true });
+    await cleanDirectory(publicDir);
   }
 
   const walkDirty = createDirtyFileWalker([
