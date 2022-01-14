@@ -21,8 +21,9 @@ or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>
 */
 
 import type { BuildOptions } from "./domain.ts";
-import { build, serve } from "./mod.ts";
+import { build, serve as serveStatic } from "./mod.ts";
 import { log, parseFlags } from "./deps.ts";
+import { serve as serveFunctions } from "./functions/mod.ts";
 
 const usage = `bob the static site builder
 
@@ -34,7 +35,13 @@ Builds are by default incremental, i.e. build only
 what is needed.
 
 USAGE:
-  bob [server] [options]
+  bob [ACTION] [OPTIONS]
+
+ACTION \`functions\`
+  Start production server in order to service requests for fuctions.
+
+ACTION \`server\`
+  Start development server serving both static files and functions.
 
 OPTIONS:
   -p, --public    path to public directory
@@ -86,6 +93,7 @@ const {
 
 const SERVER_ARG = "server";
 const server = action === SERVER_ARG;
+const functions = action === "functions";
 
 if (args.license) {
   console.log(license);
@@ -125,9 +133,17 @@ const buildOptions: BuildOptions = {
 
 await build(buildOptions);
 
+if (functions) {
+  serveFunctions({ log });
+}
+
 if (server) {
+  // Start functions server
+  serveFunctions({ log, port: 8081 });
+  log.warning("Server functions are not proxied from the main server port");
+
   // Start HTTP server of public folder
-  serve({ directory: "public", log });
+  serveStatic({ directory: "public", log });
 
   /** File watcher for content and layout dirs. */
   const watcher = Deno.watchFs([

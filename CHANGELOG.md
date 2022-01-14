@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Server functions
+
+    It is now possible to create server functions to run on any path or path pattern. This means that you can update content, call external API's, re-build your site, or pretty much anything else. See the documentation for details.
+
 ## [2.2.0] (2022-01-13)
 
 ### Fixes
