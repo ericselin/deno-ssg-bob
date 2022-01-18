@@ -34,6 +34,7 @@ import { exists, expandGlob, path } from "../deps.ts";
 import { FileCache } from "./cache.ts";
 import { createDependencyWriter } from "./content-dependencies.ts";
 import {
+  cleanDirectory,
   createOutputFileWriter,
   createStaticFileWriter,
   readContentFile,
@@ -191,7 +192,7 @@ export const build: Builder = async (options) => {
 
   if (force && await exists(publicDir)) {
     log?.warning(`Cleaning public directory ${publicDir}`);
-    await Deno.remove(publicDir, { recursive: true });
+    await cleanDirectory(publicDir);
   }
 
   const walkDirty = createDirtyFileWalker([

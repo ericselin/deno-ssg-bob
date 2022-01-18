@@ -23,8 +23,8 @@ or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>
 import { path } from "../deps.ts";
 import type {
   FileReader,
-  OutputFileWriterCreator,
   Location,
+  OutputFileWriterCreator,
   StaticFileWriterCreator,
 } from "../domain.ts";
 import { ContentType } from "../domain.ts";
@@ -35,7 +35,7 @@ export const readContentFile: FileReader = () =>
   async (location) => {
     if (location.type === ContentType.Page) {
       const content = await Deno.readTextFile(location.inputPath);
-      location
+      location;
       return {
         type: ContentType.Page,
         location: location as Location<ContentType.Page>,
@@ -64,3 +64,9 @@ export const createStaticFileWriter: StaticFileWriterCreator = ({ log }) =>
     await Deno.copyFile(location.inputPath, location.outputPath);
     log?.info(`Copied static file to ${location.outputPath}`);
   };
+
+export const cleanDirectory = async (dirpath: DirectoryPath): Promise<void> => {
+  for await (const dirEntry of Deno.readDir(dirpath)) {
+    await Deno.remove(path.join(dirpath, dirEntry.name), { recursive: true });
+  }
+};

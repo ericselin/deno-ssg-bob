@@ -30,6 +30,7 @@ import type {
 } from "../domain.ts";
 import { path } from "../deps.ts";
 import { createRenderer, h } from "./jsx.ts";
+import { loadIfExists } from "./module-loader.ts";
 
 type LayoutModuleBase<t, T> = {
   module: {
@@ -45,19 +46,6 @@ type LayoutModule =
   | LayoutModuleUnknown
   | undefined;
 
-const loadIfExists = async (scriptPath: string) => {
-  // Construct a file URL in order to be able to load
-  // local modules from remote scripts
-  const fullPath = path.toFileUrl(
-    path.join(Deno.cwd(), scriptPath),
-  ).toString();
-  try {
-    return await import(fullPath);
-  } catch (e) {
-    if (e.message === `Cannot load module "${fullPath}".`) return undefined;
-    throw e;
-  }
-};
 
 const loadFirstLayout = async (
   scriptPaths: string[],

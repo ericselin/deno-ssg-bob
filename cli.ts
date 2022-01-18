@@ -21,8 +21,9 @@ or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>
 */
 
 import type { BuildOptions } from "./domain.ts";
-import { build, serve } from "./mod.ts";
+import { build, serve as serveStatic } from "./mod.ts";
 import { log, parseFlags } from "./deps.ts";
+import { serve as serveFunctions } from "./functions/mod.ts";
 
 const usage = `bob the static site builder
 
@@ -34,15 +35,22 @@ Builds are by default incremental, i.e. build only
 what is needed.
 
 USAGE:
-  bob [server] [options]
+  bob [ACTION] [OPTIONS]
+
+ACTION \`functions\`
+  Start production server in order to service requests for fuctions.
+
+ACTION \`server\`
+  Start development server serving both static files and functions.
 
 OPTIONS:
-  -f    force build everything
-        will clean the current public directory
-  -d    build draft pages
-  -v    verbose logging
-  -h    show help
-  -l    show license information`;
+  -p, --public    path to public directory
+  -f, --force     force build everything
+                  will clean the current public directory
+  -d, --drafts    build draft pages
+  -v, --verbose   verbose logging
+  -h, --help      show help
+  -l, --license   show license information`;
 
 const license = `Copyright 2021 Eric Selin
 
@@ -60,40 +68,46 @@ You should have received a copy of the GNU Lesser General Public License
 along with \`bob\`. If not, see <https://www.gnu.org/licenses/>.
 
 Please contact the developers via GitHub <https://www.github.com/ericselin>
-or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>`
+or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>`;
 
 const licenseShort = `\`bob\` Copyright 2021 Eric Selin
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to
 redistribute it under certain conditions.
 For details run the program with the \`-l\` argument.
-`
+`;
 
 const {
-  v: verbose,
-  f: force,
-  h: help,
-  d: buildDrafts,
-  l: showLicense,
-  _: [arg],
-} = parseFlags(Deno.args);
+  _: [action],
+  ...args
+} = parseFlags(Deno.args, {
+  alias: {
+    public: "p",
+    force: "f",
+    drafts: "d",
+    verbose: "v",
+    help: "h",
+    license: "l",
+  },
+});
 
 const SERVER_ARG = "server";
-const server = arg === SERVER_ARG;
+const server = action === SERVER_ARG;
+const functions = action === "functions";
 
-if (showLicense) {
+if (args.license) {
   console.log(license);
   Deno.exit();
 }
 
 console.log(licenseShort);
 
-if (help) {
+if (args.help) {
   console.log(usage);
   Deno.exit();
 }
 
-const logLevel = verbose ? "DEBUG" : "INFO";
+const logLevel = args.verbose ? "DEBUG" : "INFO";
 
 await log.setup({
   handlers: {
@@ -111,17 +125,25 @@ await log.setup({
 const buildOptions: BuildOptions = {
   contentDir: "content",
   layoutDir: "layouts",
-  publicDir: "public",
-  force,
-  buildDrafts,
+  publicDir: args.public || "public",
+  force: args.force,
+  buildDrafts: args.drafts,
   log,
 };
 
 await build(buildOptions);
 
+if (functions) {
+  serveFunctions({ log });
+}
+
 if (server) {
+  // Start functions server
+  serveFunctions({ log, port: 8081 });
+  log.warning("Server functions are not proxied from the main server port");
+
   // Start HTTP server of public folder
-  serve({ directory: "public", log });
+  serveStatic({ directory: "public", log });
 
   /** File watcher for content and layout dirs. */
   const watcher = Deno.watchFs([
