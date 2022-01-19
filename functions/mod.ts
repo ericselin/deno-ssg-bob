@@ -20,10 +20,13 @@ type FunctionServerOptions = {
 };
 
 export const serve = async (options: FunctionServerOptions) => {
-  const { log, port } = Object.assign(options, { port: 8081 } as FunctionServerOptions);
+  const { log, port } = Object.assign(
+    options,
+    { port: 8081 } as FunctionServerOptions,
+  );
   // load functions
   const functionDefinitions = (await loadIfExists(FUNCTIONS_PATH))
-    .default as FunctionDefinitions;
+    ?.default as FunctionDefinitions;
   if (!functionDefinitions) {
     log?.info(`No server functions found ("${FUNCTIONS_PATH}")`);
     return;
