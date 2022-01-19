@@ -22,8 +22,9 @@ or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>
 
 import type { BuildOptions } from "./domain.ts";
 import { build, serve as serveStatic } from "./mod.ts";
-import { log, parseFlags } from "./deps.ts";
+import { log, parseFlags, path } from "./deps.ts";
 import { serve as serveFunctions } from "./functions/mod.ts";
+import { getUpdater } from "./core/api.ts";
 
 const usage = `bob the static site builder
 
@@ -156,7 +157,9 @@ if (server) {
   Command to run. Always run via the `bob` executable.
   Pass in original arguments, except for the "server" argument.
   */
-  const cmd = ["bob", ...Deno.args.filter((arg) => arg !== SERVER_ARG)];
+  //const cmd = ["bob", ...Deno.args.filter((arg) => arg !== SERVER_ARG)];
+
+  const update = getUpdater(buildOptions);
 
   for await (const event of watcher) {
     // Don't build on access events
@@ -169,8 +172,14 @@ if (server) {
         runningTimer = setTimeout(async () => {
           // Spawn new process for re-building. This makes Deno check for updated
           // modules (i.e. layouts) and reloads them as neccessary.
-          const buildProcess = Deno.run({ cmd });
-          await buildProcess.status();
+          //const buildProcess = Deno.run({ cmd });
+          //await buildProcess.status();
+          // Update with the change
+          log.warning("Testing incremental builds in file watcher!");
+          await update({
+            inputPath: path.relative(Deno.cwd(), event.paths[0]),
+            type: "update",
+          });
           // Remember to reset the timer id
           runningTimer = 0;
         }, 100);
