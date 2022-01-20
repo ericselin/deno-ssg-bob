@@ -30,6 +30,7 @@ type ServerOptions = {
   port?: number;
   host?: string;
   log?: Logger;
+  proxy404?: string;
 };
 
 export const serve = (options: ServerOptions): void => {
@@ -37,7 +38,7 @@ export const serve = (options: ServerOptions): void => {
   const port = options.port ?? 8080;
   const host = options.host ?? "0.0.0.0";
   const addr = `${host}:${port}`;
-  const { log } = options;
+  const { log, proxy404 } = options;
 
   const handler = async (req: Request): Promise<Response> => {
     let response: Response;
@@ -51,7 +52,16 @@ export const serve = (options: ServerOptions): void => {
       response = await serveFile(req, fsPath);
     } catch (err) {
       if (err instanceof Deno.errors.NotFound) {
-        response = new Response(`Could not find ${fsPath ?? req.url}`, { status: 404 });
+        if (proxy404) {
+          const url = new URL(req.url);
+          url.host = proxy404;
+          log?.debug(`Proxying ${req.url} to ${url.toString()}...`);
+          response = await fetch(url, { ...req, redirect: "manual" });
+        } else {
+          response = new Response(`Could not find ${fsPath ?? req.url}`, {
+            status: 404,
+          });
+        }
       } else {
         log?.error(err.toString());
         response = new Response(err.toString(), { status: 500 });

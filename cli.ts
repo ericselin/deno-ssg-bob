@@ -140,12 +140,18 @@ if (functions) {
 }
 
 if (server) {
+  const functionsPort = 8081;
+
   // Start functions server
-  serveFunctions({ log, port: 8081, buildOptions });
+  serveFunctions({ log, port: functionsPort, buildOptions });
   log.warning("Server functions are not proxied from the main server port");
 
   // Start HTTP server of public folder
-  serveStatic({ directory: "public", log });
+  serveStatic({
+    directory: "public",
+    log,
+    proxy404: `localhost:${functionsPort}`,
+  });
 
   log.warning("Testing incremental builds in file watcher!");
 
