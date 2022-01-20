@@ -212,7 +212,7 @@ export type StaticFile = {
 /** Represents a change in the content or layout files. */
 export type Change = {
   inputPath: CwdRelativePath;
-  type: "create" | "update" | "delete";
+  type: "create" | "modify" | "delete";
 };
 
 // Helper types
@@ -240,7 +240,7 @@ export type FileWalkerCreator = (
   dirtyCheckerCreators: DirtyCheckerCreator[],
 ) => (
   options: BuildOptions,
-) => (dirpath: string) => LocationGenerator;
+) => () => LocationGenerator;
 export type LocationGenerator = AsyncGenerator<Location>;
 
 /** Get `Location` from `WalkEntry` provided by directory walker. */

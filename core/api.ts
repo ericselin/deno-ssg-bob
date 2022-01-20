@@ -23,6 +23,7 @@ or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>
 import type {
   Builder,
   BuildOptions,
+  BuildResults,
   Change,
   ContentGetter,
   Location,
@@ -111,7 +112,7 @@ const createContentGetter: ContentGetterCreator = (options) => {
 type Processor = (
   location: Location,
   processDependants?: boolean,
-) => Promise<boolean>;
+) => Promise<number>;
 type ProcessorGetter = (options: BuildOptions) => Processor;
 
 export const getProcessor: ProcessorGetter = (options) => {
@@ -142,7 +143,7 @@ export const getProcessor: ProcessorGetter = (options) => {
             .then(writeOutputFile)
             .then(() => dependencyWriter.write(content))
             .then(async () => {
-              if (!processDependants) return;
+              if (!processDependants) return 1;
               const deps = await dependencyWriter.getDependants(content);
               const locations = deps.map((path) => getLocation({ path }));
               options.log?.debug(
@@ -150,35 +151,89 @@ export const getProcessor: ProcessorGetter = (options) => {
                   locations.join(", ")
                 }`,
               );
-              return Promise.all(
-                locations.map((location) => process(location, false)),
+              return await locations.reduce(
+                async (previousCountPromise, location) => {
+                  const count = await previousCountPromise;
+                  return count + await process(location, false);
+                },
+                Promise.resolve(1),
               );
             })
-            .then(() => true)
           : content?.location.type === ContentType.Static
           ? Promise.resolve(content)
             .then(writeStaticFile)
-            .then(() => true)
-          : false
+            .then(() => 1)
+          : 0
       );
   };
 
   return process;
 };
 
-type Changer = (change: Change) => Promise<unknown>;
-export const getUpdater = (options: BuildOptions): Changer => {
+type Changer = (change: Change) => Promise<number>;
+export const getChanger = (options: BuildOptions): Changer => {
+  const { log } = options;
   const process = getProcessor(options);
   const getLocation = getWalkEntryProcessor(options);
   return async (change) => {
-    const location = getLocation({ path: change.inputPath });
-    await process(location);
+    if (change.type === "create" || change.type === "modify") {
+      const location = getLocation({ path: change.inputPath });
+      return await process(location);
+    }
+    log?.warning(`Cannot process change ${JSON.stringify(change)}`);
+    return 0;
   };
 };
 
-export const build: Builder = async (options) => {
+type ChangesApplier = (changes: Change[]) => Promise<BuildResults>;
+export const getChangesApplier = (options: BuildOptions): ChangesApplier => {
+  const { log } = options;
+  const applyChange = getChanger(options);
+  return async (changes) => {
+    let renderCount = 0;
+    const startTime = Date.now();
+    for (const change of changes) {
+      renderCount += await applyChange(change);
+    }
+    const results = { renderCount, durationMs: Date.now() - startTime };
+    log?.info(`Built ${results.renderCount} pages in ${results.durationMs} ms`);
+    return results;
+  };
+};
+
+const getFilesystemChanges = async (
+  options: BuildOptions,
+): Promise<Change[]> => {
+  const { log } = options;
+
+  const walkDirty = createDirtyFileWalker([
+    allDirtyOnForce,
+    dirtyLayoutsChanged,
+    dirtyFileMod,
+  ])(
+    options,
+  );
+
+  const changes: Change[] = [];
+
+  log?.debug("Getting file system -based changes...");
   const startTime = Date.now();
 
+  for await (const location of walkDirty()) {
+    try {
+      changes.push({ type: "modify", inputPath: location.inputPath });
+    } catch (e) {
+      log?.error(`Error rendering page ${location.inputPath}!`);
+      throw e;
+    }
+  }
+
+  log?.debug(`Got changes in ${Date.now() - startTime} ms`);
+
+  return changes;
+};
+
+export const build: Builder = async (options) => {
   const { contentDir, layoutDir, publicDir, force, log } = options;
 
   log?.debug(
@@ -195,34 +250,8 @@ export const build: Builder = async (options) => {
     await cleanDirectory(publicDir);
   }
 
-  const walkDirty = createDirtyFileWalker([
-    allDirtyOnForce,
-    dirtyLayoutsChanged,
-    dirtyFileMod,
-  ])(
-    options,
-  );
-  const process = getProcessor(options);
-
-  let renderCount = 0;
-
-  for await (const location of walkDirty(contentDir)) {
-    try {
-      const rendered = await process(location);
-
-      if (rendered) {
-        renderCount++;
-      }
-    } catch (e) {
-      log?.error(`Error rendering page ${location.inputPath}!`);
-      throw e;
-    }
-  }
-
-  const results = {
-    durationMs: Date.now() - startTime,
-    renderCount,
-  };
+  const changes = await getFilesystemChanges(options);
+  const results = await getChangesApplier(options)(changes);
 
   log?.info(`Built ${results.renderCount} pages in ${results.durationMs} ms`);
 

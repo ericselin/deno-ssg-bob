@@ -62,10 +62,10 @@ const createDirtyFileWalker: FileWalkerCreator = (dirtyCheckerCreators) =>
         yield location;
       }
     }
-    return (dirpath) => {
+    return () => {
       const dirtyCheckedWalker = dirtyCheckers.reduce(
         (walk, isDirty) => markDirty(walk, isDirty),
-        markDirty(walkFiles(options, dirpath)),
+        markDirty(walkFiles(options, options.contentDir)),
       );
       return yieldDirtyFilePaths(dirtyCheckedWalker);
     };

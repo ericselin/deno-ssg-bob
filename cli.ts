@@ -22,9 +22,10 @@ or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>
 
 import type { BuildOptions } from "./domain.ts";
 import { build, serve as serveStatic } from "./mod.ts";
-import { log, parseFlags, path } from "./deps.ts";
+import { log, parseFlags } from "./deps.ts";
 import { serve as serveFunctions } from "./functions/mod.ts";
-import { getUpdater } from "./core/api.ts";
+import { getChangesApplier } from "./core/api.ts";
+import changeOnFileModifications from "./core/change-providers/fs-mod.ts";
 
 const usage = `bob the static site builder
 
@@ -135,55 +136,19 @@ const buildOptions: BuildOptions = {
 await build(buildOptions);
 
 if (functions) {
-  serveFunctions({ log });
+  serveFunctions({ log, buildOptions });
 }
 
 if (server) {
   // Start functions server
-  serveFunctions({ log, port: 8081 });
+  serveFunctions({ log, port: 8081, buildOptions });
   log.warning("Server functions are not proxied from the main server port");
 
   // Start HTTP server of public folder
   serveStatic({ directory: "public", log });
 
-  /** File watcher for content and layout dirs. */
-  const watcher = Deno.watchFs([
-    buildOptions.layoutDir,
-    buildOptions.contentDir,
-  ]);
-  /** Timer id of `setTimeout` used for debouncing. */
-  let runningTimer = 0;
-  /**
-  Command to run. Always run via the `bob` executable.
-  Pass in original arguments, except for the "server" argument.
-  */
-  //const cmd = ["bob", ...Deno.args.filter((arg) => arg !== SERVER_ARG)];
+  log.warning("Testing incremental builds in file watcher!");
 
-  const update = getUpdater(buildOptions);
-
-  for await (const event of watcher) {
-    // Don't build on access events
-    if (event.kind !== "access") {
-      log.info(`Files changed: ${event.kind} ${event.paths}`);
-      // Continue only if we're not already waiting for a build to begin
-      if (!runningTimer) {
-        log.debug("Starting timeout for building");
-        // Start timeout for build
-        runningTimer = setTimeout(async () => {
-          // Spawn new process for re-building. This makes Deno check for updated
-          // modules (i.e. layouts) and reloads them as neccessary.
-          //const buildProcess = Deno.run({ cmd });
-          //await buildProcess.status();
-          // Update with the change
-          log.warning("Testing incremental builds in file watcher!");
-          await update({
-            inputPath: path.relative(Deno.cwd(), event.paths[0]),
-            type: "update",
-          });
-          // Remember to reset the timer id
-          runningTimer = 0;
-        }, 100);
-      }
-    }
-  }
+  const applyChanges = getChangesApplier(buildOptions);
+  changeOnFileModifications(buildOptions, applyChanges);
 }

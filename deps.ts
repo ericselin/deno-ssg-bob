@@ -26,6 +26,7 @@ export {
 } from "https://deno.land/std@0.109.0/testing/asserts.ts";
 export * as path from "https://deno.land/std@0.109.0/path/mod.ts";
 export * as yaml from "https://deno.land/std@0.109.0/encoding/yaml.ts";
+export * as fs from "https://deno.land/std@0.117.0/fs/mod.ts";
 export { exists } from "https://deno.land/std@0.109.0/fs/exists.ts";
 export { walk } from "https://deno.land/std@0.109.0/fs/walk.ts";
 export { expandGlob } from "https://deno.land/std@0.109.0/fs/expand_glob.ts";
@@ -38,3 +39,4 @@ export { log };
 export type Logger = typeof log;
 
 export { serve } from "https://deno.land/std@0.121.0/http/server.ts";
+export { debounce } from "https://deno.land/std/async/mod.ts";
