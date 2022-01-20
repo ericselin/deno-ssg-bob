@@ -144,7 +144,6 @@ if (server) {
 
   // Start functions server
   serveFunctions({ log, port: functionsPort, buildOptions });
-  log.warning("Server functions are not proxied from the main server port");
 
   // Start HTTP server of public folder
   serveStatic({
@@ -152,8 +151,6 @@ if (server) {
     log,
     proxy404: `localhost:${functionsPort}`,
   });
-
-  log.warning("Testing incremental builds in file watcher!");
 
   const applyChanges = getChangesApplier(buildOptions);
   changeOnFileModifications(buildOptions, applyChanges);
