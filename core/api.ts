@@ -247,12 +247,12 @@ export const createChangesApplier = (options: BuildOptions): ChangesApplier => {
   const applyChange = createChanger(options);
   const mapChangeToDependantChanges = createChangeToDependantChangesMapper(log);
   return async (changes) => {
-    console.log("original changes:", changes.length);
+    log?.debug(`${changes.length} changes requested`);
     const allChanges =
       (await Promise.all(changes.map(mapChangeToDependantChanges)))
         .flat()
         .filter(sanitizeChangesFilter);
-    console.log("all changes:", allChanges.length);
+    log?.debug(`${changes.length} changes in total including dependants`);
     const startTime = Date.now();
     for (const change of allChanges) {
       await applyChange(change);
@@ -332,8 +332,6 @@ export const build: Builder = async (options) => {
 
   const changes = await getFilesystemChanges(options);
   const results = await createChangesApplier(options)(changes);
-
-  log?.info(`Built ${results.renderCount} pages in ${results.durationMs} ms`);
 
   return results;
 };

@@ -133,18 +133,13 @@ const buildOptions: BuildOptions = {
   log,
 };
 
-await build(buildOptions);
+const functionsPort = 8081;
 
-if (functions) {
+if (functions || server) {
   serveFunctions({ log, buildOptions });
 }
 
 if (server) {
-  const functionsPort = 8081;
-
-  // Start functions server
-  serveFunctions({ log, port: functionsPort, buildOptions });
-
   // Start HTTP server of public folder
   serveStatic({
     directory: "public",
@@ -155,3 +150,5 @@ if (server) {
   const applyChanges = createChangesApplier(buildOptions);
   changeOnFileModifications(buildOptions, applyChanges);
 }
+
+await build(buildOptions);
