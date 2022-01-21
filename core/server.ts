@@ -56,7 +56,10 @@ export const serve = (options: ServerOptions): void => {
           const url = new URL(req.url);
           url.host = proxy404;
           log?.debug(`Proxying ${req.url} to ${url.toString()}...`);
-          response = await fetch(url, { ...req, redirect: "manual" });
+          response = await fetch(
+            url,
+            new Request(req, { redirect: "manual" }),
+          );
         } else {
           response = new Response(`Could not find ${fsPath ?? req.url}`, {
             status: 404,

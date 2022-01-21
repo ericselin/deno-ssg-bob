@@ -35,8 +35,8 @@ export const createDependencyWriter = (
   log?: Logger,
 ): {
   getPages: PagesGetter;
-  write: (dependantPage: Page) => Promise<void>;
-  getDependants: (page: Page) => Promise<string[]>;
+  write: (path: string) => Promise<void>;
+  getDependants: (path: string) => Promise<string[]>;
 } => {
   const deps: ContentDependencies = {};
   return {
@@ -44,18 +44,14 @@ export const createDependencyWriter = (
       pagesGetter(wantsPages).then((pages) =>
         pages.map((page) => createDependencyProxy(page, deps))
       ),
-    write: async (dependantPage) => {
+    write: async (path) => {
       log?.debug(
-        `Page "${dependantPage.location.inputPath}" dependencies: ${
-          JSON.stringify(deps, undefined, 2)
-        }`,
+        `Page "${path}" dependencies: ${JSON.stringify(deps, undefined, 2)}`,
       );
       await Promise.all(
         Object.entries(deps)
           // don't create a dependency to the page itself
-          .filter(([depencencyPath]) =>
-            depencencyPath !== dependantPage.location.inputPath
-          )
+          .filter(([depencencyPath]) => depencencyPath !== path)
           // create cache transactions for each write
           .map(async ([depencencyPath, accessedProps]) => {
             await cache.transaction(
@@ -63,26 +59,39 @@ export const createDependencyWriter = (
               async (cache, key) => {
                 await cache.put(key, {
                   ...(await cache.get<ContentDependants>(key)),
-                  [dependantPage.location.inputPath]: accessedProps,
+                  [path]: accessedProps,
                 });
               },
             );
           }),
       );
     },
-    getDependants: async (page) => {
+    getDependants: async (path) => {
       const deps = await cache.get<ContentDependants | undefined>(
-        `${page.location.inputPath}.dependants`,
+        `${path}.dependants`,
       );
       if (!deps) return [];
       const paths = Object.keys(deps);
       log?.debug(
-        `Got page "${page.location.inputPath} dependants: ${paths.join(", ")}"`,
+        `Got page "${path} dependants: ${paths.join(", ")}"`,
       );
       return paths;
     },
   };
 };
+
+export const createDependantsReader = (cache: Cache, log?: Logger) =>
+  async (path: string) => {
+    const deps = await cache.get<ContentDependants | undefined>(
+      `${path}.dependants`,
+    );
+    if (!deps) return [];
+    const paths = Object.keys(deps);
+    log?.debug(
+      `Got page "${path} dependants: ${paths.join(", ")}"`,
+    );
+    return paths;
+  };
 
 /**
 Check if the dependants of a particular page need updating.

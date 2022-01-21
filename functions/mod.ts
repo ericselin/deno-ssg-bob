@@ -2,7 +2,11 @@ import type { BuildOptions, Change, Logger } from "../domain.ts";
 import { ContentType } from "../domain.ts";
 import { loadIfExists } from "../core/module-loader.ts";
 import { fs, path, serve as listen } from "../deps.ts";
-import { createContentReader, getChanger, writeContent } from "../core/api.ts";
+import {
+  createChangesApplier,
+  createContentReader,
+  writeContent,
+} from "../core/api.ts";
 const FUNCTIONS_PATH = "functions/index.ts";
 
 export type FunctionHandler = (
@@ -35,7 +39,7 @@ type FunctionServerOptions = {
 
 const getContentUpdater = (buildOptions: BuildOptions): ContentUpdater => {
   const readContent = createContentReader(buildOptions);
-  const applyChange = getChanger(buildOptions);
+  const applyChange = createChangesApplier(buildOptions);
   return async (contentPath, frontmatterAssign, contentReplacement) => {
     if (contentReplacement !== undefined) {
       throw new Error("Not implemented");
@@ -55,15 +59,15 @@ const getContentUpdater = (buildOptions: BuildOptions): ContentUpdater => {
       },
     };
     await writeContent(newContent);
-    await applyChange({
+    await applyChange([{
       type: "modify",
       inputPath: newContent.location.inputPath,
-    });
+    }]);
   };
 };
 
 const getContentWriter = (buildOptions: BuildOptions): ContentWriter => {
-  const applyChange = getChanger(buildOptions);
+  const applyChange = createChangesApplier(buildOptions);
   return async (contentPath, content) => {
     // get content path
     const filepath = path.join(buildOptions.contentDir, contentPath);
@@ -77,7 +81,7 @@ const getContentWriter = (buildOptions: BuildOptions): ContentWriter => {
       inputPath: filepath,
     };
     // apply change
-    await applyChange(change);
+    await applyChange([change]);
   };
 };
 

@@ -1,5 +1,6 @@
 import type { BuildOptions, Change } from "../../domain.ts";
 import { debounce, path } from "./../../deps.ts";
+import { sanitizeChangesFilter } from "../changes.ts";
 
 export default async function changerFileModifications(
   buildOptions: BuildOptions,
@@ -7,9 +8,11 @@ export default async function changerFileModifications(
 ) {
   /** File watcher for content and layout dirs. */
   const watcher = Deno.watchFs([
-    buildOptions.layoutDir,
+    //buildOptions.layoutDir,
     buildOptions.contentDir,
   ]);
+
+  buildOptions.log?.warning("Not updating on layout changes");
 
   const pendingEvents: Deno.FsEvent[] = [];
   const getChanges = changesFromFsEvents(buildOptions);
@@ -71,26 +74,6 @@ const _eventToChange = (event: Deno.FsEvent): Change | Change[] => {
   throw new Error(`Could not process event ${JSON.stringify(event)}`);
 };
 
-/** Filter duplicates (inefficient algo, but we generally only have a few items in the array) */
-const _removeDuplicates = (
-  change: Change,
-  index: number,
-  changes: Change[],
-): boolean =>
-  changes.findIndex((c) =>
-    c.type === change.type && c.inputPath === change.inputPath
-  ) === index;
-
-/** Filter modifications for deleted and created files */
-const _removeModifiedWhenAlsoCreatedOrDeleted = (
-  change: Change,
-  _index: number,
-  changes: Change[],
-): boolean =>
-  change.type !== "modify" ||
-  changes.findIndex(
-      (c) => (c.inputPath === change.inputPath && c.type !== "modify"),
-    ) < 0;
 
 const changesFromFsEvents = ({ log }: BuildOptions) =>
   (events: Deno.FsEvent[]): Change[] => {
@@ -102,8 +85,7 @@ const changesFromFsEvents = ({ log }: BuildOptions) =>
       // above may create nested arrays, so flatten
       .flat()
       .map(_setInputPathToCwdRelative)
-      .filter(_removeDuplicates)
-      .filter(_removeModifiedWhenAlsoCreatedOrDeleted);
+      .filter(sanitizeChangesFilter);
     // clear array after transforming to changes
     events.splice(0);
     return changes;

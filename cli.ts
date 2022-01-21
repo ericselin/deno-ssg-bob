@@ -24,7 +24,7 @@ import type { BuildOptions } from "./domain.ts";
 import { build, serve as serveStatic } from "./mod.ts";
 import { log, parseFlags } from "./deps.ts";
 import { serve as serveFunctions } from "./functions/mod.ts";
-import { getChangesApplier } from "./core/api.ts";
+import { createChangesApplier } from "./core/api.ts";
 import changeOnFileModifications from "./core/change-providers/fs-mod.ts";
 
 const usage = `bob the static site builder
@@ -152,6 +152,6 @@ if (server) {
     proxy404: `localhost:${functionsPort}`,
   });
 
-  const applyChanges = getChangesApplier(buildOptions);
+  const applyChanges = createChangesApplier(buildOptions);
   changeOnFileModifications(buildOptions, applyChanges);
 }

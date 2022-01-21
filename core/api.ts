@@ -27,6 +27,7 @@ import type {
   Change,
   ContentGetter,
   Location,
+  Logger,
   Page,
   PageContent,
   PagesGetter,
@@ -35,7 +36,10 @@ import type {
 import { ContentType } from "../domain.ts";
 import { exists, expandGlob, md, path } from "../deps.ts";
 import { FileCache } from "./cache.ts";
-import { createDependencyWriter } from "./content-dependencies.ts";
+import {
+  createDependantsReader,
+  createDependencyWriter,
+} from "./content-dependencies.ts";
 import {
   cleanDirectory,
   createOutputFileWriter,
@@ -50,6 +54,7 @@ import render from "./renderer.ts";
 import createDirtyFileWalker from "./dirty-file-walk.ts";
 import getLayoutLoader from "./layout-loader.ts";
 import getWalkEntryProcessor from "./walk-entry-processor.ts";
+import { sanitizeChangesFilter } from "./changes.ts";
 
 type ContentGetterCreator = (options: BuildOptions) => ContentGetter;
 
@@ -180,7 +185,6 @@ export const createContentGetter: ContentGetterCreator = (options) => {
 
 type Processor = (
   location: Location,
-  processDependants?: boolean,
 ) => Promise<number>;
 type ProcessorGetter = (options: BuildOptions) => Processor;
 
@@ -190,10 +194,9 @@ export const getProcessor: ProcessorGetter = (options) => {
   const writeOutputFile = createOutputFileWriter(options);
   const writeStaticFile = createStaticFileWriter(options);
   const cache = new FileCache();
-  const getLocation = getWalkEntryProcessor(options);
 
   // run workflow
-  const process: Processor = (location, processDependants = false) => {
+  const process: Processor = (location) => {
     const dependencyWriter = createDependencyWriter(
       cache,
       pagesGetter,
@@ -210,24 +213,8 @@ export const getProcessor: ProcessorGetter = (options) => {
             .then(loadLayout)
             .then(render)
             .then(writeOutputFile)
-            .then(() => dependencyWriter.write(content))
-            .then(async () => {
-              if (!processDependants) return 1;
-              const deps = await dependencyWriter.getDependants(content);
-              const locations = deps.map((path) => getLocation({ path }));
-              options.log?.debug(
-                `Building "${content.location.inputPath}" dependant pages ${
-                  locations.join(", ")
-                }`,
-              );
-              return await locations.reduce(
-                async (previousCountPromise, location) => {
-                  const count = await previousCountPromise;
-                  return count + await process(location, false);
-                },
-                Promise.resolve(1),
-              );
-            })
+            .then(() => dependencyWriter.write(content.location.inputPath))
+            .then(() => 1)
           : content?.location.type === ContentType.Static
           ? Promise.resolve(content)
             .then(writeStaticFile)
@@ -240,7 +227,7 @@ export const getProcessor: ProcessorGetter = (options) => {
 };
 
 type Changer = (change: Change) => Promise<number>;
-export const getChanger = (options: BuildOptions): Changer => {
+const createChanger = (options: BuildOptions): Changer => {
   const { log } = options;
   const process = getProcessor(options);
   const getLocation = getWalkEntryProcessor(options);
@@ -255,18 +242,42 @@ export const getChanger = (options: BuildOptions): Changer => {
 };
 
 type ChangesApplier = (changes: Change[]) => Promise<BuildResults>;
-export const getChangesApplier = (options: BuildOptions): ChangesApplier => {
+export const createChangesApplier = (options: BuildOptions): ChangesApplier => {
   const { log } = options;
-  const applyChange = getChanger(options);
+  const applyChange = createChanger(options);
+  const mapChangeToDependantChanges = createChangeToDependantChangesMapper(log);
   return async (changes) => {
-    let renderCount = 0;
+    console.log("original changes:", changes.length);
+    const allChanges =
+      (await Promise.all(changes.map(mapChangeToDependantChanges)))
+        .flat()
+        .filter(sanitizeChangesFilter);
+    console.log("all changes:", allChanges.length);
     const startTime = Date.now();
-    for (const change of changes) {
-      renderCount += await applyChange(change);
+    for (const change of allChanges) {
+      await applyChange(change);
     }
-    const results = { renderCount, durationMs: Date.now() - startTime };
+    const results = {
+      renderCount: allChanges.length,
+      durationMs: Date.now() - startTime,
+    };
     log?.info(`Built ${results.renderCount} pages in ${results.durationMs} ms`);
     return results;
+  };
+};
+
+const createChangeToDependantChangesMapper = (log?: Logger) => {
+  const readDepandants = createDependantsReader(new FileCache(), log);
+  return async (change: Change): Promise<Change | Change[]> => {
+    const dependants = await readDepandants(change.inputPath);
+    if (!dependants.length) return change;
+    return [
+      change,
+      ...dependants.map((dep): Change => ({
+        inputPath: dep,
+        type: "modify",
+      })),
+    ];
   };
 };
 
@@ -320,7 +331,7 @@ export const build: Builder = async (options) => {
   }
 
   const changes = await getFilesystemChanges(options);
-  const results = await getChangesApplier(options)(changes);
+  const results = await createChangesApplier(options)(changes);
 
   log?.info(`Built ${results.renderCount} pages in ${results.durationMs} ms`);
 
