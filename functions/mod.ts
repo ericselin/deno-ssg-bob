@@ -1,7 +1,8 @@
 import type { BuildOptions, Change, Logger } from "../domain.ts";
+import { ContentType } from "../domain.ts";
 import { loadIfExists } from "../core/module-loader.ts";
 import { fs, path, serve as listen } from "../deps.ts";
-import { getChanger } from "../core/api.ts";
+import { createContentReader, getChanger, writeContent } from "../core/api.ts";
 const FUNCTIONS_PATH = "functions/index.ts";
 
 export type FunctionHandler = (
@@ -12,9 +13,15 @@ export type FunctionHandler = (
 type FunctionContext = {
   pathnameParams: Record<string, string>;
   writeAndRender: ContentWriter;
+  updateAndRender: ContentUpdater;
 };
 
 type ContentWriter = (contentPath: string, content: string) => Promise<void>;
+type ContentUpdater = (
+  contentPath: string,
+  frontmatter?: Record<string, unknown>,
+  content?: string,
+) => Promise<void>;
 
 type FunctionDefinition = [string, FunctionHandler];
 type FunctionDefinitions = FunctionDefinition[] | undefined;
@@ -24,6 +31,35 @@ type FunctionServerOptions = {
   log?: Logger;
   port?: number;
   buildOptions: BuildOptions;
+};
+
+const getContentUpdater = (buildOptions: BuildOptions): ContentUpdater => {
+  const readContent = createContentReader(buildOptions);
+  const applyChange = getChanger(buildOptions);
+  return async (contentPath, frontmatterAssign, contentReplacement) => {
+    if (contentReplacement !== undefined) {
+      throw new Error("Not implemented");
+    }
+    const content = await readContent(contentPath);
+    if (content?.type !== ContentType.Page) {
+      throw new Error(`Content in ${contentPath} is not a page`);
+    }
+    if (content.content) {
+      throw new Error("Not implemented");
+    }
+    const newContent = {
+      ...content,
+      frontmatter: {
+        ...content.frontmatter,
+        ...frontmatterAssign,
+      },
+    };
+    await writeContent(newContent);
+    await applyChange({
+      type: "modify",
+      inputPath: newContent.location.inputPath,
+    });
+  };
 };
 
 const getContentWriter = (buildOptions: BuildOptions): ContentWriter => {
@@ -63,13 +99,23 @@ export const serve = async (options: FunctionServerOptions) => {
   ) => [new URLPattern({ pathname }), handler]);
   // create content writer
   const writeAndRender = getContentWriter(buildOptions);
+  const updateAndRender = getContentUpdater(buildOptions);
   // start server
   listen((request) => {
     const fn = functions.find(([pattern]) => pattern.test(request.url));
     if (!fn) return new Response("Not found", { status: 404 });
     const [pattern, handler] = fn;
     const match = pattern.exec(request.url)!;
-    return handler(request, { pathnameParams: match.pathname.groups, writeAndRender });
+    try {
+      return handler(request, {
+        pathnameParams: match.pathname.groups,
+        writeAndRender,
+        updateAndRender,
+      });
+    } catch (err) {
+      log?.error(err.toString());
+      return new Response("Internal server error", { status: 500 });
+    }
   }, { port });
   log?.info(`Functions running on port ${port}`);
 };

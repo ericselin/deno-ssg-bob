@@ -20,7 +20,14 @@ Please contact the developers via GitHub <https://www.github.com/ericselin>
 or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>
 */
 
-import type { BuildOptions, Page, Html, Parser } from "../domain.ts";
+import type {
+  BuildOptions,
+  Html,
+  Page,
+  PageContent,
+  PageFile,
+  Parser,
+} from "../domain.ts";
 import { ContentType } from "../domain.ts";
 import { md, yaml } from "../deps.ts";
 
@@ -38,14 +45,10 @@ export const getContentFileParser = (
   parseContent: ContentParser,
   parseFrontmatter: FrontmatterParser,
 ) =>
-  ({ log }: BuildOptions): Parser =>
-    (contentFile) => {
-      const contentSplit = contentFile.content.split("\n---\n");
-      const rawContent = contentSplit.pop() || "";
-      const rawFrontmatter = contentSplit.pop() || "";
-      const frontmatter = parseFrontmatter(rawFrontmatter) as
-        | Record<string, unknown>
-        | undefined;
+  ({ log }: BuildOptions): Parser => {
+    const getFrontmatter = getFrontmatterParser(parseFrontmatter);
+    return (contentFile) => {
+      const { frontmatter, content: rawContent } = getFrontmatter(contentFile);
 
       const content: Page = {
         type: ContentType.Page,
@@ -85,5 +88,36 @@ export const getContentFileParser = (
 
       return content;
     };
+  };
+
+type PageFileWithFrontmatter = PageFile & {
+  frontmatter: Record<string, unknown>;
+  content: string;
+};
+
+export const getFrontmatterParser = (parse: FrontmatterParser) =>
+  (pageFile: PageFile): PageFileWithFrontmatter => {
+    const contentSplit = pageFile.content.split("\n---\n");
+    const content = contentSplit.pop() || "";
+    const rawFrontmatter = contentSplit.pop() || "";
+    const frontmatter = parse(rawFrontmatter) as
+      | Record<string, unknown>
+      | undefined;
+    return {
+      ...pageFile,
+      frontmatter: frontmatter || {},
+      content,
+    };
+  };
+
+export const parseFrontmatter = getFrontmatterParser(yaml.parse);
 
 export default getContentFileParser(markdownParser, yaml.parse);
+
+export const stringifyPageContent = (
+  content: { frontmatter: Record<string, unknown> },
+) =>
+  `---
+${yaml.stringify(content.frontmatter)}
+---
+`;

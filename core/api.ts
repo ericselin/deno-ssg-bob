@@ -28,10 +28,12 @@ import type {
   ContentGetter,
   Location,
   Page,
+  PageContent,
   PagesGetter,
+  StaticContent,
 } from "../domain.ts";
 import { ContentType } from "../domain.ts";
-import { exists, expandGlob, path } from "../deps.ts";
+import { exists, expandGlob, md, path } from "../deps.ts";
 import { FileCache } from "./cache.ts";
 import { createDependencyWriter } from "./content-dependencies.ts";
 import {
@@ -43,7 +45,7 @@ import {
 import dirtyFileMod from "./dirty-checkers/file-mod.ts";
 import dirtyLayoutsChanged from "./dirty-checkers/layouts.ts";
 import allDirtyOnForce from "./dirty-checkers/force-build.ts";
-import getParser from "./parser.ts";
+import getParser, { stringifyPageContent } from "./parser.ts";
 import render from "./renderer.ts";
 import createDirtyFileWalker from "./dirty-file-walk.ts";
 import getLayoutLoader from "./layout-loader.ts";
@@ -82,7 +84,74 @@ const createPagesGetter = (
   };
 };
 
-const createContentGetter: ContentGetterCreator = (options) => {
+/** Path to content file. If it starts with a slash, it's considered relative to the
+ * root directory, if not it's considered relative to the content directory */
+type ContentFilePath = string;
+
+export const createContentReader = (
+  options: BuildOptions,
+) => {
+  const contentFilePathToLocation = createContentFilePathToLocation(options);
+  return (filepath: string): Promise<StaticContent | PageContent | undefined> =>
+    Promise
+      .resolve(filepath)
+      .then(contentFilePathToLocation)
+      .then(async (location) =>
+        location.type === ContentType.Static
+          ? staticLocationToContent(location as Location<ContentType.Static>)
+          : location.type === ContentType.Page
+          ? await readPageLocation(location as Location<ContentType.Page>)
+          : undefined
+      );
+};
+
+const createContentFilePathToLocation = (options: BuildOptions) => {
+  const inputPathToLocation = getWalkEntryProcessor(options);
+  return (filepath: ContentFilePath): Location => {
+    // add content dir if not starting with slash
+    if (!filepath.startsWith("/")) {
+      filepath = path.join(options.contentDir, filepath);
+    } // remove extra beginning slash otherwise
+    else filepath = filepath.substring(1);
+    return inputPathToLocation({ path: filepath });
+  };
+};
+const staticLocationToContent = (
+  staticLocation: Location<ContentType.Static>,
+): StaticContent => ({
+  type: ContentType.Static,
+  location: staticLocation,
+});
+
+const readPageLocation = (
+  pageLocation: Location<ContentType.Page>,
+): Promise<PageContent> =>
+  Promise
+    .resolve(pageLocation)
+    .then(async (location) => ({
+      type: ContentType.Page,
+      location,
+      rawContent: await Deno.readTextFile(location.inputPath),
+    }))
+    .then(({ rawContent, ...page }) => {
+      const parsed = md.parse(rawContent);
+      return ({
+        ...page,
+        type: ContentType.Page,
+        frontmatter: parsed.meta,
+        content: parsed.content,
+      });
+    });
+
+export const writeContent = (
+  content: { location: Location; frontmatter: Record<string, unknown> },
+): Promise<void> =>
+  Deno.writeTextFile(
+    content.location.inputPath,
+    stringifyPageContent({ frontmatter: content.frontmatter }),
+  );
+
+export const createContentGetter: ContentGetterCreator = (options) => {
   const { buildDrafts } = options;
   const readFile = readContentFile(options);
   const parse = getParser(options);
@@ -124,7 +193,7 @@ export const getProcessor: ProcessorGetter = (options) => {
   const getLocation = getWalkEntryProcessor(options);
 
   // run workflow
-  const process: Processor = (location, processDependants = true) => {
+  const process: Processor = (location, processDependants = false) => {
     const dependencyWriter = createDependencyWriter(
       cache,
       pagesGetter,

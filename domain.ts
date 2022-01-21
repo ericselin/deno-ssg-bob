@@ -159,6 +159,13 @@ export type Page<T = unknown> = {
   content: Html;
 };
 
+export type PageContent = {
+  type: ContentType.Page;
+  location: Location<ContentType.Page>;
+  frontmatter: Record<string, unknown>;
+  content: Html;
+};
+
 /** Something that should just be copied to the `public` directory. */
 export type StaticContent = {
   type: ContentType.Static;
@@ -307,7 +314,10 @@ export interface Cache {
   transaction(key: string, fn: CacheTransactionCallback): Promise<void>;
 }
 
-export type CacheTransactionCallback = (cache: Cache, lockedKey: string) => Promise<void>;
+export type CacheTransactionCallback = (
+  cache: Cache,
+  lockedKey: string,
+) => Promise<void>;
 
 // Utility types
 
