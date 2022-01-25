@@ -23,7 +23,10 @@ or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>
 import type { BuildOptions } from "./domain.ts";
 import { build, serve as serveStatic } from "./mod.ts";
 import { log, parseFlags } from "./deps.ts";
-import { serve as serveFunctions } from "./functions/mod.ts";
+import {
+  serve as serveFunctions,
+  writeNginxLocations,
+} from "./functions/mod.ts";
 import { createChangesApplier } from "./core/api.ts";
 import changeOnFileModifications from "./core/change-providers/fs-mod.ts";
 
@@ -50,6 +53,8 @@ OPTIONS:
   -f, --force     force build everything
                   will clean the current public directory
   -d, --drafts    build draft pages
+  --fn-nginx-conf write function locations to nginx configuration file
+  --fn-hostname   hostname to use for nginx proxing
   -v, --verbose   verbose logging
   -h, --help      show help
   -l, --license   show license information`;
@@ -90,6 +95,8 @@ const {
     verbose: "v",
     help: "h",
     license: "l",
+    fnNginxConf: "fn-nginx-conf",
+    fnHostname: "fn-hostname",
   },
 });
 
@@ -137,6 +144,14 @@ const functionsPort = 8081;
 
 if (functions || server) {
   serveFunctions({ log, buildOptions });
+}
+
+if (args.fnNginxConf) {
+  if (!args.fnHostname) {
+    throw new Error("Please provide hostname for nginx proxy (--fn-hostname)");
+  }
+  log.info(`Writing nginx locations to ${args.fnNginxConf}`);
+  await writeNginxLocations(args.fnNginxConf, args.fnHostname, functionsPort);
 }
 
 if (server) {

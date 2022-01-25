@@ -4,7 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 2.3.0-beta
+## Unreleased
+
+### Added
+
+- Generate Nginx location config for functions
+
+    The cli arguments `--fn-nginx-conf` and `--fn-hostname` now work together to create a configuration file for Nginx. This file includes locations of the functions (with path parameters transformed to regular expressions), and can be imported into a `server` section in an Nginx configuration file.
+
+## 2.3.0-beta (2022-01-21)
 
 ### Added
 

@@ -7,7 +7,26 @@ import {
   createContentReader,
   writeContent,
 } from "../core/api.ts";
+import { writeNginxLocations as writeNginxLocationsInternal } from "./nginx-locations.ts";
 const FUNCTIONS_PATH = "functions/index.ts";
+
+export const writeNginxLocations = async (
+  filepath: string,
+  hostname: string,
+  port: number,
+) => {
+  const functionDefinitions = (await loadIfExists(FUNCTIONS_PATH))
+    ?.default as Functions;
+  if (!functionDefinitions) {
+    throw new Error(`Functions not found at ${FUNCTIONS_PATH}`);
+  }
+  await writeNginxLocationsInternal({
+    filepath,
+    hostname,
+    port,
+    functions: functionDefinitions,
+  });
+};
 
 export type FunctionHandler = (
   req: Request,
@@ -28,8 +47,8 @@ type ContentUpdater = (
 ) => Promise<void>;
 
 type FunctionDefinition = [string, FunctionHandler];
-type FunctionDefinitions = FunctionDefinition[] | undefined;
-type Functions = [URLPattern, FunctionHandler][];
+export type Functions = FunctionDefinition[];
+type FunctionsPatterns = [URLPattern, FunctionHandler][];
 
 type FunctionServerOptions = {
   log?: Logger;
@@ -92,13 +111,13 @@ export const serve = async (options: FunctionServerOptions) => {
   );
   // load functions
   const functionDefinitions = (await loadIfExists(FUNCTIONS_PATH))
-    ?.default as FunctionDefinitions;
+    ?.default as Functions;
   if (!functionDefinitions) {
     log?.info(`No server functions found ("${FUNCTIONS_PATH}")`);
     return;
   }
   // create url patterns
-  const functions: Functions = functionDefinitions.map((
+  const functions: FunctionsPatterns = functionDefinitions.map((
     [pathname, handler],
   ) => [new URLPattern({ pathname }), handler]);
   // create content writer
