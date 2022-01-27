@@ -46,15 +46,12 @@ import {
   createStaticFileWriter,
   readContentFile,
 } from "./fs.ts";
-import dirtyFileMod from "./dirty-checkers/file-mod.ts";
-import dirtyLayoutsChanged from "./dirty-checkers/layouts.ts";
-import allDirtyOnForce from "./dirty-checkers/force-build.ts";
 import getParser, { stringifyPageContent } from "./parser.ts";
 import render from "./renderer.ts";
-import createDirtyFileWalker from "./dirty-file-walk.ts";
 import getLayoutLoader from "./layout-loader.ts";
 import getWalkEntryProcessor from "./walk-entry-processor.ts";
 import { sanitizeChangesFilter } from "./changes.ts";
+import { getFilesystemChanges } from "./changes-fs.ts";
 
 type ContentGetterCreator = (options: BuildOptions) => ContentGetter;
 
@@ -279,38 +276,6 @@ const createChangeToDependantChangesMapper = (log?: Logger) => {
       })),
     ];
   };
-};
-
-const getFilesystemChanges = async (
-  options: BuildOptions,
-): Promise<Change[]> => {
-  const { log } = options;
-
-  const walkDirty = createDirtyFileWalker([
-    allDirtyOnForce,
-    dirtyLayoutsChanged,
-    dirtyFileMod,
-  ])(
-    options,
-  );
-
-  const changes: Change[] = [];
-
-  log?.debug("Getting file system -based changes...");
-  const startTime = Date.now();
-
-  for await (const location of walkDirty()) {
-    try {
-      changes.push({ type: "modify", inputPath: location.inputPath });
-    } catch (e) {
-      log?.error(`Error rendering page ${location.inputPath}!`);
-      throw e;
-    }
-  }
-
-  log?.debug(`Got changes in ${Date.now() - startTime} ms`);
-
-  return changes;
 };
 
 export const build: Builder = async (options) => {

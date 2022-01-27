@@ -216,10 +216,13 @@ export type StaticFile = {
   location: Location<ContentType.Static>;
 };
 
+/** Change types available */
+export type ChangeType = "create" | "modify" | "delete";
+
 /** Represents a change in the content or layout files. */
 export type Change = {
   inputPath: CwdRelativePath;
-  type: "create" | "modify" | "delete";
+  type: ChangeType;
 };
 
 // Helper types
