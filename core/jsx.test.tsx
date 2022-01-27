@@ -122,7 +122,7 @@ Deno.test("childPages pages getter run with correct glob", async () => {
 Deno.test("childPages calls getPage only for index.md files", async () => {
   const getPages = (_glob: string | string[]): Promise<Page[]> => {
     throw new Error("This should not be called");
-  }
+  };
 
   const render = createRenderer({
     contentDir: "../content",
@@ -150,5 +150,59 @@ Deno.test("childPages calls getPage only for index.md files", async () => {
   assertEquals(
     await render(<Children />),
     "<p></p>",
+  );
+});
+
+Deno.test("jsx renders numbers", async () => {
+  const Base: Component = () => (
+    <div>
+      Hello number {1}
+    </div>
+  );
+
+  assertEquals(
+    await render(<Base />),
+    "<div>Hello number 1</div>",
+  );
+});
+
+Deno.test("jsx renders undefined and null as empty string", async () => {
+  const Base: Component = () => (
+    <div>
+      This is empty {undefined}
+      {null}
+    </div>
+  );
+
+  assertEquals(
+    await render(<Base />),
+    "<div>This is empty </div>",
+  );
+});
+
+Deno.test("jsx does not render end tag for empty tags such as br", async () => {
+  // source for empty elements: https://developer.mozilla.org/en-US/docs/Glossary/Empty_element
+  const Base: Component = () => (
+    <div>
+      <area />
+      <base />
+      <br />
+      <col />
+      <embed />
+      <hr />
+      <img />
+      <input />
+      <link />
+      <meta />
+      <param />
+      <source />
+      <track />
+      <wbr />
+    </div>
+  );
+
+  assertEquals(
+    await render(<Base />),
+    "<div><area><base><br><col><embed><hr><img><input><link><meta><param><source><track><wbr></div>",
   );
 });

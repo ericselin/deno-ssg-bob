@@ -114,8 +114,25 @@ export type PagesGetter = (wantsPages: WantsPages) => Promise<Page[]>;
 
 type ElementType = Component<DefaultProps, unknown, unknown, unknown> | string;
 
-type Child = Element | string;
+type Child = Element | string | number | boolean | null | undefined;
 type Children = Child | Child[];
+
+export const HTMLEmptyElements = [
+  "area",
+  "base",
+  "br",
+  "col",
+  "embed",
+  "hr",
+  "img",
+  "input",
+  "link",
+  "meta",
+  "param",
+  "source",
+  "track",
+  "wbr",
+];
 
 declare global {
   namespace JSX {

@@ -30,6 +30,7 @@ import type {
   Page,
   Props,
 } from "../domain.ts";
+import { HTMLEmptyElements } from "../domain.ts";
 import { path } from "../deps.ts";
 
 export const h: ElementCreator = (type, props, ...children) => {
@@ -67,67 +68,90 @@ export const createRenderer: ElementRendererCreator = (options, getPages) =>
 
       component = await component;
 
-      if (!component) return "";
-
-      if (typeof component === "string") {
-        return component;
-      }
-
-      if ("length" in component) {
+      // if this is an array, render recursively
+      if (Array.isArray(component)) {
         for (const c of component) {
           html += await render(c);
         }
         return html;
       }
 
-      if (typeof component.type !== "string") {
-        const props = component.props || {};
-        props.children = component.children;
-        if (component.needsCss) {
-          renderContext.needsCss = [
-            ...renderContext.needsCss,
-            path.join(options.layoutDir, component.needsCss),
-          ];
-        }
-        const context: Context = {
-          page: contentPage as Page,
-          needsCss: renderContext.needsCss,
-          get childPages() {
-            if (getPages && _shouldHaveChildPages(this.page.location)) {
-              return getPages(_getChildPagesGlobs(this.page.location));
-            }
-            return undefined;
-          },
-        };
-        if (component.wantsPages) {
-          context.wantedPages = getPages &&
-            // get all wanted pages
-            await getPages(component.wantsPages)
-              .then((wantedPages) =>
-                // filter out the current page from wanted pages
-                wantedPages.filter((page) =>
-                  page.location.inputPath !==
-                    context.page.location.inputPath
-                )
-              );
-        }
-        component = await component.type(props, context);
-        return render(component);
+      if (component === null) {
+        return "";
       }
 
-      const { type, props, children } = component;
-
-      html += `<${type}${renderProps(props)}>`;
-
-      if (children) {
-        for (const child of children) {
-          html += await render(child);
-        }
+      switch (typeof component) {
+        case "undefined":
+          return "";
+        case "string":
+          return component;
+        case "number":
+        case "boolean":
+          return component.toString();
       }
 
-      html += `</${type}>`;
+      // see if this is an html tag
+      if (typeof component.type === "string") {
+        const { type, props, children } = component;
 
-      return html;
+        html += `<${type}${renderProps(props)}>`;
+
+        // if this is an "empty element", don't render children or end tag
+        if (HTMLEmptyElements.includes(type)) {
+          children && children.length &&
+            options.log?.error(
+              `HTML element ${type} on page ${
+                contentPage?.location.inputPath
+              } should not have children!`,
+            );
+          return html;
+        }
+
+        if (children) {
+          for (const child of children) {
+            html += await render(child);
+          }
+        }
+
+        html += `</${type}>`;
+
+        return html;
+      }
+
+      // if we get here, the element should be an actual renderable jsx component
+
+      const props = component.props || {};
+      props.children = component.children;
+      if (component.needsCss) {
+        renderContext.needsCss = [
+          ...renderContext.needsCss,
+          path.join(options.layoutDir, component.needsCss),
+        ];
+      }
+      const context: Context = {
+        page: contentPage as Page,
+        needsCss: renderContext.needsCss,
+        get childPages() {
+          if (getPages && _shouldHaveChildPages(this.page.location)) {
+            return getPages(_getChildPagesGlobs(this.page.location));
+          }
+          return undefined;
+        },
+      };
+      if (component.wantsPages) {
+        context.wantedPages = getPages &&
+          // get all wanted pages
+          await getPages(component.wantsPages)
+            .then((wantedPages) =>
+              // filter out the current page from wanted pages
+              wantedPages.filter((page) =>
+                page.location.inputPath !==
+                  context.page.location.inputPath
+              )
+            );
+      }
+      component = await component.type(props, context);
+      return render(component);
     };
     return render;
   };
