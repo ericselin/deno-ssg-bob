@@ -4,7 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 2.3.0-rc1
+
+### Fixed
+
+- Content file deletions and creations are now correctly processed into changes
+
+    This is done by comparing the content and public directories, and seeing if a file in one direcory has a corresponding file in the other.
+
+- JSX now renders [empty HTML elements](https://developer.mozilla.org/en-US/docs/Glossary/Empty_element) without the end tag.
+
+- JSX now renders numbers and booleans with the `toString()` method.
 
 ### Added
 
@@ -104,7 +114,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Specify layout in content frontmatter ([0514da1])
 
-# 1.0.0 (2021-10-07)
+## 1.0.0 (2021-10-07)
 
 ### Fixes
 
