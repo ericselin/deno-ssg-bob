@@ -4,7 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 2.3.0-rc1
+## 2.3.0-rc2 - 2022-01-28
+
+### Changed
+
+- Functions CLI action (`bob functions`) doesn't build the site anymore, it just serves the functions. Decoupling imports and builds from functions means it'll be much easier to manage a 100% uptime with functions.
+
+## 2.3.0-rc1 - 2022-01-27
 
 ### Fixed
 

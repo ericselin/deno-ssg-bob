@@ -143,15 +143,18 @@ const buildOptions: BuildOptions = {
 const functionsPort = 8081;
 
 if (functions || server) {
-  serveFunctions({ log, buildOptions });
+  await serveFunctions({ log, buildOptions });
 }
 
 if (args.fnNginxConf) {
-  if (!args.fnHostname) {
-    throw new Error("Please provide hostname for nginx proxy (--fn-hostname)");
+  const hostname = args.fnHostname || Deno.env.get("HOSTNAME");
+  if (!hostname) {
+    throw new Error("Please provide hostname for nginx proxy (--fn-hostname or $HOSTNAME)");
   }
+  log.info(`Functions using hostname ${hostname}`);
   log.info(`Writing nginx locations to ${args.fnNginxConf}`);
-  await writeNginxLocations(args.fnNginxConf, args.fnHostname, functionsPort);
+  await writeNginxLocations(args.fnNginxConf, hostname, functionsPort);
+  log.info(`Done! Feel free to reload nginx and possibly stop previous functions server`);
 }
 
 if (server) {
@@ -166,4 +169,6 @@ if (server) {
   changeOnFileModifications(buildOptions, applyChanges);
 }
 
-await build(buildOptions);
+if (!functions) {
+  await build(buildOptions);
+}
