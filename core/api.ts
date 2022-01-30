@@ -38,7 +38,9 @@ import { exists, expandGlob, md, path } from "../deps.ts";
 import { FileCache } from "./cache.ts";
 import {
   createDependantsReader,
+  createDependencyPurger,
   createDependencyWriter,
+  createNewDependantsGetter,
 } from "./content-dependencies.ts";
 import {
   cleanDirectory,
@@ -50,7 +52,7 @@ import getParser, { stringifyPageContent } from "./parser.ts";
 import render from "./renderer.ts";
 import getLayoutLoader from "./layout-loader.ts";
 import getWalkEntryProcessor from "./walk-entry-processor.ts";
-import { sanitizeChangesFilter } from "./changes.ts";
+import { createInputPathsGetter, sanitizeChangesFilter } from "./changes.ts";
 import { getFilesystemChanges } from "./changes-fs.ts";
 
 type ContentGetterCreator = (options: BuildOptions) => ContentGetter;
@@ -190,13 +192,13 @@ export const getProcessor: ProcessorGetter = (options) => {
   const pagesGetter = createPagesGetter(options, getContent);
   const writeOutputFile = createOutputFileWriter(options);
   const writeStaticFile = createStaticFileWriter(options);
-  const cache = new FileCache();
 
   // run workflow
   const process: Processor = (location) => {
     const dependencyWriter = createDependencyWriter(
-      cache,
+      options.cache,
       pagesGetter,
+      options.contentDir,
       options.log,
     );
     const loadLayout = getLayoutLoader(options, dependencyWriter.getPages);
@@ -228,13 +230,31 @@ const createChanger = (options: BuildOptions): Changer => {
   const { log } = options;
   const process = getProcessor(options);
   const getLocation = getWalkEntryProcessor(options);
+  const getAllPossibleInputPaths = createInputPathsGetter(options);
+  const purgeDependencies = createDependencyPurger(options.cache);
   return async (change) => {
-    if (change.type === "create" || change.type === "modify") {
-      const location = getLocation({ path: change.inputPath });
-      return await process(location);
+    switch (change.type) {
+      case "create":
+      case "modify":
+        return await process(getLocation({ path: change.inputPath }));
+      case "delete":
+        await purgeDependencies(change.inputPath).catch(() => {
+          log?.debug(`No cached dependants for ${change.inputPath}`);
+        });
+        await Deno.remove(getLocation({ path: change.inputPath }).outputPath);
+        return 1;
+      case "orphan":
+        await Promise.any(
+          getAllPossibleInputPaths(change.outputPath).map((inputPath) =>
+            purgeDependencies(inputPath)
+          ),
+        ).catch(() => {
+          /* this should be a file not found, so just swallow */
+          log?.debug(`No cached dependants found for ${change.outputPath}`);
+        });
+        await Deno.remove(change.outputPath);
+        return 1;
     }
-    log?.warning(`Cannot process change ${JSON.stringify(change)}`);
-    return 0;
   };
 };
 
@@ -242,14 +262,17 @@ type ChangesApplier = (changes: Change[]) => Promise<BuildResults>;
 export const createChangesApplier = (options: BuildOptions): ChangesApplier => {
   const { log } = options;
   const applyChange = createChanger(options);
-  const mapChangeToDependantChanges = createChangeToDependantChangesMapper(log);
+  const mapChangeToDependantChanges = createChangeToDependantChangesMapper(
+    options,
+  );
   return async (changes) => {
     log?.debug(`${changes.length} changes requested`);
     const allChanges =
       (await Promise.all(changes.map(mapChangeToDependantChanges)))
         .flat()
         .filter(sanitizeChangesFilter);
-    log?.debug(`${changes.length} changes in total including dependants`);
+    log?.debug(`${allChanges.length} changes in total including dependants`);
+    log?.debug(JSON.stringify(allChanges));
     const startTime = Date.now();
     for (const change of allChanges) {
       await applyChange(change);
@@ -258,15 +281,38 @@ export const createChangesApplier = (options: BuildOptions): ChangesApplier => {
       renderCount: allChanges.length,
       durationMs: Date.now() - startTime,
     };
-    log?.info(`Built ${results.renderCount} pages in ${results.durationMs} ms`);
+    log?.info(
+      `Applied ${results.renderCount} changes in ${results.durationMs} ms`,
+    );
     return results;
   };
 };
 
-const createChangeToDependantChangesMapper = (log?: Logger) => {
-  const readDepandants = createDependantsReader(new FileCache(), log);
+const createChangeToDependantChangesMapper = (
+  { log, contentDir, publicDir }: {
+    log?: Logger;
+    contentDir: string;
+    publicDir: string;
+  },
+) => {
+  const cache = new FileCache();
+  const readDepandants = createDependantsReader(cache, log);
+  const getNewDependants = createNewDependantsGetter(cache);
+  const getAllPossibleInputPaths = createInputPathsGetter({
+    contentDir,
+    publicDir,
+  });
   return async (change: Change): Promise<Change | Change[]> => {
-    const dependants = await readDepandants(change.inputPath);
+    let dependants: string[];
+    if (change.type === "create") {
+      dependants = await getNewDependants(change.inputPath);
+    } else if (change.type === "orphan") {
+      const allPossibleInputPaths = getAllPossibleInputPaths(change.outputPath);
+      dependants =
+        (await Promise.all(allPossibleInputPaths.map(readDepandants))).flat();
+    } else {
+      dependants = await readDepandants(change.inputPath);
+    }
     if (!dependants.length) return change;
     return [
       change,

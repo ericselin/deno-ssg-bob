@@ -30,12 +30,18 @@ export default async function changerFileModifications(
 }
 
 /** Set path relative to CWD */
-const _setInputPathToCwdRelative = (
-  { inputPath, ...change }: Change,
-): Change => ({
-  ...change,
-  inputPath: path.relative(Deno.cwd(), inputPath),
-});
+const _setPathToCwdRelative = (
+  change: Change,
+): Change =>
+  "inputPath" in change
+    ? {
+      ...change,
+      inputPath: path.relative(Deno.cwd(), change.inputPath),
+    }
+    : {
+      ...change,
+      outputPath: path.relative(Deno.cwd(), change.outputPath),
+    };
 
 /** Create one or many changes based on a filesystem event */
 const _eventToChange = (event: Deno.FsEvent): Change | Change[] => {
@@ -74,7 +80,6 @@ const _eventToChange = (event: Deno.FsEvent): Change | Change[] => {
   throw new Error(`Could not process event ${JSON.stringify(event)}`);
 };
 
-
 const changesFromFsEvents = ({ log }: BuildOptions) =>
   (events: Deno.FsEvent[]): Change[] => {
     log?.debug(`Creating changes from fs events ${JSON.stringify(events)}`);
@@ -84,7 +89,7 @@ const changesFromFsEvents = ({ log }: BuildOptions) =>
       .map(_eventToChange)
       // above may create nested arrays, so flatten
       .flat()
-      .map(_setInputPathToCwdRelative)
+      .map(_setPathToCwdRelative)
       .filter(sanitizeChangesFilter);
     // clear array after transforming to changes
     events.splice(0);

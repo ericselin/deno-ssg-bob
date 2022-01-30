@@ -29,6 +29,8 @@ const getLocation = createWalkEntryProcessor({
   layoutDir: "layout",
   publicDir: "public",
   baseUrl: "https://mypage.com",
+  // @ts-ignore not needed
+  cache: undefined,
 });
 
 //@ts-ignore Partial includes needed properties

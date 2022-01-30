@@ -3,6 +3,7 @@ import type { Page, PagesGetter } from "../domain.ts";
 import { ContentType } from "../domain.ts";
 import { MemoryCache } from "./cache.ts";
 import {
+  _matchGlobs,
   createDependencyChecker,
   createDependencyWriter,
 } from "./content-dependencies.ts";
@@ -28,14 +29,14 @@ Deno.test("dependency writer works for title", async () => {
       title: "My page",
       content: "Some content here",
     })]);
-  const depsCache = createDependencyWriter(cache, pagesGetter);
+  const depsCache = createDependencyWriter(cache, pagesGetter, "");
 
   // get pages
   const pages = await depsCache.getPages("");
   // access title
   pages.map((page) => page.title);
   // write deps
-  await depsCache.write(createPage("dependant", {}));
+  await depsCache.write("dependant");
 
   // create dependency checker
   const checkDeps = createDependencyChecker(cache);
@@ -58,7 +59,7 @@ Deno.test("dependency writer works for title", async () => {
         content: "Updated content",
       }),
     ),
-    ["content/dependant"],
+    ["dependant"],
   );
 });
 
@@ -68,7 +69,7 @@ Deno.test("dependency writer works for concurrent builds", async () => {
     Promise.resolve([createPage("dependency", {
       title: "My page",
     })]);
-  const depsCache = createDependencyWriter(cache, pagesGetter);
+  const depsCache = createDependencyWriter(cache, pagesGetter, "");
 
   // get pages
   const pages = await depsCache.getPages("");
@@ -76,8 +77,8 @@ Deno.test("dependency writer works for concurrent builds", async () => {
   pages.map((page) => page.title);
   // write deps
   await Promise.all([
-    depsCache.write(createPage("dependant-1", {})),
-    depsCache.write(createPage("dependant-2", {})),
+    depsCache.write("dependant-1"),
+    depsCache.write("dependant-2"),
   ]);
 
   // create dependency checker
@@ -99,6 +100,22 @@ Deno.test("dependency writer works for concurrent builds", async () => {
         title: "My new page",
       }),
     ),
-    ["content/dependant-1", "content/dependant-2"],
+    ["dependant-1", "dependant-2"],
   );
+});
+
+Deno.test("created page matcher works", () => {
+  const globs = {
+    "page-1": ["**/*.md"],
+    "page-2": ["*/*.md"],
+    "page-3": ["dir/**/*.md"],
+    "page-4": ["sub/*/*.md"],
+    "page-5": ["**/*.md"],
+  };
+  assertEquals(_matchGlobs(globs, "sub/dir/page.md"), [
+    "page-1",
+    "page-4",
+    "page-5",
+  ]);
+  assertEquals(_matchGlobs(globs, "index.md"), ["page-1", "page-5"]);
 });

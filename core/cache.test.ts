@@ -1,27 +1,36 @@
 import { delay } from "https://deno.land/std/async/mod.ts";
 import { assertEquals } from "../deps.ts";
-import { MemoryCache } from "./cache.ts";
+import { FileCache, MemoryCache } from "./cache.ts";
 
-Deno.test("memory cache implementation works", async () => {
+Deno.test("memory cache add works", async () => {
   const cache = new MemoryCache();
-  await cache.put("test", "value");
-  assertEquals(await cache.get("test"), "value");
-  // create concurrent transactions
   await Promise.all([
-    cache.transaction("test", async (cache, key) => {
-      const curr = await cache.get(key);
-      await delay(100);
-      await cache.put(key, curr + " first");
-    }),
-    cache.transaction("test", async (cache, key) => {
-      const curr = await cache.get(key);
-      await delay(1);
-      await cache.put(key, curr + " second");
-    }),
-    cache.transaction("test", async (cache, key) => {
-      const curr = await cache.get(key);
-      cache.put(key, curr + " third");
-    }),
+    delay(100).then(() => cache.add("test", { a: "third" })),
+    delay(1).then(() => cache.add("test", { b: "second" })),
+    cache.add("test", { c: "first" }),
   ]);
-  assertEquals(await cache.get("test"), "value first second third");
-})
+  assertEquals(await cache.get("test"), {
+    a: "third",
+    b: "second",
+    c: "first",
+  });
+});
+
+Deno.test("file cache add works", async () => {
+  const tempDir = await Deno.makeTempDir();
+  const cache = new FileCache(tempDir);
+  try {
+    await Promise.all([
+      cache.add("test", { a: "third" }),
+      cache.add("test", { b: "second" }),
+      cache.add("test", { c: "first" }),
+    ]);
+    assertEquals(await cache.get("test"), {
+      a: "third",
+      b: "second",
+      c: "first",
+    });
+  } finally {
+    await Deno.remove(tempDir, { recursive: true });
+  }
+});

@@ -22,6 +22,7 @@ or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>
 
 import { build } from "../mod.ts";
 import { assertEquals, path, walk } from "../deps.ts";
+import { MemoryCache } from "../core/cache.ts";
 
 const assertDirectoriesEqual = async (
   actualDir: string,
@@ -68,6 +69,7 @@ const testExampleDir = (dir: string) =>
           contentDir: paths.contentDir,
           layoutDir: paths.layoutDir,
           publicDir,
+          cache: new MemoryCache(),
         },
       );
       await assertDirectoriesEqual(publicDir, paths.expectedDir);

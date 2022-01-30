@@ -3,64 +3,57 @@ import dirtyFileMod from "./dirty-checkers/file-mod.ts";
 import dirtyLayoutsChanged from "./dirty-checkers/layouts.ts";
 import allDirtyOnForce from "./dirty-checkers/force-build.ts";
 import createDirtyFileWalker from "./dirty-file-walk.ts";
-import { path, walk } from "../deps.ts";
-
-/** Get input paths which might have resulted in a specific public (output) path */
-export const _createInputPathsGetter = (
-  { contentDir, publicDir }: DeletedContentFilesOptions,
-) =>
-  (publicPath: string): string[] => {
-    const relativePath = path.relative(publicDir, publicPath);
-    const paths = [path.join(contentDir, relativePath)];
-    if (path.extname(relativePath) === ".html") {
-      const relativeDir = path.dirname(relativePath);
-      paths.push(path.join(contentDir, `${relativeDir}.md`));
-      paths.push(path.join(contentDir, relativeDir, "index.md"));
-    }
-    return paths;
-  };
+import { walk } from "../deps.ts";
+import { createInputPathsGetter } from "./changes.ts";
 
 type DeletedContentFilesOptions = { contentDir: string; publicDir: string };
 
 /** Check if the specified public file path has a corresponding content file. */
-const createDeletedContentFilesGetter = (
+const createDeletedContentFilesChecker = (
   options: DeletedContentFilesOptions,
 ) => {
-  const getPossibleInputPaths = _createInputPathsGetter(options);
-  return async (publicPath: string): Promise<string[] | undefined> => {
+  const getPossibleInputPaths = createInputPathsGetter(options);
+  return async (publicPath: string): Promise<boolean> => {
     const inputPathPossibilities = getPossibleInputPaths(publicPath);
     try {
+      // any will resolve if any of the promises resolve,
+      // and throw only if all promises reject
+      // in essence, it throws if none of the files found
       await Promise.any(
         inputPathPossibilities.map(async (inputPath) => {
+          // this will throw if file not found
           await Deno.lstat(inputPath);
         }),
       );
-      return undefined;
+      return false;
     } catch {
-      return inputPathPossibilities;
+      // all content files deleted if all promises rejected
+      return true;
     }
   };
 };
 
 /**
- * From files in public folder that have no corresponding content file,
- * get all possible content files that might have been deleted.
- * @returns Array of content file paths, relative to cwd
+ * From files in public folder that have no corresponding content file
+ * @returns Array of orphaned public file paths, relative to cwd
  */
 const getDeletedContentFiles = async (
   options: DeletedContentFilesOptions,
 ): Promise<string[]> => {
-  const getDeletionPossibilities = createDeletedContentFilesGetter(options);
-  const contentFiles: string[] = [];
+  const checkIfAllContentFilesDeleted = createDeletedContentFilesChecker(
+    options,
+  );
+  const orphanedPublicFiles: string[] = [];
   for await (const publicWalkEntry of walk(options.publicDir)) {
     // just bail if this is not a file
     if (!publicWalkEntry.isFile) continue;
 
     const publicPath = publicWalkEntry.path;
-    const deletedContentFiles = await getDeletionPossibilities(publicPath);
-    if (deletedContentFiles) contentFiles.push(...deletedContentFiles);
+    if (await checkIfAllContentFilesDeleted(publicPath)) {
+      orphanedPublicFiles.push(publicPath);
+    }
   }
-  return contentFiles;
+  return orphanedPublicFiles;
 };
 
 export const getFilesystemChanges = async (
@@ -96,7 +89,7 @@ export const getFilesystemChanges = async (
   // get public files that need to be deleted
   const orphanedPublicFiles: string[] = await getDeletedContentFiles(options);
   const orphanedPublicFilesChanges: Change[] = orphanedPublicFiles.map(
-    (path) => ({ type: "delete", inputPath: path }),
+    (path) => ({ type: "orphan", outputPath: path }),
   );
   changes.push(...orphanedPublicFilesChanges);
 

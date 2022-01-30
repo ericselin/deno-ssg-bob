@@ -94,6 +94,8 @@ Deno.test("childPages pages getter run with correct glob", async () => {
     contentDir: "../content",
     layoutDir: "",
     publicDir: "",
+    // @ts-ignore not needed
+    cache: undefined,
   }, getPages)({
     type: ContentType.Page,
     //@ts-ignore only content path needed
@@ -128,6 +130,8 @@ Deno.test("childPages calls getPage only for index.md files", async () => {
     contentDir: "../content",
     layoutDir: "",
     publicDir: "",
+    // @ts-ignore not needed
+    cache: undefined,
   }, getPages)({
     type: ContentType.Page,
     //@ts-ignore only content path needed

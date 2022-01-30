@@ -1,4 +1,5 @@
 import { build } from "../../../mod.ts";
+import { MemoryCache } from "../../../core/cache.ts";
 import { assertEquals, path, walk } from "../../../deps.ts";
 
 const assertDirectoriesEqual = async (
@@ -46,6 +47,7 @@ const testExampleDir = (dir: string) =>
           contentDir: paths.contentDir,
           layoutDir: paths.layoutDir,
           publicDir,
+          cache: new MemoryCache(),
         },
       );
       await assertDirectoriesEqual(publicDir, paths.expectedDir);

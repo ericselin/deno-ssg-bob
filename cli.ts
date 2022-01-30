@@ -29,6 +29,7 @@ import {
 } from "./functions/mod.ts";
 import { createChangesApplier } from "./core/api.ts";
 import changeOnFileModifications from "./core/change-providers/fs-mod.ts";
+import { FileCache } from "./core/cache.ts";
 
 const usage = `bob the static site builder
 
@@ -135,6 +136,7 @@ const buildOptions: BuildOptions = {
   contentDir: "content",
   layoutDir: "layouts",
   publicDir: args.public || "public",
+  cache: new FileCache(),
   force: args.force,
   buildDrafts: args.drafts,
   log,
@@ -149,12 +151,16 @@ if (functions || server) {
 if (args.fnNginxConf) {
   const hostname = args.fnHostname || Deno.env.get("HOSTNAME");
   if (!hostname) {
-    throw new Error("Please provide hostname for nginx proxy (--fn-hostname or $HOSTNAME)");
+    throw new Error(
+      "Please provide hostname for nginx proxy (--fn-hostname or $HOSTNAME)",
+    );
   }
   log.info(`Functions using hostname ${hostname}`);
   log.info(`Writing nginx locations to ${args.fnNginxConf}`);
   await writeNginxLocations(args.fnNginxConf, hostname, functionsPort);
-  log.info(`Done! Feel free to reload nginx and possibly stop previous functions server`);
+  log.info(
+    `Done! Feel free to reload nginx and possibly stop previous functions server`,
+  );
 }
 
 if (server) {

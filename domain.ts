@@ -153,6 +153,7 @@ export type BuildOptions = {
   contentDir: string;
   layoutDir: string;
   publicDir: string;
+  cache: Cache;
   buildDrafts?: boolean;
   force?: boolean;
   baseUrl?: string;
@@ -234,13 +235,20 @@ export type StaticFile = {
 };
 
 /** Change types available */
-export type ChangeType = "create" | "modify" | "delete";
+export type ChangeType = Change["type"];
 
 /** Represents a change in the content or layout files. */
-export type Change = {
+export type Change = InputChange | OutputChange;
+
+type InputChange = {
+  type: "create" | "modify" | "delete";
   inputPath: CwdRelativePath;
-  type: ChangeType;
-};
+}
+
+type OutputChange = {
+  type: "orphan";
+  outputPath: CwdRelativePath;
+}
 
 // Helper types
 
@@ -331,7 +339,9 @@ Helpers, utilities and other.
 export interface Cache {
   get<T>(key: string): Promise<T | undefined>;
   put<T>(key: string, value: T): Promise<unknown>;
-  transaction(key: string, fn: CacheTransactionCallback): Promise<void>;
+  delete(key: string): Promise<void>;
+  deleteFrom(key: string, property: string): Promise<void>;
+  add(key: string, value: Record<string, unknown>): Promise<void>;
 }
 
 export type CacheTransactionCallback = (

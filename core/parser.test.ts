@@ -20,13 +20,16 @@ Please contact the developers via GitHub <https://www.github.com/ericselin>
 or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>
 */
 
+import type { BuildOptions } from "../domain.ts";
 import { assertEquals } from "../deps.ts";
 import getParser, { getContentFileParser } from "./parser.ts";
 
-const buildOptions = {
+const buildOptions: BuildOptions = {
   contentDir: "",
   publicDir: "",
   layoutDir: "",
+  // @ts-ignore not needed
+  cache: undefined,
 };
 
 Deno.test("extremely simple parse case works", () => {
