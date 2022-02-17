@@ -22,6 +22,16 @@ or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>
 
 /*
 
+Configuration file
+
+*/
+
+export type ConfigFile = {
+  contentImporter: ContentImporter;
+};
+
+/*
+
 TSX Components
 
 */
@@ -243,12 +253,24 @@ export type Change = InputChange | OutputChange;
 type InputChange = {
   type: "create" | "modify" | "delete";
   inputPath: CwdRelativePath;
-}
+};
 
 type OutputChange = {
   type: "orphan";
   outputPath: CwdRelativePath;
-}
+};
+
+export type ContentImporter = AsyncGenerator<ImportedContent | DeletedContent | undefined>
+
+export type ImportedContent<T = unknown> = {
+  contentPath: string;
+  data: T;
+};
+
+export type DeletedContent = {
+  contentPath: string;
+  delete: true;
+};
 
 // Helper types
 

@@ -29,6 +29,7 @@ export * as yaml from "https://deno.land/std@0.109.0/encoding/yaml.ts";
 export * as fs from "https://deno.land/std@0.117.0/fs/mod.ts";
 export { exists } from "https://deno.land/std@0.109.0/fs/exists.ts";
 export { walk } from "https://deno.land/std@0.109.0/fs/walk.ts";
+export { ensureDir } from "https://deno.land/std@0.109.0/fs/ensure_dir.ts";
 export { expandGlob } from "https://deno.land/std@0.109.0/fs/expand_glob.ts";
 export type { WalkEntry } from "https://deno.land/std@0.109.0/fs/walk.ts";
 export { Marked as md } from "https://deno.land/x/markdown@v2.0.0/mod.ts";

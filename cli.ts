@@ -20,7 +20,7 @@ Please contact the developers via GitHub <https://www.github.com/ericselin>
 or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>
 */
 
-import type { BuildOptions } from "./domain.ts";
+import type { BuildOptions, ConfigFile } from "./domain.ts";
 import { build, serve as serveStatic } from "./mod.ts";
 import { log, parseFlags } from "./deps.ts";
 import {
@@ -30,6 +30,8 @@ import {
 import { createChangesApplier } from "./core/api.ts";
 import changeOnFileModifications from "./core/change-providers/fs-mod.ts";
 import { FileCache } from "./core/cache.ts";
+import { loadIfExists } from "./core/module-loader.ts";
+import { importContent } from "./core/import-content.ts";
 
 const usage = `bob the static site builder
 
@@ -98,6 +100,7 @@ const {
     license: "l",
     fnNginxConf: "fn-nginx-conf",
     fnHostname: "fn-hostname",
+    import: "i",
   },
 });
 
@@ -141,6 +144,17 @@ const buildOptions: BuildOptions = {
   buildDrafts: args.drafts,
   log,
 };
+
+// try to load config
+const configModule = await loadIfExists("bob.ts");
+const configFile: ConfigFile | undefined = configModule?.default;
+if (configFile) {
+  log.info("Using config file `bob.ts`");
+  // import content if we have an importer and CLI flag set
+  if (configFile.contentImporter && args.import) {
+    await importContent(configFile.contentImporter, buildOptions.contentDir, buildOptions.cache, log);
+  }
+}
 
 const functionsPort = 8081;
 

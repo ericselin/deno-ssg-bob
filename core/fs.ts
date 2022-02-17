@@ -20,7 +20,7 @@ Please contact the developers via GitHub <https://www.github.com/ericselin>
 or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>
 */
 
-import { path } from "../deps.ts";
+import { ensureDir, path } from "../deps.ts";
 import type {
   FileReader,
   Location,
@@ -70,3 +70,13 @@ export const cleanDirectory = async (dirpath: DirectoryPath): Promise<void> => {
     await Deno.remove(path.join(dirpath, dirEntry.name), { recursive: true });
   }
 };
+
+export const createContentWriter = (
+  contentDir: string,
+  dataStringifier: (data: unknown) => string,
+) =>
+  async (content: { contentPath: string; data: unknown }): Promise<void> => {
+    const inputPath = path.join(contentDir, content.contentPath);
+    await ensureDir(path.dirname(inputPath));
+    await Deno.writeTextFile(inputPath, dataStringifier(content.data));
+  };

@@ -20,8 +20,14 @@ Please contact the developers via GitHub <https://www.github.com/ericselin>
 or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>
 */
 
-export type { Component, Props } from "./domain.ts";
-export type { Page } from "./domain.ts";
+export type {
+  Component,
+  ConfigFile,
+  ContentImporter,
+  ImportedContent,
+  Page,
+  Props,
+} from "./domain.ts";
 export type { EdgeComponent } from "./edge/mod.ts";
 export type {
   FunctionHandler,
