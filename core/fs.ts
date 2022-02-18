@@ -55,14 +55,14 @@ export const createOutputFileWriter: OutputFileWriterCreator = ({ log }) =>
   ) => {
     await Deno.mkdir(path.dirname(outputFile.path), { recursive: true });
     await Deno.writeTextFile(outputFile.path, outputFile.output);
-    log?.info(`Wrote file ${outputFile.path} to disk`);
+    log?.debug(`Wrote file ${outputFile.path} to disk`);
   };
 
 export const createStaticFileWriter: StaticFileWriterCreator = ({ log }) =>
   async ({ location }) => {
     await Deno.mkdir(path.dirname(location.outputPath), { recursive: true });
     await Deno.copyFile(location.inputPath, location.outputPath);
-    log?.info(`Copied static file to ${location.outputPath}`);
+    log?.debug(`Copied static file to ${location.outputPath}`);
   };
 
 export const cleanDirectory = async (dirpath: DirectoryPath): Promise<void> => {

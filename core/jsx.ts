@@ -150,8 +150,19 @@ export const createRenderer: ElementRendererCreator = (options, getPages) =>
               )
             );
       }
-      component = await component.type(props, context);
-      return render(component);
+
+      try {
+        component = await component.type(props, context);
+        return render(component);
+      } catch (e) {
+        options.log?.error(
+          `Error rendering page ${contentPage?.location.inputPath}`,
+        );
+        options.log?.error(
+          `Content page: ${JSON.stringify(contentPage, undefined, 2)}`,
+        );
+        throw e;
+      }
     };
     return render;
   };

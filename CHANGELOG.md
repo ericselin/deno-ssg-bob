@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+### Changed
+
+- Improve logging
+
+    Writing individual files is now logged as DEBUG level. Add INFO logging for getting file system changes and dependant changes. Add logging for layout errors.
+
 ### Added
 
 - Ability to import / update content from the CLI

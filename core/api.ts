@@ -267,11 +267,12 @@ export const createChangesApplier = (options: BuildOptions): ChangesApplier => {
   );
   return async (changes) => {
     log?.debug(`${changes.length} changes requested`);
+    log?.info("Getting dependant pages that need to be re-rendered...");
     const allChanges =
       (await Promise.all(changes.map(mapChangeToDependantChanges)))
         .flat()
         .filter(sanitizeChangesFilter);
-    log?.debug(`${allChanges.length} changes in total including dependants`);
+    log?.info(`Applying ${allChanges.length} changes in total including dependants...`);
     log?.debug(JSON.stringify(allChanges));
     const startTime = Date.now();
     for (const change of allChanges) {
@@ -341,7 +342,9 @@ export const build: Builder = async (options) => {
     await cleanDirectory(publicDir);
   }
 
+  log?.info("Getting list of changes from filesystem...");
   const changes = await getFilesystemChanges(options);
+  log?.info(`Got ${changes.length} changes from filesystem`);
   const results = await createChangesApplier(options)(changes);
 
   return results;
