@@ -26,7 +26,6 @@ export type {
   ContentImporter,
   ImportedContent,
   Page,
-  Props,
 } from "./domain.ts";
 export type { EdgeComponent } from "./edge/mod.ts";
 export type {
@@ -42,3 +41,10 @@ export * from "./utils/get-path.ts";
 export * from "./utils/read-contents.ts";
 export * from "./utils/sort-date.ts";
 export * from "./utils/sort-weight.ts";
+
+/**
+ * @deprecated
+ *
+ * This type is deprecated and should not be used.
+ */
+export type Props = Record<string, unknown>;

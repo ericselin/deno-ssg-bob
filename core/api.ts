@@ -52,7 +52,7 @@ import getParser, { stringifyPageContent } from "./parser.ts";
 import render from "./renderer.ts";
 import getLayoutLoader from "./layout-loader.ts";
 import getWalkEntryProcessor from "./walk-entry-processor.ts";
-import { createInputPathsGetter, sanitizeChangesFilter } from "./changes.ts";
+import { createInputPathsGetter, removeDuplicateChanges } from "./changes.ts";
 import { getFilesystemChanges } from "./changes-fs.ts";
 
 type ContentGetterCreator = (options: BuildOptions) => ContentGetter;
@@ -271,8 +271,10 @@ export const createChangesApplier = (options: BuildOptions): ChangesApplier => {
     const allChanges =
       (await Promise.all(changes.map(mapChangeToDependantChanges)))
         .flat()
-        .filter(sanitizeChangesFilter);
-    log?.info(`Applying ${allChanges.length} changes in total including dependants...`);
+        .filter(removeDuplicateChanges);
+    log?.info(
+      `Applying ${allChanges.length} changes in total including dependants...`,
+    );
     log?.debug(JSON.stringify(allChanges));
     const startTime = Date.now();
     for (const change of allChanges) {

@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+### Fixed
+
+- Server no longer crashes when saving files in nvim
+
+    A bug in the file modification watcher caused the change list to include temporary (non-existent) files when saving with certain editors, such as vim. This is now fixed.
+
 ### Changed
 
 - Improve logging

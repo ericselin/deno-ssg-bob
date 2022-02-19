@@ -1,10 +1,8 @@
 import type { Change } from "../domain.ts";
 import { assertEquals } from "../deps.ts";
 import {
-  _removeDuplicateChanges,
-  _removeModifiedWhenAlsoCreatedOrDeleted,
+  removeDuplicateChanges,
   createInputPathsGetter,
-  sanitizeChangesFilter,
 } from "./changes.ts";
 
 Deno.test("content file from public file base case", () => {
@@ -36,7 +34,7 @@ Deno.test("content file from public file base case", () => {
   );
 });
 
-Deno.test("duplicates work", () => {
+Deno.test("removing duplicates work", () => {
   const hasDuplicates: Change[] = [
     { type: "orphan", outputPath: "public/orphan/index.html" },
     { type: "orphan", outputPath: "public/orphan-2/index.html" },
@@ -46,7 +44,7 @@ Deno.test("duplicates work", () => {
     { type: "create", inputPath: "content/created.md" },
     { type: "create", inputPath: "content/created.md" },
   ];
-  const dupsRemoved = hasDuplicates.filter(_removeDuplicateChanges);
+  const dupsRemoved = hasDuplicates.filter(removeDuplicateChanges);
   assertEquals(dupsRemoved, [
     { type: "orphan", outputPath: "public/orphan/index.html" },
     { type: "orphan", outputPath: "public/orphan-2/index.html" },
@@ -61,25 +59,6 @@ Deno.test("single change does not get sanitized", () => {
     type: "orphan",
     outputPath: "public/testing/index.html",
   }];
-  const dupsRemoved = changes.filter(_removeDuplicateChanges);
+  const dupsRemoved = changes.filter(removeDuplicateChanges);
   assertEquals(dupsRemoved, changes);
-  const modsRemoved = changes.filter(_removeModifiedWhenAlsoCreatedOrDeleted);
-  assertEquals(modsRemoved, changes);
-  const sanitized = changes.filter(sanitizeChangesFilter);
-  assertEquals(sanitized, changes);
-});
-
-Deno.test("remove modifications for created or deleted", () => {
-  const hasDuplicates: Change[] = [
-    { type: "orphan", outputPath: "public/orphan/index.html" },
-    { type: "create", inputPath: "content/modified.md" },
-    { type: "modify", inputPath: "content/modified.md" },
-    { type: "create", inputPath: "content/created.md" },
-  ];
-  const dupsRemoved = hasDuplicates.filter(_removeModifiedWhenAlsoCreatedOrDeleted);
-  assertEquals(dupsRemoved, [
-    { type: "orphan", outputPath: "public/orphan/index.html" },
-    { type: "create", inputPath: "content/modified.md" },
-    { type: "create", inputPath: "content/created.md" },
-  ]);
 });

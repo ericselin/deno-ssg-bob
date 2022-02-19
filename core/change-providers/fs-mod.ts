@@ -1,6 +1,13 @@
 import type { BuildOptions, Change } from "../../domain.ts";
 import { debounce, path } from "./../../deps.ts";
-import { sanitizeChangesFilter } from "../changes.ts";
+import { removeDuplicateChanges } from "../changes.ts";
+
+type ChangeArrayFn<R> = (
+  change: Change,
+  i: number,
+  changes: Change[],
+) => R;
+type ChangeArrayFilter = ChangeArrayFn<boolean>;
 
 export default async function changerFileModifications(
   buildOptions: BuildOptions,
@@ -15,7 +22,7 @@ export default async function changerFileModifications(
   buildOptions.log?.warning("Not updating on layout changes");
 
   const pendingEvents: Deno.FsEvent[] = [];
-  const getChanges = changesFromFsEvents(buildOptions);
+  const getChanges = _changesFromFsEvents(buildOptions);
   const applyEvents = debounce(
     (events: Deno.FsEvent[]) => applyChanges(getChanges(events)),
     100,
@@ -28,20 +35,6 @@ export default async function changerFileModifications(
     applyEvents(pendingEvents);
   }
 }
-
-/** Set path relative to CWD */
-const _setPathToCwdRelative = (
-  change: Change,
-): Change =>
-  "inputPath" in change
-    ? {
-      ...change,
-      inputPath: path.relative(Deno.cwd(), change.inputPath),
-    }
-    : {
-      ...change,
-      outputPath: path.relative(Deno.cwd(), change.outputPath),
-    };
 
 /** Create one or many changes based on a filesystem event */
 const _eventToChange = (event: Deno.FsEvent): Change | Change[] => {
@@ -80,17 +73,101 @@ const _eventToChange = (event: Deno.FsEvent): Change | Change[] => {
   throw new Error(`Could not process event ${JSON.stringify(event)}`);
 };
 
-const changesFromFsEvents = ({ log }: BuildOptions) =>
+/** Filter out filest that were first created then immediately removed */
+const _removeTempFiles: ChangeArrayFilter = (change, i, changes) => {
+  // remove anything followed by delete
+  if (change.type !== "delete" && change.type !== "orphan") {
+    const lastDeleteThisFile = changes.findLastIndex((c) =>
+      c.type === "delete" && c.inputPath === change.inputPath
+    );
+    if (lastDeleteThisFile > i) {
+      return false;
+    }
+  }
+  // remove delete when preceded by create
+  if (change.type === "delete") {
+    const firstCreateThisFile = changes.findIndex((c) =>
+      c.type === "create" && c.inputPath === change.inputPath
+    );
+    if (firstCreateThisFile >= 0 && firstCreateThisFile < i) {
+      return false;
+    }
+  }
+  return true;
+};
+
+/** Turn delete followed by create into a single modify using reducer */
+const _processFileRefresh = (
+  newChanges: Change[],
+  change: Change,
+  i: number,
+  changes: Change[],
+): Change[] => {
+  // do not append delete followed by create
+  if (
+    change.type === "delete" &&
+    changes.findLastIndex((c) =>
+        c.type === "create" && c.inputPath === change.inputPath
+      ) > i
+  ) {
+    return newChanges;
+  }
+  // turn create preceded by delete into modify
+  if (change.type === "create") {
+    const firstDeleteThisFile = changes.findIndex((c) =>
+      c.type === "delete" && c.inputPath === change.inputPath
+    );
+    if (firstDeleteThisFile >= 0 && firstDeleteThisFile < i) {
+      return newChanges.concat({ ...change, type: "modify" });
+    }
+  }
+  return newChanges.concat(change);
+};
+
+/** Remove modifications of created and deleted files */
+const _removeModificationsWhenCreateOrDelete: ChangeArrayFilter = (
+  change,
+  _i,
+  changes,
+) => {
+  if (
+    change.type === "modify" &&
+    changes.findIndex((c) =>
+        (c.type === "create" || c.type === "delete") &&
+        c.inputPath === change.inputPath
+      ) >= 0
+  ) {
+    return false;
+  }
+  return true;
+};
+
+/** Set path relative to CWD */
+const _setPathToCwdRelative = (change: Change): Change =>
+  "inputPath" in change
+    ? {
+      ...change,
+      inputPath: path.relative(Deno.cwd(), change.inputPath),
+    }
+    : {
+      ...change,
+      outputPath: path.relative(Deno.cwd(), change.outputPath),
+    };
+
+export const _changesFromFsEvents = (options?: BuildOptions) =>
   (events: Deno.FsEvent[]): Change[] => {
-    log?.debug(`Creating changes from fs events ${JSON.stringify(events)}`);
+    options?.log?.debug(
+      `Creating changes from fs events ${JSON.stringify(events)}`,
+    );
     const changes: Change[] = events
-      // filter out access events
-      .filter((event) => event.kind !== "access")
+      .filter((event) => event.kind !== "access") // filter out access events
       .map(_eventToChange)
-      // above may create nested arrays, so flatten
-      .flat()
-      .map(_setPathToCwdRelative)
-      .filter(sanitizeChangesFilter);
+      .flat() // above may create nested arrays, so flatten
+      .filter(_removeTempFiles)
+      .reduce<Change[]>(_processFileRefresh, [])
+      .filter(_removeModificationsWhenCreateOrDelete)
+      .filter(removeDuplicateChanges)
+      .map(_setPathToCwdRelative); // set paths to cwd-relative
     // clear array after transforming to changes
     events.splice(0);
     return changes;
