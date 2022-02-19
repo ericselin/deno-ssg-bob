@@ -27,6 +27,7 @@ import {
   serve as serveFunctions,
   writeNginxLocations,
 } from "./functions/mod.ts";
+import type { Functions } from "./functions/mod.ts";
 import { createChangesApplier } from "./core/api.ts";
 import changeOnFileModifications from "./core/change-providers/fs-mod.ts";
 import { FileCache } from "./core/cache.ts";
@@ -145,6 +146,8 @@ const buildOptions: BuildOptions = {
   log,
 };
 
+let functionDefinitions: Functions | undefined = undefined;
+
 // try to load config
 const configModule = await loadIfExists("bob.ts");
 const configFile: ConfigFile | undefined = configModule?.default;
@@ -152,14 +155,20 @@ if (configFile) {
   log.info("Using config file `bob.ts`");
   // import content if we have an importer and CLI flag set
   if (configFile.contentImporter && args.import) {
-    await importContent(configFile.contentImporter, buildOptions.contentDir, buildOptions.cache, log);
+    await importContent(
+      configFile.contentImporter,
+      buildOptions.contentDir,
+      buildOptions.cache,
+      log,
+    );
   }
+  functionDefinitions = configFile.functions;
 }
 
 const functionsPort = 8081;
 
 if (functions || server) {
-  await serveFunctions({ log, buildOptions });
+  await serveFunctions({ log, buildOptions, functionDefinitions });
 }
 
 if (args.fnNginxConf) {

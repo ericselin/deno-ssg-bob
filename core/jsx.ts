@@ -21,6 +21,7 @@ or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>
 */
 
 import type {
+  Component,
   Context,
   Element,
   ElementCreator,
@@ -42,8 +43,8 @@ export const h: ElementCreator = (type, props, ...children) => {
   return element;
 };
 
-const renderProps = (props?: Props): string => {
-  if (!props) return "";
+const renderProps = (props?: unknown): string => {
+  if (!props || typeof props !== "object") return "";
   return Object.entries(props).reduce(
     (all, [attr, value]) => `${all} ${attr}="${value}"`,
     "",
@@ -63,36 +64,36 @@ export const createRenderer: ElementRendererCreator = (options, getPages) =>
     const renderContext = {
       needsCss: [] as string[],
     };
-    const render: ElementRenderer = async (component) => {
+    const render: ElementRenderer = async (element) => {
       let html = "";
 
-      component = await component;
+      element = await element;
 
       // if this is an array, render recursively
-      if (Array.isArray(component)) {
-        for (const c of component) {
+      if (Array.isArray(element)) {
+        for (const c of element) {
           html += await render(c);
         }
         return html;
       }
 
-      if (component === null) {
+      if (element === null) {
         return "";
       }
 
-      switch (typeof component) {
+      switch (typeof element) {
         case "undefined":
           return "";
         case "string":
-          return component;
+          return element;
         case "number":
         case "boolean":
-          return component.toString();
+          return element.toString();
       }
 
       // see if this is an html tag
-      if (typeof component.type === "string") {
-        const { type, props, children } = component;
+      if (typeof element.type === "string") {
+        const { type, props, children } = element;
 
         html += `<${type}${renderProps(props)}>`;
 
@@ -120,15 +121,15 @@ export const createRenderer: ElementRendererCreator = (options, getPages) =>
 
       // if we get here, the element should be an actual renderable jsx component
 
-      const props = component.props || {};
-      props.children = component.children;
-      if (component.needsCss) {
+      const props = element.props as Props || {};
+      props.children = element.children;
+      if (element.needsCss) {
         renderContext.needsCss = [
           ...renderContext.needsCss,
-          path.join(options.layoutDir, component.needsCss),
+          path.join(options.layoutDir, element.needsCss),
         ];
       }
-      const context: Context = {
+      const context: Context<unknown, unknown, unknown> = {
         page: contentPage as Page,
         needsCss: renderContext.needsCss,
         get childPages() {
@@ -138,10 +139,10 @@ export const createRenderer: ElementRendererCreator = (options, getPages) =>
           return undefined;
         },
       };
-      if (component.wantsPages) {
+      if (element.wantsPages) {
         context.wantedPages = getPages &&
           // get all wanted pages
-          await getPages(component.wantsPages)
+          await getPages(element.wantsPages)
             .then((wantedPages) =>
               // filter out the current page from wanted pages
               wantedPages.filter((page) =>
@@ -152,8 +153,14 @@ export const createRenderer: ElementRendererCreator = (options, getPages) =>
       }
 
       try {
-        component = await component.type(props, context);
-        return render(component);
+        const component = element.type as Component<
+          unknown,
+          unknown,
+          unknown,
+          unknown
+        >;
+        element = await component(props, context);
+        return render(element);
       } catch (e) {
         options.log?.error(
           `Error rendering page ${contentPage?.location.inputPath}`,

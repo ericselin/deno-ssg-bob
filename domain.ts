@@ -26,8 +26,11 @@ Configuration file
 
 */
 
+import { Functions } from "./functions/mod.ts";
+
 export type ConfigFile = {
-  contentImporter: ContentImporter;
+  contentImporter?: ContentImporter;
+  functions?: Functions;
 };
 
 /*
@@ -38,13 +41,13 @@ TSX Components
 
 /** Component type to be used for all TSX components, both layouts and standalone. */
 export type Component<
-  P extends Props = DefaultProps,
-  PageFrontmatter = unknown,
+  Props = unknown,
+  PageFrontmatter = undefined,
   WantedPagesFrontmatter = undefined,
   ChildPagesFrontmatter = undefined,
 > =
   & ((
-    props: P & { children?: Children },
+    props: Props & { children?: Children },
     context: Context<
       PageFrontmatter,
       WantedPagesFrontmatter,
@@ -61,8 +64,8 @@ export type AnyComponent = Component<DefaultProps, unknown, unknown, unknown>;
 /** Context for rendering a specific page. */
 export type Context<
   PageFrontmatter = unknown,
-  WantedPagesFrontmatter = unknown,
-  ChildPagesFrontmatter = unknown,
+  WantedPagesFrontmatter = undefined,
+  ChildPagesFrontmatter = undefined,
 > = {
   page: Page<PageFrontmatter>;
   needsCss: CssSpecifier[];
@@ -71,11 +74,6 @@ export type Context<
   childPages?: ChildPagesFrontmatter extends undefined ? undefined
     : ChildPages<ChildPagesFrontmatter>;
 };
-
-/** Component properties. */
-export type Props = Record<string, unknown>;
-/** Default component properties. */
-export type DefaultProps = Props;
 
 type WantsPages = string | string[];
 type WantedPages<W = unknown> = Page<W>[];
@@ -91,7 +89,7 @@ TSX rendering
 */
 
 /** An `Element` is the internal representation of a `Component` or other node, such as a string. */
-export type Element<P extends Props = DefaultProps> = {
+export type Element<P = unknown> = {
   type: ElementType;
   props?: P;
   children?: Children[];
@@ -102,7 +100,7 @@ export type Element<P extends Props = DefaultProps> = {
 /** Creates elements from transpiled JSX calls. This is equivalent to `React.createElement` or `Preact.h`. */
 export type ElementCreator = (
   type: ElementType,
-  props?: Props,
+  props?: unknown,
   ...children: Children[]
 ) => Element;
 
@@ -122,10 +120,16 @@ export type ElementRendererCreator = (
 /** Get an array of the pages wanted by a layout or a content page. */
 export type PagesGetter = (wantsPages: WantsPages) => Promise<Page[]>;
 
-type ElementType = Component<DefaultProps, unknown, unknown, unknown> | string;
+type ElementType = Component<undefined> | string;
 
 type Child = Element | string | number | boolean | null | undefined;
 type Children = Child | Child[];
+
+/** Component properties. */
+export type Props = Record<string, unknown>;
+
+/** Default component properties. */
+type DefaultProps = Props;
 
 export const HTMLEmptyElements = [
   "area",
@@ -260,7 +264,9 @@ type OutputChange = {
   outputPath: CwdRelativePath;
 };
 
-export type ContentImporter = AsyncGenerator<ImportedContent | DeletedContent | undefined>
+export type ContentImporter = AsyncGenerator<
+  ImportedContent | DeletedContent | undefined
+>;
 
 export type ImportedContent<T = unknown> = {
   contentPath: string;

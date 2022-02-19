@@ -18,6 +18,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
     Now you can specify a generator that yields content files in a `bob.ts` configuration file. This generator is run with the `--import` CLI flag. Partial updates based on the last import date are also possible. See the docs.
 
+- Render TSX from functions
+
+    Use the function context `renderResponse` to render a TSX component as the response. This method comes with type checking of the component and subsequent arguments. Just pass in a normal component and the props you want!
+
 ## 2.3.0 - 2022-02-03
 
 ### Fixed

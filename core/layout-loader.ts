@@ -23,7 +23,6 @@ or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>
 import type {
   BuildOptions,
   Component,
-  DefaultProps,
   LayoutLoader,
   PagesGetter,
   RenderablePage,
@@ -125,12 +124,7 @@ const loadLayout = (
         renderer: (content) =>
           renderJsx(content)(
             h(
-              layout.module.default as Component<
-                DefaultProps,
-                unknown,
-                unknown,
-                unknown
-              >,
+              layout.module.default as Component,
             ),
           ),
       };

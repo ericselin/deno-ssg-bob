@@ -1,6 +1,7 @@
 import type { BuildOptions, Change, Logger } from "../domain.ts";
-import { ContentType } from "../domain.ts";
+import { Component, ContentType } from "../domain.ts";
 import { loadIfExists } from "../core/module-loader.ts";
+import { createRenderer, h } from "../core/jsx.ts";
 import { fs, path, serve as listen } from "../deps.ts";
 import {
   createChangesApplier,
@@ -8,25 +9,8 @@ import {
   writeContent,
 } from "../core/api.ts";
 import { writeNginxLocations as writeNginxLocationsInternal } from "./nginx-locations.ts";
-const FUNCTIONS_PATH = "functions/index.ts";
 
-export const writeNginxLocations = async (
-  filepath: string,
-  hostname: string,
-  port: number,
-) => {
-  const functionDefinitions = (await loadIfExists(FUNCTIONS_PATH))
-    ?.default as Functions;
-  if (!functionDefinitions) {
-    throw new Error(`Functions not found at ${FUNCTIONS_PATH}`);
-  }
-  await writeNginxLocationsInternal({
-    filepath,
-    hostname,
-    port,
-    functions: functionDefinitions,
-  });
-};
+const FUNCTIONS_PATH_DEPRECATED = "functions/index.ts";
 
 export type FunctionHandler = (
   req: Request,
@@ -37,6 +21,10 @@ type FunctionContext = {
   pathnameParams: Record<string, string>;
   writeAndRender: ContentWriter;
   updateAndRender: ContentUpdater;
+  renderResponse: <Props>(
+    element: Component<Props>,
+    props: Props extends undefined ? never : Props,
+  ) => Promise<Response>;
 };
 
 type ContentWriter = (contentPath: string, content: string) => Promise<void>;
@@ -51,9 +39,36 @@ export type Functions = FunctionDefinition[];
 type FunctionsPatterns = [URLPattern, FunctionHandler][];
 
 type FunctionServerOptions = {
+  functionDefinitions?: Functions;
   log?: Logger;
   port?: number;
   buildOptions: BuildOptions;
+};
+
+export const writeNginxLocations = async (
+  filepath: string,
+  hostname: string,
+  port: number,
+  functions?: Functions,
+  log?: Logger,
+) => {
+  // DEPRECATED
+  if (!functions) {
+    functions = (await loadIfExists(FUNCTIONS_PATH_DEPRECATED))
+      ?.default as Functions;
+    if (functions) {
+      log?.warning("DEPRECATED: Using functions from functions/index.ts");
+    }
+  }
+  if (!functions) {
+    throw new Error("No functions defined");
+  }
+  await writeNginxLocationsInternal({
+    filepath,
+    hostname,
+    port,
+    functions: functions,
+  });
 };
 
 const getContentUpdater = (buildOptions: BuildOptions): ContentUpdater => {
@@ -105,15 +120,20 @@ const getContentWriter = (buildOptions: BuildOptions): ContentWriter => {
 };
 
 export const serve = async (options: FunctionServerOptions) => {
-  const { log, port, buildOptions } = Object.assign(
+  const { log, port, buildOptions, functionDefinitions } = Object.assign(
     options,
     { port: 8081 } as FunctionServerOptions,
   );
-  // load functions
-  const functionDefinitions = (await loadIfExists(FUNCTIONS_PATH))
-    ?.default as Functions;
+  // DEPRECATED: load functions
   if (!functionDefinitions) {
-    log?.info(`No server functions found ("${FUNCTIONS_PATH}")`);
+    const functionDefinitions = (await loadIfExists(FUNCTIONS_PATH_DEPRECATED))
+      ?.default as Functions;
+    if (functionDefinitions) {
+      log?.warning("DEPRECATED: Using functions from functions/index.ts");
+    }
+  }
+  if (!functionDefinitions) {
+    log?.info("No functions defined");
     return;
   }
   // create url patterns
@@ -134,6 +154,27 @@ export const serve = async (options: FunctionServerOptions) => {
         pathnameParams: match.pathname.groups,
         writeAndRender,
         updateAndRender,
+        renderResponse: async (component, props) => {
+          const renderer = createRenderer(buildOptions);
+          const render = renderer({
+            type: ContentType.Page,
+            content: "",
+            frontmatter: {},
+            location: {
+              type: ContentType.Page,
+              inputPath: "",
+              outputPath: "",
+              contentPath: "",
+              url: new URL("http://example.org/"),
+            },
+          });
+          console.log(component, props);
+          const element = h(component, props);
+          const html = await render(element);
+          return new Response(html, {
+            headers: { "Content-Type": "text/html" },
+          });
+        },
       });
     } catch (err) {
       log?.error(err.toString());
