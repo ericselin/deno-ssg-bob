@@ -9,17 +9,15 @@ type ChangeArrayFn<R> = (
 ) => R;
 type ChangeArrayFilter = ChangeArrayFn<boolean>;
 
-export default async function changerFileModifications(
+export const changeOnFileModifications = async (
   buildOptions: BuildOptions,
   applyChanges: (changes: Change[]) => Promise<unknown>,
-) {
+) => {
   /** File watcher for content and layout dirs. */
   const watcher = Deno.watchFs([
     //buildOptions.layoutDir,
     buildOptions.contentDir,
   ]);
-
-  buildOptions.log?.warning("Not updating on layout changes");
 
   const pendingEvents: Deno.FsEvent[] = [];
   const getChanges = _changesFromFsEvents(buildOptions);
@@ -34,7 +32,34 @@ export default async function changerFileModifications(
     // apply events (debounced, as per above)
     applyEvents(pendingEvents);
   }
-}
+};
+
+export const restartOnFileModifications = async (
+  directory: string,
+  cmd: string[],
+) => {
+  /** File watcher for content and layout dirs. */
+  const watcher = Deno.watchFs([
+    directory,
+  ]);
+
+  let process = Deno.run({ cmd });
+
+  const restart = debounce(
+    async () => {
+      process.kill("SIGTERM");
+      await process.status();
+      process = Deno.run({ cmd });
+    },
+    100,
+  );
+
+  for await (const event of watcher) {
+    if (event.kind !== "access") {
+      restart();
+    }
+  }
+};
 
 /** Create one or many changes based on a filesystem event */
 const _eventToChange = (event: Deno.FsEvent): Change | Change[] => {

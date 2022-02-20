@@ -10,7 +10,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Server no longer crashes when saving files in nvim
 
-    A bug in the file modification watcher caused the change list to include temporary (non-existent) files when saving with certain editors, such as vim. This is now fixed.
+    A bug in the file modification watcher caused the change list to include temporary (non-existent) files when saving with certain editors, such as nvim, causing an error. This is now fixed.
+
+- Server now re-builds correctly when layout files changed
+
+    Because of the caching in Deno, the server was previously unable to re-build correctly when layout files were changed. Now changes in layout files will result in a complete site re-build with the new layouts.
 
 ### Changed
 

@@ -29,7 +29,10 @@ import {
 } from "./functions/mod.ts";
 import type { Functions } from "./functions/mod.ts";
 import { createChangesApplier } from "./core/api.ts";
-import changeOnFileModifications from "./core/change-providers/fs-mod.ts";
+import {
+  changeOnFileModifications,
+  restartOnFileModifications,
+} from "./core/change-providers/fs-mod.ts";
 import { FileCache } from "./core/cache.ts";
 import { loadIfExists } from "./core/module-loader.ts";
 import { importContent } from "./core/import-content.ts";
@@ -44,24 +47,34 @@ Builds are by default incremental, i.e. build only
 what is needed.
 
 USAGE:
-  bob [ACTION] [OPTIONS]
+  bob [COMMAND] [OPTIONS]
 
-ACTION \`functions\`
+COMMAND \`build\` (default if command not specified) 
+  Build (render) site into public directory. Will do an incremental build -
+  use \`--force\` to re-build everything.
+
+COMMAND \`watch\`
+  Build site into public directory and re-build content file changes.
+
+COMMAND \`functions\`
   Start production server in order to service requests for fuctions.
+  OPTIONS specific to this command:
+    --fn-nginx-conf     write function locations to nginx configuration file
+    --fn-hostname       hostname to use for nginx proxing
 
-ACTION \`server\`
+COMMAND \`server\`
   Start development server serving both static files and functions.
+  Will re-build the site on content file and layout changes.
+  (Internally, this uses the \`watch\` command, restarting it on layout changes.)
 
 OPTIONS:
-  -p, --public    path to public directory
-  -f, --force     force build everything
-                  will clean the current public directory
-  -d, --drafts    build draft pages
-  --fn-nginx-conf write function locations to nginx configuration file
-  --fn-hostname   hostname to use for nginx proxing
-  -v, --verbose   verbose logging
-  -h, --help      show help
-  -l, --license   show license information`;
+  -i, --import          import content before building
+  -p, --public          path to public directory
+  -f, --force           re-build from scratch (deletes public dir and cache)
+  -d, --drafts          build draft pages
+  -v, --verbose         verbose logging
+  -h, --help            show help
+  -l, --license         show license information`;
 
 const license = `Copyright 2021 Eric Selin
 
@@ -108,13 +121,17 @@ const {
 const SERVER_ARG = "server";
 const server = action === SERVER_ARG;
 const functions = action === "functions";
+// this is a hidden internal command
+const watcher = action === "watch";
 
 if (args.license) {
   console.log(license);
   Deno.exit();
 }
 
-console.log(licenseShort);
+if (!watcher) {
+  console.log(licenseShort);
+}
 
 if (args.help) {
   console.log(usage);
@@ -194,10 +211,23 @@ if (server) {
     proxy404: `localhost:${functionsPort}`,
   });
 
+  /**
+  Command to run. Always run via the `bob` executable.
+  Pass in original arguments, except for the "server" argument.
+  */
+  const cmd = [
+    "bob",
+    ...Deno.args.map((arg) => arg === SERVER_ARG ? "watch" : arg),
+  ];
+
+  restartOnFileModifications(buildOptions.layoutDir, cmd);
+}
+
+if (watcher) {
   const applyChanges = createChangesApplier(buildOptions);
   changeOnFileModifications(buildOptions, applyChanges);
 }
 
-if (!functions) {
+if (!functions && !server) {
   await build(buildOptions);
 }
