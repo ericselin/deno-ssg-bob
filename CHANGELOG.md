@@ -4,7 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 2.4.0
+*2022-02-20*
+
+### Added
+
+- Ability to import / update content from the CLI
+
+    Now you can specify a generator that yields content files in a `bob.ts` configuration file. This generator is run with the `--import` CLI flag. Partial updates based on the last import date are also possible. See the docs.
+
+- Render TSX from functions
+
+    Use the function context `renderResponse` to render a TSX component as the response. This method comes with type checking of the component and subsequent arguments. Just pass in a normal component and the props you want!
 
 ### Fixed
 
@@ -22,17 +33,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
     Writing individual files is now logged as DEBUG level. Add INFO logging for getting file system changes and dependant changes. Add logging for layout errors.
 
-### Added
-
-- Ability to import / update content from the CLI
-
-    Now you can specify a generator that yields content files in a `bob.ts` configuration file. This generator is run with the `--import` CLI flag. Partial updates based on the last import date are also possible. See the docs.
-
-- Render TSX from functions
-
-    Use the function context `renderResponse` to render a TSX component as the response. This method comes with type checking of the component and subsequent arguments. Just pass in a normal component and the props you want!
-
-## 2.3.0 - 2022-02-03
+## 2.3.0
+*2022-02-03*
 
 ### Fixed
 
@@ -54,7 +56,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
     It is now possible to create server functions to run on any path or path pattern. This means that you can update content, call external API's, re-build your site, or pretty much anything else. See the documentation for details.
 
-## [2.2.0] - 2022-01-13
+## 2.2.0
+*2022-01-13*
 
 ### Fixes
 
@@ -70,13 +73,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Add long-form aliases to all cli arguments (e.g. `-d / --drafts`)
 
-## [2.1.1] (2022-01-12)
+## 2.1.1
+*2022-01-12*
 
 ### Fixes
 
 - Fix layout loader module loading error ([a5443b7])
 
-## [2.1.0] (2021-12-22)
+## 2.1.0
+*2021-12-22*
 
 ### Added
 
@@ -84,13 +89,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Create edge components module and docs ([5fceb8c])
 - Create page sorter based on weight ([bb4b298])
 
-## [2.0.2] (2021-11-05)
+## 2.0.2
+*2021-11-05*
 
 ### Fixes
 
 - Check for full layout module path in import error ([2332da5])
 
-## [2.0.1] (2021-11-04)
+## 2.0.1
+*2021-11-04*
 
 ### Fixes
 
@@ -98,7 +105,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Reload layouts when running in server mode ([a328f43])
 - Use real layouts dir for CSS paths ([8a5a6c0])
 
-# [2.0.0] (2021-11-01)
+## 2.0.0
+*2021-11-01*
 
 ### Changed
 
@@ -110,7 +118,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Create development server ([b0ef6c1]), closes [#6]
 - Create static file copy to public dir ([5cc0f44]), closes [#5]
 
-# [1.2.0] (2021-10-26)
+## 1.2.0
+*2021-10-26*
 
 ### Fixes
 
@@ -125,20 +134,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Do not build draft pages by default ([81f4c9d]), closes [#12]
 - Set title on `ContentBase` ([1fea872])
 
-## [1.1.1] (2021-10-08)
+## 1.1.1
+*2021-10-08*
 
 ### Fixes
 
 - Add affected content file to crash output ([e726840])
 - Add help command to CLI ([23222a6])
 
-# [1.1.0] (2021-10-08)
+## 1.1.0
+*2021-10-08*
 
 ### Added
 
 - Specify layout in content frontmatter ([0514da1])
 
-## 1.0.0 (2021-10-07)
+## 1.0.0
+*2021-10-07*
 
 ### Fixes
 
