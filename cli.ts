@@ -197,7 +197,12 @@ if (args.fnNginxConf) {
   }
   log.info(`Functions using hostname ${hostname}`);
   log.info(`Writing nginx locations to ${args.fnNginxConf}`);
-  await writeNginxLocations(args.fnNginxConf, hostname, functionsPort);
+  await writeNginxLocations(
+    args.fnNginxConf,
+    hostname,
+    functionsPort,
+    functionDefinitions,
+  );
   log.info(
     `Done! Feel free to reload nginx and possibly stop previous functions server`,
   );
