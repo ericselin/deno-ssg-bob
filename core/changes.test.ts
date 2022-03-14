@@ -1,9 +1,6 @@
 import type { Change } from "../domain.ts";
 import { assertEquals } from "../deps.ts";
-import {
-  removeDuplicateChanges,
-  createInputPathsGetter,
-} from "./changes.ts";
+import { createInputPathsGetter, removeDuplicateChanges } from "./changes.ts";
 
 Deno.test("content file from public file base case", () => {
   const getPaths = createInputPathsGetter({

@@ -22,6 +22,7 @@ or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>
 
 export {
   assert,
+  assertArrayIncludes,
   assertEquals,
 } from "https://deno.land/std@0.109.0/testing/asserts.ts";
 export * as path from "https://deno.land/std@0.109.0/path/mod.ts";

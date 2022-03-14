@@ -3,13 +3,14 @@ import dirtyFileMod from "./dirty-checkers/file-mod.ts";
 import dirtyLayoutsChanged from "./dirty-checkers/layouts.ts";
 import allDirtyOnForce from "./dirty-checkers/force-build.ts";
 import createDirtyFileWalker from "./dirty-file-walk.ts";
-import { walk } from "../deps.ts";
+import { path, walk } from "../deps.ts";
 import { createInputPathsGetter } from "./changes.ts";
 
+/** Content and public dirs should be absolute */
 type DeletedContentFilesOptions = { contentDir: string; publicDir: string };
 
 /** Check if the specified public file path has a corresponding content file. */
-const createDeletedContentFilesChecker = (
+export const _createDeletedContentFilesChecker = (
   options: DeletedContentFilesOptions,
 ) => {
   const getPossibleInputPaths = createInputPathsGetter(options);
@@ -34,26 +35,35 @@ const createDeletedContentFilesChecker = (
 };
 
 /**
- * From files in public folder that have no corresponding content file
+ * Get files in public folder that have no corresponding content file
  * @returns Array of orphaned public file paths, relative to cwd
  */
-const getDeletedContentFiles = async (
+export const _getDeletedContentFiles = async (
   options: DeletedContentFilesOptions,
 ): Promise<string[]> => {
-  const checkIfAllContentFilesDeleted = createDeletedContentFilesChecker(
+  const checkIfAllContentFilesDeleted = _createDeletedContentFilesChecker(
     options,
   );
   const orphanedPublicFiles: string[] = [];
-  for await (const publicWalkEntry of walk(options.publicDir)) {
-    // just bail if this is not a file
-    if (!publicWalkEntry.isFile) continue;
-
+  let walkIterable;
+  try {
+    walkIterable = walk(options.publicDir, { includeDirs: false });
+  } catch (e) {
+    if (e.name === "NotFound") {
+      return [];
+    }
+    throw e;
+  }
+  for await (const publicWalkEntry of walkIterable) {
     const publicPath = publicWalkEntry.path;
     if (await checkIfAllContentFilesDeleted(publicPath)) {
       orphanedPublicFiles.push(publicPath);
     }
   }
-  return orphanedPublicFiles;
+  // return relative to cwd
+  return orphanedPublicFiles.map((filepath) =>
+    path.relative(Deno.cwd(), filepath)
+  );
 };
 
 export const getFilesystemChanges = async (
@@ -86,8 +96,21 @@ export const getFilesystemChanges = async (
     }
     changes.push({ type, inputPath: location.inputPath });
   }
+
+  // options for deleted content files getter
+  const opts: DeletedContentFilesOptions = {
+    publicDir: options.publicDir,
+    contentDir: options.contentDir,
+  };
+  if (!path.isAbsolute(opts.publicDir)) {
+    opts.publicDir = path.join(Deno.cwd(), opts.publicDir);
+  }
+  if (!path.isAbsolute(opts.contentDir)) {
+    opts.contentDir = path.join(Deno.cwd(), opts.contentDir);
+  }
+
   // get public files that need to be deleted
-  const orphanedPublicFiles: string[] = await getDeletedContentFiles(options);
+  const orphanedPublicFiles: string[] = await _getDeletedContentFiles(opts);
   const orphanedPublicFilesChanges: Change[] = orphanedPublicFiles.map(
     (path) => ({ type: "orphan", outputPath: path }),
   );
