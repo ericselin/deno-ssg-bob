@@ -111,7 +111,7 @@ const getContentWriter = (buildOptions: BuildOptions): ContentWriter => {
     await Deno.writeTextFile(filepath, content);
     // create change
     const change: Change = {
-      type: "modify",
+      type: "create",
       inputPath: filepath,
     };
     // apply change
@@ -168,7 +168,6 @@ export const serve = async (options: FunctionServerOptions) => {
               url: new URL("http://example.org/"),
             },
           });
-          console.log(component, props);
           const element = h(component, props);
           const html = await render(element);
           return new Response(html, {
