@@ -6,4 +6,4 @@ You can render JSX (or maybe more technically TSX) in functions. Just create you
 
 ## Example
 
-code:functions.
+code:functions.tsx

@@ -45,20 +45,23 @@ export const _getDeletedContentFiles = async (
     options,
   );
   const orphanedPublicFiles: string[] = [];
-  let walkIterable;
   try {
-    walkIterable = walk(options.publicDir, { includeDirs: false });
+    for await (
+      const publicWalkEntry of walk(options.publicDir, { includeDirs: false })
+    ) {
+      const publicPath = publicWalkEntry.path;
+      if (await checkIfAllContentFilesDeleted(publicPath)) {
+        orphanedPublicFiles.push(publicPath);
+      }
+    }
   } catch (e) {
-    if (e.name === "NotFound") {
+    // The error throw on non-existing root folder is not Deno.errors.NotFound,
+    // but a general error. This workaround is fragile, but better than just
+    // blindly returning an empty array regardless of the error.
+    if (e.message.startsWith("No such file or directory")) {
       return [];
     }
     throw e;
-  }
-  for await (const publicWalkEntry of walkIterable) {
-    const publicPath = publicWalkEntry.path;
-    if (await checkIfAllContentFilesDeleted(publicPath)) {
-      orphanedPublicFiles.push(publicPath);
-    }
   }
   // return relative to cwd
   return orphanedPublicFiles.map((filepath) =>
@@ -108,6 +111,8 @@ export const getFilesystemChanges = async (
   if (!path.isAbsolute(opts.contentDir)) {
     opts.contentDir = path.join(Deno.cwd(), opts.contentDir);
   }
+
+  log?.debug("Getting orphaned public files");
 
   // get public files that need to be deleted
   const orphanedPublicFiles: string[] = await _getDeletedContentFiles(opts);
