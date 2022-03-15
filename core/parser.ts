@@ -20,14 +20,7 @@ Please contact the developers via GitHub <https://www.github.com/ericselin>
 or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>
 */
 
-import type {
-  BuildOptions,
-  Html,
-  Page,
-  PageContent,
-  PageFile,
-  Parser,
-} from "../domain.ts";
+import type { BuildOptions, Html, Page, PageFile, Parser } from "../domain.ts";
 import { ContentType } from "../domain.ts";
 import { md, yaml } from "../deps.ts";
 
@@ -52,6 +45,7 @@ export const getContentFileParser = (
 
       const content: Page = {
         type: ContentType.Page,
+        pathname: contentFile.location.pathname,
         location: contentFile.location,
         frontmatter: frontmatter || {},
         content: parseContent(rawContent),
@@ -59,7 +53,7 @@ export const getContentFileParser = (
           // here we're assuming `content` is HTML
           let summary = this.content
             // get first 500 characters
-            .substr(0, 500)
+            .substring(0, 500)
             // strip html tags
             .replace(/<[^>]*>?/g, "")
             // replace newlines with space

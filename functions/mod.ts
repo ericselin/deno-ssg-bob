@@ -158,6 +158,7 @@ export const serve = async (options: FunctionServerOptions) => {
           const renderer = createRenderer(buildOptions);
           const render = renderer({
             type: ContentType.Page,
+            pathname: "",
             content: "",
             frontmatter: {},
             location: {
@@ -165,6 +166,7 @@ export const serve = async (options: FunctionServerOptions) => {
               inputPath: "",
               outputPath: "",
               contentPath: "",
+              pathname: "",
               url: new URL("http://example.org/"),
             },
           });

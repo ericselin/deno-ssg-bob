@@ -24,24 +24,21 @@ import type { WalkEntryToLocationConverter } from "../domain.ts";
 import { ContentType, Logger } from "../domain.ts";
 import { path } from "../deps.ts";
 
-let didWarnAboutBaseURL = false;
+const createPathnameFromOutputPath = (outputPath: string): string =>
+  outputPath.replace(path.sep, "/").replace("index.html", "");
 
 const getURLCreator = (
   { baseUrl, log }: { baseUrl?: string; log?: Logger },
 ) => {
-  if (!baseUrl && !didWarnAboutBaseURL) {
-    didWarnAboutBaseURL = true;
-    log?.warning("Base URL not set, using default value");
-  }
   if (!baseUrl) {
     baseUrl = "http://localhost";
   }
   return (outputPath: string): URL => {
     const url = new URL(
-      outputPath.replace(path.sep, "/").replace("index.html", ""),
+      createPathnameFromOutputPath(outputPath),
       baseUrl,
     );
-    log?.debug(`Output path ${outputPath} getting url ${url.toString()}`);
+    log?.warning("DEPRECATED: `Location.url` Please use `Page.pathname` instead");
     return url;
   };
 };
@@ -82,7 +79,10 @@ const processWalkEntry: WalkEntryToLocationConverter = (
       inputPath: path.join(contentDir, inputPath),
       outputPath: path.join(publicDir, outputPath),
       contentPath: inputPath,
-      url: createURL(outputPath),
+      pathname: createPathnameFromOutputPath(outputPath),
+      get url() {
+        return createURL(outputPath);
+      },
     };
   };
 };

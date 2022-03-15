@@ -142,7 +142,7 @@ export const createRenderer: ElementRendererCreator = (options, getPages) =>
       };
       // TODO DEPRECATED
       if (element.wantsPages) {
-        log?.warning("DEPRECATED: `wantedPages`");
+        log?.warning("DEPRECATED: `Page.wantedPages` Use `Page.children` instead");
         context.wantedPages = getPages &&
           // get all wanted pages
           await getPages(element.wantsPages)

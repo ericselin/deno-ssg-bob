@@ -16,6 +16,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
     When force-building, the new build should be as clean as possible. This includes clearing the cache before the build.
 
+- DEPRECATED: `Location.url`
+
+    The new way of getting the relative url directly from `Page.pathname` is much easier to work with. To migrate, change the places where you use the url to use `Page.pathname` instead.
+
+- DEPRECATED: `Component.wantedPages`
+
+    Now you can only define wanted pages on the component level, which is very limited. To migrate, change `wantedPages` to calls to `PageContext.getPages` instead.
+
 ## 2.4.2
 *2022-03-15*
 

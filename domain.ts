@@ -55,6 +55,7 @@ export type Component<
     >,
   ) => Awaitable<Element>)
   & {
+    /** @deprecated */
     wantsPages?: WantsPages;
     needsCss?: NeedsCss;
   };
@@ -69,6 +70,7 @@ export type Context<
 > = {
   page: Page<PageFrontmatter>;
   needsCss: CssSpecifier[];
+  /** @deprecated */
   wantedPages?: WantedPagesFrontmatter extends undefined ? undefined
     : WantedPages<WantedPagesFrontmatter>;
   childPages?: ChildPagesFrontmatter extends undefined ? undefined
@@ -93,6 +95,7 @@ export type Element<P = unknown> = {
   type: ElementType;
   props?: P;
   children?: Children[];
+  /** @deprecated */
   wantsPages?: WantsPages;
   needsCss?: NeedsCss;
 };
@@ -180,6 +183,8 @@ export type Content = Page | StaticContent;
 /** Something that should be rendered into an HTML page. */
 export type Page<T = unknown> = {
   type: ContentType.Page;
+  /** URL pathname of published page */
+  pathname: string;
   location: Location<ContentType.Page>;
   frontmatter: T & {
     layout?: string;
@@ -213,7 +218,8 @@ export type Location<T extends ContentType = ContentType> = {
   contentPath: string;
   /** Path of the output (e.g. HTML) file, relative to CWD */
   outputPath: CwdRelativePath;
-  /** Final URL of published asset */
+  pathname: string;
+  /** @deprecated */
   url: URL;
   /** Flag to mark if asset at this location should be rebuilt */
   dirty?: boolean;
