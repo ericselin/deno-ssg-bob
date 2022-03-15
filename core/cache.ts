@@ -41,13 +41,15 @@ class MemoryCache implements Cache {
     }
     throw new Error(`Cache at key ${key} is not an array - cannot add`);
   }
+
+  async clear() {}
 }
 
 class FileCache implements Cache {
   /** @private */
   _transactionQueue: Promise<void> = Promise.resolve();
   /** @private */
-  _cacheDir: string;
+  readonly _cacheDir: string;
 
   constructor(cacheDir = ".cache") {
     this._cacheDir = cacheDir;
@@ -111,6 +113,10 @@ class FileCache implements Cache {
         }
       },
     );
+  }
+
+  async clear() {
+    await Deno.remove(this._cacheDir, { recursive: true });
   }
 
   /** @private */

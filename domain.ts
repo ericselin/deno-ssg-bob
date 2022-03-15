@@ -370,6 +370,7 @@ export interface Cache {
   delete(key: string): Promise<void>;
   deleteFrom(key: string, property: string): Promise<void>;
   add(key: string, value: Record<string, unknown>): Promise<void>;
+  clear(): Promise<void>;
 }
 
 export type CacheTransactionCallback = (

@@ -10,6 +10,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Fix CLI crash when public dir not existing
 
+### Changed
+
+- Clear cache on force build
+
+    When force-building, the new build should be as clean as possible. This includes clearing the cache before the build.
+
 ## 2.4.2
 *2022-03-15*
 

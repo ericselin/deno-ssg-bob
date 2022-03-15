@@ -328,7 +328,7 @@ const createChangeToDependantChangesMapper = (
 };
 
 export const build: Builder = async (options) => {
-  const { contentDir, layoutDir, publicDir, force, log } = options;
+  const { contentDir, layoutDir, publicDir, force, log, cache } = options;
 
   log?.debug(
     `Build directories: content:${contentDir} layouts:${layoutDir} public:${publicDir}`,
@@ -340,8 +340,9 @@ export const build: Builder = async (options) => {
   }
 
   if (force && await exists(publicDir)) {
-    log?.warning(`Cleaning public directory ${publicDir}`);
+    log?.warning(`Cleaning public directory ${publicDir} as well as cache`);
     await cleanDirectory(publicDir);
+    await cache.clear();
   }
 
   log?.info("Getting list of changes from filesystem...");
