@@ -64,6 +64,7 @@ export const createRenderer: ElementRendererCreator = (options, getPages) =>
     const renderContext = {
       needsCss: [] as string[],
     };
+    const { log } = options;
     const render: ElementRenderer = async (element) => {
       let html = "";
 
@@ -139,7 +140,9 @@ export const createRenderer: ElementRendererCreator = (options, getPages) =>
           return undefined;
         },
       };
+      // TODO DEPRECATED
       if (element.wantsPages) {
+        log?.warning("DEPRECATED: `wantedPages`");
         context.wantedPages = getPages &&
           // get all wanted pages
           await getPages(element.wantsPages)
