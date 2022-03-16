@@ -42,16 +42,9 @@ const getWalkEntry = (path: string, isFile = true): WalkEntry => ({
 const locationFrom = (path: string) => getLocation(getWalkEntry(path));
 
 Deno.test("md file url pathname is correct", () => {
-  assertEquals(locationFrom("blog/post.md").url.pathname, "/blog/post/");
-  assertEquals(locationFrom("blog/index.md").url.pathname, "/blog/");
-  assertEquals(locationFrom("index.md").url.pathname, "/");
-});
-
-Deno.test("md file whole url is correct", () => {
-  assertEquals(
-    locationFrom("blog/post.md").url.toString(),
-    "https://mypage.com/blog/post/",
-  );
+  assertEquals(locationFrom("blog/post.md").pathname, "/blog/post/");
+  assertEquals(locationFrom("blog/index.md").pathname, "/blog/");
+  assertEquals(locationFrom("index.md").pathname, "/");
 });
 
 Deno.test("location input and output relative", () => {
@@ -67,5 +60,5 @@ Deno.test("html has static location", () => {
   assertEquals(location.inputPath, "content/dir/page.html");
   assertEquals(location.outputPath, "public/dir/page.html");
   assertEquals(location.type, ContentType.Static);
-  assertEquals(location.url.pathname, "/dir/page.html");
+  assertEquals(location.pathname, "/dir/page.html");
 });

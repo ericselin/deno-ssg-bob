@@ -5,6 +5,7 @@ import {
 } from "../changes-fs.ts";
 
 const testDir = path.dirname(path.fromFileUrl(import.meta.url));
+const testDirRelative = path.relative(Deno.cwd(), testDir);
 
 const getOpts = (
   suffix: string,
@@ -22,7 +23,7 @@ Deno.test("empty content folder returns the one existing public file", async () 
   const orphans = await _getDeletedContentFiles(getOpts("2"));
   assertEquals(
     orphans,
-    [path.join("public-2", "orphan", "index.html")],
+    [path.join(testDirRelative, "public-2", "orphan", "index.html")],
   );
 });
 
@@ -40,8 +41,8 @@ Deno.test("all kinds of files in public folder works, index exists", async () =>
   assertArrayIncludes(
     orphans,
     [
-      path.join("public-3", "subdir", "index.html"),
-      path.join("public-3", "subdir", "another", "index.html"),
+      path.join(testDirRelative, "public-3", "subdir", "index.html"),
+      path.join(testDirRelative, "public-3", "subdir", "another", "index.html"),
     ],
   );
 });

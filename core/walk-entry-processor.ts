@@ -25,7 +25,10 @@ import { ContentType, Logger } from "../domain.ts";
 import { path } from "../deps.ts";
 
 const createPathnameFromOutputPath = (outputPath: string): string =>
-  outputPath.replace(path.sep, "/").replace("index.html", "");
+  outputPath
+    .replace(path.sep, "/")
+    .replace(/^\.*\/?/, "/")
+    .replace("index.html", "");
 
 const getURLCreator = (
   { baseUrl, log }: { baseUrl?: string; log?: Logger },
@@ -38,7 +41,9 @@ const getURLCreator = (
       createPathnameFromOutputPath(outputPath),
       baseUrl,
     );
-    log?.warning("DEPRECATED: `Location.url` Please use `Page.pathname` instead");
+    log?.warning(
+      "DEPRECATED: `Location.url` Please use `Page.pathname` instead",
+    );
     return url;
   };
 };
