@@ -4,11 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 2.5.0
+*2022-03-16*
+
+### Deprecated
+
+- `Location.url`
+
+    The new way of getting the relative url directly from `Page.pathname` is much easier to work with. To migrate, change the places where you use the url to use `Page.pathname` instead.
+
+- `Component.wantedPages`
+
+    Now you can only define wanted pages on the component level, which is very limited. To migrate, change `wantedPages` to calls to `PageContext.getPages` instead.
 
 ### Added
 
-- `Page` property `pathname` to quickly get path of current page
+- `Page` property `pathname` to quickly get (relative) path of current page
 
     This should now be used instead of the deprecated `Page.location.url`. Works when rendering JSX from functions as well.
 
@@ -21,14 +32,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Clear cache on force build
 
     When force-building, the new build should be as clean as possible. This includes clearing the cache before the build.
-
-- DEPRECATED: `Location.url`
-
-    The new way of getting the relative url directly from `Page.pathname` is much easier to work with. To migrate, change the places where you use the url to use `Page.pathname` instead.
-
-- DEPRECATED: `Component.wantedPages`
-
-    Now you can only define wanted pages on the component level, which is very limited. To migrate, change `wantedPages` to calls to `PageContext.getPages` instead.
 
 ## 2.4.2
 *2022-03-15*
