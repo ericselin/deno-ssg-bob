@@ -149,6 +149,7 @@ export const serve = async (options: FunctionServerOptions) => {
     if (!fn) return new Response("Not found", { status: 404 });
     const [pattern, handler] = fn;
     const match = pattern.exec(request.url)!;
+    const url = new URL(request.url);
     try {
       return handler(request, {
         pathnameParams: match.pathname.groups,
@@ -158,7 +159,7 @@ export const serve = async (options: FunctionServerOptions) => {
           const renderer = createRenderer(buildOptions);
           const render = renderer({
             type: ContentType.Page,
-            pathname: "",
+            pathname: url.pathname,
             content: "",
             frontmatter: {},
             location: {

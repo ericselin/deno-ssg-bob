@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+### Added
+
+- `Page` property `pathname` to quickly get path of current page
+
+    This should now be used instead of the deprecated `Page.location.url`. Works when rendering JSX from functions as well.
+
 ### Fixed
 
 - Fix CLI crash when public dir not existing
