@@ -18,6 +18,7 @@ export type FunctionHandler = (
 ) => Response | Promise<Response>;
 
 type FunctionContext = {
+  log?: Logger;
   pathnameParams: Record<string, string>;
   writeAndRender: ContentWriter;
   updateAndRender: ContentUpdater;
@@ -40,7 +41,6 @@ type FunctionsPatterns = [URLPattern, FunctionHandler][];
 
 type FunctionServerOptions = {
   functionDefinitions?: Functions;
-  log?: Logger;
   port?: number;
   buildOptions: BuildOptions;
 };
@@ -120,10 +120,11 @@ const getContentWriter = (buildOptions: BuildOptions): ContentWriter => {
 };
 
 export const serve = async (options: FunctionServerOptions) => {
-  const { log, port, buildOptions, functionDefinitions } = Object.assign(
-    options,
-    { port: 8081 } as FunctionServerOptions,
-  );
+  const { port, buildOptions, functionDefinitions } = {
+    port: 8081,
+    ...options,
+  };
+  const { log } = buildOptions;
   // DEPRECATED: load functions
   if (!functionDefinitions) {
     const functionDefinitions = (await loadIfExists(FUNCTIONS_PATH_DEPRECATED))
@@ -152,6 +153,7 @@ export const serve = async (options: FunctionServerOptions) => {
     const url = new URL(request.url);
     try {
       return handler(request, {
+        log,
         pathnameParams: match.pathname.groups,
         writeAndRender,
         updateAndRender,
@@ -179,7 +181,7 @@ export const serve = async (options: FunctionServerOptions) => {
         },
       });
     } catch (err) {
-      log?.error(err.toString());
+      log?.critical(err);
       return new Response("Internal server error", { status: 500 });
     }
   }, { port });

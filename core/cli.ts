@@ -22,16 +22,14 @@ or email eric.selin@gmail.com <mailto:eric.selin@gmail.com>
 
 import type { BuildOptions, ConfigFile } from "../domain.ts";
 import { build, serve as serveStatic } from "../mod.ts";
-import { log, parseFlags } from "../deps.ts";
+import { getLogger, parseFlags } from "../deps.ts";
 import {
   serve as serveFunctions,
   writeNginxLocations,
 } from "../functions/mod.ts";
 import type { Functions } from "../functions/mod.ts";
 import { createChangesApplier } from "./api.ts";
-import {
-  changeOnFileModifications,
-} from "./change-providers/fs-mod.ts";
+import { changeOnFileModifications } from "./change-providers/fs-mod.ts";
 import { FileCache } from "./cache.ts";
 import { importContent } from "./import-content.ts";
 
@@ -137,20 +135,8 @@ export const bob = async (configFile?: ConfigFile) => {
     Deno.exit();
   }
 
-  const logLevel = args.verbose ? "DEBUG" : "INFO";
-
-  await log.setup({
-    handlers: {
-      console: new log.handlers.ConsoleHandler(logLevel),
-    },
-
-    loggers: {
-      default: {
-        level: logLevel,
-        handlers: ["console"],
-      },
-    },
-  });
+  const logger = configFile?.logger || getLogger();
+  if (args.verbose) logger.levelName === "DEBUG";
 
   const buildOptions: BuildOptions = {
     contentDir: "content",
@@ -159,7 +145,7 @@ export const bob = async (configFile?: ConfigFile) => {
     cache: new FileCache(),
     force: args.force,
     buildDrafts: args.drafts,
-    log,
+    log: logger,
   };
 
   let functionDefinitions: Functions | undefined = undefined;
@@ -171,7 +157,7 @@ export const bob = async (configFile?: ConfigFile) => {
         configFile.contentImporter,
         buildOptions.contentDir,
         buildOptions.cache,
-        log,
+        logger,
       );
     }
     functionDefinitions = configFile.functions;
@@ -180,7 +166,7 @@ export const bob = async (configFile?: ConfigFile) => {
   const functionsPort = 8081;
 
   if (functions || server) {
-    await serveFunctions({ log, buildOptions, functionDefinitions });
+    await serveFunctions({ buildOptions, functionDefinitions });
   }
 
   if (args.fnNginxConf) {
@@ -190,15 +176,15 @@ export const bob = async (configFile?: ConfigFile) => {
         "Please provide hostname for nginx proxy (--fn-hostname or $HOSTNAME)",
       );
     }
-    log.info(`Functions using hostname ${hostname}`);
-    log.info(`Writing nginx locations to ${args.fnNginxConf}`);
+    logger.info(`Functions using hostname ${hostname}`);
+    logger.info(`Writing nginx locations to ${args.fnNginxConf}`);
     await writeNginxLocations(
       args.fnNginxConf,
       hostname,
       functionsPort,
       functionDefinitions,
     );
-    log.info(
+    logger.info(
       `Done! Feel free to reload nginx and possibly stop previous functions server`,
     );
   }
@@ -207,7 +193,7 @@ export const bob = async (configFile?: ConfigFile) => {
     // Start HTTP server of public folder
     serveStatic({
       directory: "public",
-      log,
+      log: logger,
       proxy404: `localhost:${functionsPort}`,
     });
   }

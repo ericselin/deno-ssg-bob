@@ -12,6 +12,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
     It is now possible to run the bob CLI via a separately exported CLI function `bob(ConfigFile)`. Running the CLI like this from your own `bob.ts` file has two major benefits: a) the bob runtime / CLI is always the same version that you are importing in your code, and b) this makes it possible to utilize Deno file watchers. I.e. at the end of your `bob.ts` config file, just run `bob(config)` - then you can `deno run -A --watch bob.ts server`.
 
+- Ability to pass in logger in config file
+
+    You can now pass in your own `Logger` in `ConfigFile.logger`. This makes it possible to log messages very flexibly into files or why not email or SMS.
+
 ## 2.5.1
 *2022-03-16*
 
