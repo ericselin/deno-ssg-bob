@@ -29,7 +29,10 @@ import {
 } from "../functions/mod.ts";
 import type { Functions } from "../functions/mod.ts";
 import { createChangesApplier } from "./api.ts";
-import { changeOnFileModifications } from "./change-providers/fs-mod.ts";
+import {
+  changeOnFileModifications,
+  restartOnFileModifications,
+} from "./change-providers/fs-mod.ts";
 import { FileCache } from "./cache.ts";
 import { importContent } from "./import-content.ts";
 
@@ -196,6 +199,17 @@ export const bob = async (configFile?: ConfigFile) => {
       log: logger,
       proxy404: `localhost:${functionsPort}`,
     });
+
+    /**
+    Command to run. Always run via the `bob` executable.
+    Pass in original arguments, except for the "server" argument.
+    */
+    const cmd = [
+      "bob",
+      ...Deno.args.map((arg) => arg === SERVER_ARG ? "watch" : arg),
+    ];
+
+    restartOnFileModifications(buildOptions.layoutDir, cmd);
   }
 
   if (watcher) {
@@ -203,7 +217,7 @@ export const bob = async (configFile?: ConfigFile) => {
     changeOnFileModifications(buildOptions, applyChanges);
   }
 
-  if (!functions) {
+  if (!functions && !server) {
     await build(buildOptions);
   }
 };
