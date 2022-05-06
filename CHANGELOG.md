@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- Create function for running CLI command(s)
+
+    It is now possible to run the bob CLI via a separately exported CLI function `bob(ConfigFile)`. Running the CLI like this from your own `bob.ts` file has two major benefits: a) the bob runtime / CLI is always the same version that you are importing in your code, and b) this makes it possible to utilize Deno file watchers. I.e. at the end of your `bob.ts` config file, just run `bob(config)` - then you can `deno run -A --watch bob.ts server`.
+
 ## 2.5.1
 *2022-03-16*
 
