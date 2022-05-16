@@ -4,7 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 2.6.0$
+## 2.7.0
+
+### Added
+
+- JSX fragments
+
+    JSX fragments can now be used with the `/** @jsxFrag Fragment */` pragma while importing `Fragment`.
+
+### Changed
+
+- Do not render `false`
+
+    `false` is no longer rendered as "false". This was unintuitive, because e.g. `{condition === "render" && <p>Rendered!</p>}` previously rendered "false" if the test statement was false. This made conditional JSX cumbersome to write. This is now the same behavior as React.
+
+- Properly render boolean props to HTML attributes
+
+    Now boolean props are rendered much more intuitively: if you specify `<elem attr={true} />` it will render into `<elem attr />`, as is expected from "boolean" HTML attributes. Conversely, `<elem attr={false} />` will just render `<elem />`, in order to make it easier to conditionally include such attributes.
+
+## 2.6.0
 
 ### Added
 

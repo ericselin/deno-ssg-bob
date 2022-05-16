@@ -43,10 +43,17 @@ export const h: ElementCreator = (type, props, ...children) => {
   return element;
 };
 
+export const Fragment = "Fragment";
+
 const renderProps = (props?: unknown): string => {
   if (!props || typeof props !== "object") return "";
   return Object.entries(props).reduce(
-    (all, [attr, value]) => `${all} ${attr}="${value}"`,
+    (all, [attr, value]) =>
+      value === false
+        ? all
+        : value === true
+        ? `${all} ${attr}`
+        : `${all} ${attr}="${value}"`,
     "",
   );
 };
@@ -88,8 +95,21 @@ export const createRenderer: ElementRendererCreator = (options, getPages) =>
         case "string":
           return element;
         case "number":
-        case "boolean":
           return element.toString();
+        case "boolean":
+          return element ? element.toString() : "";
+      }
+
+      // for fragments, only render children
+      if (
+        typeof element.type === "string" &&
+        element.type === Fragment &&
+        element.children
+      ) {
+        for (const child of element.children) {
+          html += await render(child);
+        }
+        return html;
       }
 
       // see if this is an html tag
@@ -142,7 +162,9 @@ export const createRenderer: ElementRendererCreator = (options, getPages) =>
       };
       // TODO DEPRECATED
       if (element.wantsPages) {
-        log?.warning("DEPRECATED: `Page.wantedPages` Use `Page.children` instead");
+        log?.warning(
+          "DEPRECATED: `Page.wantedPages` Use `Page.children` instead",
+        );
         context.wantedPages = getPages &&
           // get all wanted pages
           await getPages(element.wantsPages)
