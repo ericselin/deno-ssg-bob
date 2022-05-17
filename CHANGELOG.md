@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.7.1
+
+### Fixed
+
+- Content importer no longer errors when no content imported
+
+    When doing partial imports based on last modification date, it is quite common that no content is yielded from the importer. Previously this resulted in an error being logged, now the content importer exits when it encounters (the first occurence of) undefined.
+
 ## 2.7.0
 
 ### Added

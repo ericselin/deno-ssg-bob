@@ -1,5 +1,5 @@
 import type { ContentImporter, ImportedContent } from "../mod.ts";
-import { assertEquals, assert } from "../deps.ts";
+import { assert, assertEquals } from "../deps.ts";
 import { MemoryCache } from "./cache.ts";
 import { importContent, lastUpdateCacheKey } from "./import-content.ts";
 
@@ -47,4 +47,35 @@ Deno.test("content importer yields in last update, otherwise undefined", async (
   await importContent(gen(), "", memCache, undefined, write);
 
   assertEquals(writeCount, 2);
+});
+
+Deno.test("content imported doesn't error when nothing yielded", async () => {
+  // noop content importer only checking date
+  async function* gen(): ContentImporter {
+    (yield) as Date | undefined;
+  }
+  // noop writer
+  const write = (_: ImportedContent) => {
+    throw new Error("We should never write anything here");
+  };
+  // error logger
+  const log = {
+    critical: () => {
+      throw new Error("Should not error");
+    },
+    error: () => {
+      throw new Error("Should not error");
+    },
+    info: () => {},
+    debug: () => {},
+  };
+
+  await importContent(
+    gen(),
+    "",
+    new MemoryCache(),
+    //@ts-ignore only error property needed
+    log,
+    write,
+  );
 });

@@ -38,6 +38,8 @@ export const importContent = async (
       const next = await contentImporter.next(lastUpdate);
       // use this next yield as content
       content = next.value;
+      // if no next value, the importer has exited, so break from loop
+      if (!content) break;
     }
 
     // write or delete
