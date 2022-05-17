@@ -32,9 +32,9 @@ const assertDirectoriesEqual = async (
   for await (const dirEntry of walk(actualDir)) {
     if (!dirEntry.isFile) continue;
     actualFileCount++;
-    const actualContents = await Deno.readTextFile(dirEntry.path);
+    const actualContents = await Deno.readFile(dirEntry.path);
     const relativePath = path.relative(actualDir, dirEntry.path);
-    const expectedContents = await Deno.readTextFile(
+    const expectedContents = await Deno.readFile(
       path.join(expectedDir, relativePath),
     );
     assertEquals(actualContents, expectedContents);
