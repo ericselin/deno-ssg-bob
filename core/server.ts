@@ -45,6 +45,10 @@ export const serve = (options: ServerOptions): void => {
     let fsPath: string | undefined = undefined;
 
     try {
+      // throw not found if this is not a GET
+      // this will trigger the 404 and possible proxying
+      if (req.method.toUpperCase() !== "GET") throw new Deno.errors.NotFound();
+
       const normalizedUrl = new URL(req.url).pathname;
       fsPath = posix.join(directory, normalizedUrl);
       if (fsPath.endsWith("/")) fsPath = posix.join(fsPath, "index.html");
