@@ -145,14 +145,14 @@ export const serve = async (options: FunctionServerOptions) => {
   const writeAndRender = getContentWriter(buildOptions);
   const updateAndRender = getContentUpdater(buildOptions);
   // start server
-  listen((request) => {
+  listen(async (request) => {
     const fn = functions.find(([pattern]) => pattern.test(request.url));
     if (!fn) return new Response("Not found", { status: 404 });
     const [pattern, handler] = fn;
     const match = pattern.exec(request.url)!;
     const url = new URL(request.url);
     try {
-      return handler(request, {
+      return await handler(request, {
         log,
         pathnameParams: match.pathname.groups,
         writeAndRender,
