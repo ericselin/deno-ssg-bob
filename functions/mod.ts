@@ -38,7 +38,7 @@ type ContentUpdater = (
 type FunctionDefinition = [string, FunctionHandler];
 type FunctionsPatterns = [URLPattern, FunctionHandler][];
 export type Functions = FunctionDefinition[];
-export type FunctionErrorHandler = (err: Error) => Response | void | undefined | Promise<Response | void | undefined>
+export type FunctionErrorHandler = (err: Error, req: Request) => Response | void | undefined | Promise<Response | void | undefined>
 
 type FunctionServerOptions = {
   functionDefinitions?: Functions;
@@ -184,7 +184,7 @@ export const serve = async (options: FunctionServerOptions) => {
       });
     } catch (err) {
       log?.critical(err);
-      const errorResponse = errorHandler && await errorHandler(err);
+      const errorResponse = errorHandler && await errorHandler(err, request);
       return errorResponse ||
         new Response("Internal server error", { status: 500 });
     }
