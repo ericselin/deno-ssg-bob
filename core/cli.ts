@@ -169,7 +169,7 @@ export const bob = async (configFile?: ConfigFile) => {
   const functionsPort = 8081;
 
   if (functions || server) {
-    await serveFunctions({ buildOptions, functionDefinitions });
+    await serveFunctions({ buildOptions, functionDefinitions, errorHandler: configFile?.errorHandler });
   }
 
   if (args.fnNginxConf) {

@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- Error handler for functions
+
+    An error handler for errors in functions can now be specified in `ConfigFile`. This handler is called if functions throw at any point. You can optionally return a `Response` from this handler. If nothing is returned, a default 500 server error is returned (as before).
+
 ## 2.7.2
 
 ### Fixed

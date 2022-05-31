@@ -36,11 +36,13 @@ type ContentUpdater = (
 ) => Promise<void>;
 
 type FunctionDefinition = [string, FunctionHandler];
-export type Functions = FunctionDefinition[];
 type FunctionsPatterns = [URLPattern, FunctionHandler][];
+export type Functions = FunctionDefinition[];
+export type FunctionErrorHandler = (err: Error) => Response | void | undefined | Promise<Response | void | undefined>
 
 type FunctionServerOptions = {
   functionDefinitions?: Functions;
+  errorHandler?: FunctionErrorHandler;
   port?: number;
   buildOptions: BuildOptions;
 };
@@ -120,7 +122,7 @@ const getContentWriter = (buildOptions: BuildOptions): ContentWriter => {
 };
 
 export const serve = async (options: FunctionServerOptions) => {
-  const { port, buildOptions, functionDefinitions } = {
+  const { port, buildOptions, functionDefinitions, errorHandler } = {
     port: 8081,
     ...options,
   };
@@ -182,7 +184,9 @@ export const serve = async (options: FunctionServerOptions) => {
       });
     } catch (err) {
       log?.critical(err);
-      return new Response("Internal server error", { status: 500 });
+      const errorResponse = errorHandler && await errorHandler(err);
+      return errorResponse ||
+        new Response("Internal server error", { status: 500 });
     }
   }, { port });
   log?.info(`Functions running on port ${port}`);

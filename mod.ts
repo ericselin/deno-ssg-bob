@@ -29,6 +29,7 @@ export type {
 } from "./domain.ts";
 export type { EdgeComponent } from "./edge/mod.ts";
 export type {
+  FunctionErrorHandler,
   FunctionHandler,
   Functions,
   writeNginxLocations,
@@ -36,7 +37,7 @@ export type {
 export { EdgeElement } from "./edge/bob.tsx";
 export { build } from "./core/api.ts";
 export { serve } from "./core/server.ts";
-export { h, Fragment } from "./core/jsx.ts";
+export { Fragment, h } from "./core/jsx.ts";
 export { bob } from "./core/cli.ts";
 export * from "./utils/get-path.ts";
 export * from "./utils/read-contents.ts";

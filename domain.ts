@@ -26,11 +26,12 @@ Configuration file
 
 */
 
-import type { Functions } from "./functions/mod.ts";
+import type { FunctionErrorHandler, Functions } from "./functions/mod.ts";
 
 export type ConfigFile = {
   contentImporter?: ContentImporter;
   functions?: Functions;
+  errorHandler?: FunctionErrorHandler;
   logger?: Logger;
 };
 
