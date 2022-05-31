@@ -12,6 +12,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
     An error handler for errors in functions can now be specified in `ConfigFile`. This handler is called if functions throw at any point. You can optionally return a `Response` from this handler. If nothing is returned, a default 500 server error is returned (as before).
 
+### Changed
+
+- Add input file name to errors thrown from content reader
+
+    Particularly when reading content files from a function, the read might fail (mostly because of a missing file). This adds the offending file name to the error message for better debuggability.
+
 ## 2.7.2
 
 ### Fixed

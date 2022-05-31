@@ -137,6 +137,10 @@ const readPageLocation = (
       location,
       rawContent: await Deno.readTextFile(location.inputPath),
     }))
+    .catch((err) => {
+      err.message += ` (trying to read ${pageLocation.inputPath})`;
+      throw err;
+    })
     .then(({ rawContent, ...page }) => {
       const parsed = md.parse(rawContent);
       return ({
