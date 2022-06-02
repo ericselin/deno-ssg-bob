@@ -24,6 +24,8 @@ import type { BuildOptions, ConfigFile } from "../domain.ts";
 import { build, serve as serveStatic } from "../mod.ts";
 import { getLogger, parseFlags } from "../deps.ts";
 import {
+  handleRequest,
+  loadFunctionsFromFunctionsFile,
   serve as serveFunctions,
   writeNginxLocations,
 } from "../functions/mod.ts";
@@ -35,6 +37,11 @@ import {
 } from "./change-providers/fs-mod.ts";
 import { FileCache } from "./cache.ts";
 import { importContent } from "./import-content.ts";
+import {
+  cacheResponseBody,
+  CacheUpdater,
+  updateCache,
+} from "../functions/cache.ts";
 
 const usage = `bob the static site builder
 
@@ -67,6 +74,7 @@ COMMAND \`server\`
   (Internally, this uses the \`watch\` command, restarting it on layout changes.)
 
 OPTIONS:
+  -c, --cache           EXPERIMENTAL: enable caching of responses from functions
   -i, --import          import content before building
   -p, --public          path to public directory
   -f, --force           re-build from scratch (deletes public dir and cache)
@@ -100,7 +108,9 @@ redistribute it under certain conditions.
 For details run the program with the \`-l\` argument.
 `;
 
-export const bob = async (configFile?: ConfigFile) => {
+export const bob = async (configFile?: ConfigFile): Promise<{
+  cacheUrl?: (urlOrPathnameToCache: string) => unknown;
+}> => {
   const {
     _: [action],
     ...args
@@ -115,6 +125,7 @@ export const bob = async (configFile?: ConfigFile) => {
       fnNginxConf: "fn-nginx-conf",
       fnHostname: "fn-hostname",
       import: "i",
+      cache: "c",
     },
   });
 
@@ -167,9 +178,30 @@ export const bob = async (configFile?: ConfigFile) => {
   }
 
   const functionsPort = 8081;
+  let functionsCacher: CacheUpdater | undefined = undefined;
 
   if (functions || server) {
-    await serveFunctions({ buildOptions, functionDefinitions, errorHandler: configFile?.errorHandler });
+    if (!functionDefinitions) {
+      functionDefinitions = await loadFunctionsFromFunctionsFile();
+      if (functionDefinitions) {
+        logger.warning(
+          "DEPRECATED: Loading functions from functions/index.ts is soon no longer supported",
+        );
+      }
+    }
+    const handler = handleRequest({
+      buildOptions,
+      port: functionsPort,
+      functionDefinitions,
+      errorHandler: configFile?.errorHandler,
+      responseCacher: args.cache
+        ? cacheResponseBody(buildOptions.publicDir, logger)
+        : undefined,
+    });
+    if (handler) {
+      serveFunctions(handler);
+      functionsCacher = updateCache(handler, logger);
+    }
   }
 
   if (args.fnNginxConf) {
@@ -220,4 +252,8 @@ export const bob = async (configFile?: ConfigFile) => {
   if (!functions && !server) {
     await build(buildOptions);
   }
+
+  return {
+    cacheUrl: functionsCacher,
+  };
 };

@@ -9,6 +9,7 @@ import {
   writeContent,
 } from "../core/api.ts";
 import { writeNginxLocations as writeNginxLocationsInternal } from "./nginx-locations.ts";
+import { Cacher } from "./cache.ts";
 
 const FUNCTIONS_PATH_DEPRECATED = "functions/index.ts";
 
@@ -35,18 +36,29 @@ type ContentUpdater = (
   content?: string,
 ) => Promise<void>;
 
-type FunctionDefinition = [string, FunctionHandler];
-type FunctionsPatterns = [URLPattern, FunctionHandler][];
+type FunctionDefinition = [string, FunctionHandler, FunctionOptions?];
+export type FunctionOptions = {
+  /** Cache GET requests to this function in the public folder */
+  cache?: boolean;
+};
+
 export type Functions = FunctionDefinition[];
-export type FunctionErrorHandler = (err: Error, req: Request) => Response | void | undefined | Promise<Response | void | undefined>
+export type FunctionErrorHandler = (
+  err: Error,
+  req: Request,
+) => Response | void | undefined | Promise<Response | void | undefined>;
 
 type FunctionServerOptions = {
+  responseCacher?: Cacher;
   functionDefinitions?: Functions;
   errorHandler?: FunctionErrorHandler;
   port?: number;
   buildOptions: BuildOptions;
 };
 
+type FunctionsPatterns = [URLPattern, FunctionHandler, FunctionOptions?][];
+
+/** @deprecated */
 export const writeNginxLocations = async (
   filepath: string,
   hostname: string,
@@ -71,6 +83,14 @@ export const writeNginxLocations = async (
     port,
     functions: functions,
   });
+};
+
+export const loadFunctionsFromFunctionsFile = async (): Promise<
+  Functions | undefined
+> => {
+  const functionDefinitions = (await loadIfExists(FUNCTIONS_PATH_DEPRECATED))
+    ?.default as Functions;
+  return functionDefinitions;
 };
 
 const getContentUpdater = (buildOptions: BuildOptions): ContentUpdater => {
@@ -121,46 +141,38 @@ const getContentWriter = (buildOptions: BuildOptions): ContentWriter => {
   };
 };
 
-export const serve = async (options: FunctionServerOptions) => {
-  const { port, buildOptions, functionDefinitions, errorHandler } = {
-    port: 8081,
-    ...options,
-  };
-  const { log } = buildOptions;
-  // DEPRECATED: load functions
-  if (!functionDefinitions) {
-    const functionDefinitions = (await loadIfExists(FUNCTIONS_PATH_DEPRECATED))
-      ?.default as Functions;
-    if (functionDefinitions) {
-      log?.warning("DEPRECATED: Using functions from functions/index.ts");
-    }
-  }
-  if (!functionDefinitions) {
-    log?.info("No functions defined");
-    return;
-  }
+export const handleRequest = (
+  fnServerOptions: FunctionServerOptions,
+) => {
+  const { log } = fnServerOptions.buildOptions;
+
+  if (!fnServerOptions.functionDefinitions) return;
+
   // create url patterns
-  const functions: FunctionsPatterns = functionDefinitions.map((
-    [pathname, handler],
-  ) => [new URLPattern({ pathname }), handler]);
+  const functions: FunctionsPatterns = fnServerOptions.functionDefinitions.map((
+    [pathname, handler, options],
+  ) => [new URLPattern({ pathname }), handler, options]);
+
   // create content writer
-  const writeAndRender = getContentWriter(buildOptions);
-  const updateAndRender = getContentUpdater(buildOptions);
-  // start server
-  listen(async (request) => {
+  const writeAndRender = getContentWriter(fnServerOptions.buildOptions);
+  const updateAndRender = getContentUpdater(fnServerOptions.buildOptions);
+
+  return async (request: Request): Promise<Response> => {
     const fn = functions.find(([pattern]) => pattern.test(request.url));
-    if (!fn) return new Response("Not found", { status: 404 });
-    const [pattern, handler] = fn;
+    if (!fn) {
+      return new Response("Not found", { status: 404 });
+    }
+    const [pattern, handler, options] = fn;
     const match = pattern.exec(request.url)!;
     const url = new URL(request.url);
     try {
-      return await handler(request, {
+      const response = await handler(request, {
         log,
         pathnameParams: match.pathname.groups,
         writeAndRender,
         updateAndRender,
         renderResponse: async (component, props) => {
-          const renderer = createRenderer(buildOptions);
+          const renderer = createRenderer(fnServerOptions.buildOptions);
           const render = renderer({
             type: ContentType.Page,
             pathname: url.pathname,
@@ -182,12 +194,22 @@ export const serve = async (options: FunctionServerOptions) => {
           });
         },
       });
+      if (options?.cache && fnServerOptions.responseCacher) {
+        fnServerOptions.responseCacher(request, response);
+      }
+      return response;
     } catch (err) {
       log?.critical(err);
-      const errorResponse = errorHandler && await errorHandler(err, request);
+      const errorResponse = fnServerOptions.errorHandler &&
+        await fnServerOptions.errorHandler(err, request);
       return errorResponse ||
         new Response("Internal server error", { status: 500 });
     }
-  }, { port });
-  log?.info(`Functions running on port ${port}`);
+  };
+};
+
+export const serve = (
+  handle: (request: Request) => Response | Promise<Response>,
+) => {
+  listen(handle);
 };
