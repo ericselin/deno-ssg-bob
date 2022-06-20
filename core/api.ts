@@ -24,6 +24,7 @@ import type {
   Builder,
   BuildOptions,
   BuildResults,
+  Cache,
   Change,
   ContentGetter,
   Location,
@@ -35,7 +36,6 @@ import type {
 } from "../domain.ts";
 import { ContentType } from "../domain.ts";
 import { exists, expandGlob, md, path } from "../deps.ts";
-import { FileCache } from "./cache.ts";
 import {
   createDependantsReader,
   createDependencyPurger,
@@ -296,13 +296,13 @@ export const createChangesApplier = (options: BuildOptions): ChangesApplier => {
 };
 
 const createChangeToDependantChangesMapper = (
-  { log, contentDir, publicDir }: {
+  { log, contentDir, publicDir, cache }: {
     log?: Logger;
     contentDir: string;
     publicDir: string;
+    cache: Cache;
   },
 ) => {
-  const cache = new FileCache();
   const readDepandants = createDependantsReader(cache, log);
   const getNewDependants = createNewDependantsGetter(cache);
   const getAllPossibleInputPaths = createInputPathsGetter({
